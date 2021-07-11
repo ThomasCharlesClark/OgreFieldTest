@@ -1,0 +1,70 @@
+hlms PurpleRadialFlare pbs
+{
+	roughness	1.0
+	fresnel		1.0
+	diffuse_map				flare-radial-purple.png
+	roughness_map			MRAMOR-bump.jpg
+}
+
+hlms Crosses pbs
+{
+	roughness	0.02
+	fresnel		1.0
+	diffuse_map				crosses.png
+}
+
+hlms Grid pbs
+{
+	roughness	0.02
+	fresnel		1.0
+	diffuse_map				grid.png
+	roughness_map			MRAMOR-bump.jpg
+}
+
+hlms UnlitBlack unlit
+{
+	diffuse 	0.0 0.0 0.0 1.0
+}
+
+hlms UnlitRed unlit
+{
+	diffuse 	1.0 0.0 0.0 1.0
+}
+
+hlms UnlitGreen unlit
+{
+	diffuse 	0.0 1.0 0.4 0.8
+}
+
+hlms UnlitWhite unlit
+{
+	diffuse 	1.0 1.0 1.0 1.0
+}
+
+hlms Red pbs
+{	
+	roughness 		0.02
+	fresnel 		1.33
+	diffuse_map		red10x10.png
+}
+
+hlms Active pbs
+{	
+	roughness 		0.02
+	fresnel 		1.33
+	diffuse_map		green10x10.png
+}
+
+
+hlms Neighbourly pbs
+{	
+	roughness 		0.02
+	fresnel 		1.33
+	diffuse_map		blue10x10.png
+}
+
+
+hlms Transparent pbs
+{	
+	diffuse_map		transparent10x10.png
+}
