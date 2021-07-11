@@ -13,7 +13,7 @@
 
 #include <SDL.h>
 
-namespace Demo
+namespace MyThirdOgre
 {
     class MouseListener;
     class KeyboardListener;

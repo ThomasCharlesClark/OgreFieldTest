@@ -3,7 +3,7 @@
 #include "OgreStringVector.h"
 #include "OgrePixelFormatGpu.h"
 
-namespace Demo
+namespace MyThirdOgre
 {
     /** Functions mostly useful for Unit Testing
     */

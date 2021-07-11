@@ -3,8 +3,9 @@
 #include "GameEntity.h"
 
 #include "LogicSystem.h"
+#include "OgreManualObject2.h"
 
-namespace Demo
+namespace MyThirdOgre
 {
     const size_t cNumTransforms = 250;
 
@@ -77,6 +78,42 @@ namespace Demo
 
         return gameEntity;
     }
+    //-----------------------------------------------------------------------------------
+	GameEntity* GameEntityManager::addGameEntity( Ogre::SceneMemoryMgrTypes type, 
+                                                  const MovableObjectDefinition* moDefinition, 
+                                                  const Ogre::Vector3& initialPos, 
+                                                  const Ogre::Quaternion& initialRot, 
+                                                  const Ogre::Vector3& initialScale,
+                                                  const Ogre::String& manualObjectDatablockName,
+                                                  const ManualObjectLineListDefinition& manualObjectLineListDef )
+	{
+        GameEntity* gameEntity = new GameEntity(mCurrentId++, moDefinition, type);
+
+        gameEntity->mManualObjectDatablockName = manualObjectDatablockName;
+        gameEntity->mManualObjectDefinition = manualObjectLineListDef;
+
+        CreatedGameEntity cge;
+        cge.gameEntity = gameEntity;
+        cge.initialTransform.vPos = initialPos;
+        cge.initialTransform.qRot = initialRot;
+        cge.initialTransform.vScale = initialScale;
+
+        size_t slot, bufferIdx;
+        aquireTransformSlot(slot, bufferIdx);
+
+        gameEntity->mTransformBufferIdx = bufferIdx;
+        for (int i = 0; i < NUM_GAME_ENTITY_BUFFERS; ++i)
+        {
+            gameEntity->mTransform[i] = mTransformBuffers[bufferIdx] + slot + cNumTransforms * i;
+            memcpy(gameEntity->mTransform[i], &cge.initialTransform, sizeof(GameEntityTransform));
+        }
+
+        mGameEntities[type].push_back(gameEntity);
+
+        mLogicSystem->queueSendMessage(mGraphicsSystem, Mq::GAME_ENTITY_ADDED, cge);
+
+        return gameEntity;
+	}
     //-----------------------------------------------------------------------------------
     void GameEntityManager::removeGameEntity( GameEntity *toRemove )
     {

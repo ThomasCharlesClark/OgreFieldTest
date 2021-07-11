@@ -31,7 +31,7 @@ THE SOFTWARE.
 
 #include <SDL_syswm.h>
 
-namespace Demo
+namespace MyThirdOgre
 {
 extern unsigned long WindowContentViewHandle(const SDL_SysWMinfo &info);
 }

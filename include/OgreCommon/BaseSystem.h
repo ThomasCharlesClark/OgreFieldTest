@@ -4,7 +4,7 @@
 
 #include "Threading/MessageQueueSystem.h"
 
-namespace Demo
+namespace MyThirdOgre
 {
     class GameState;
 

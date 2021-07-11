@@ -316,16 +316,12 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\EmptyProject.cpp" />
-    <ClCompile Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\EmptyProjectGameState.cpp" />
     <ClCompile Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\BaseSystem.cpp" />
     <ClCompile Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\CameraController.cpp" />
     <ClCompile Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\GameEntityManager.cpp" />
     <ClCompile Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\GraphicsSystem.cpp" />
     <ClCompile Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\LogicSystem.cpp" />
     <ClCompile Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\SdlInputHandler.cpp" />
-    <ClCompile Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\System\Desktop\MainLoopMultiThreaded.cpp" />
-    <ClCompile Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\System\Desktop\MainLoopSingleThreaded.cpp" />
     <ClCompile Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\System\MainEntryPoints.cpp" />
     <ClCompile Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\System\StaticPluginLoader.cpp" />
     <ClCompile Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\Threading\MessageQueueSystem.cpp" />
@@ -338,8 +334,10 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClCompile Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\Utils\TestUtils.cpp" />
     <ClCompile Include="src\FieldTest\Cell.cpp" />
     <ClCompile Include="src\FieldTest\Field.cpp" />
+    <ClCompile Include="src\GraphicsGameState.cpp" />
+    <ClCompile Include="src\LogicGameState.cpp" />
+    <ClCompile Include="src\MyThirdOgre.cpp" />
     <ClInclude Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\EmptyProject.h" />
-    <ClInclude Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\EmptyProjectGameState.h" />
     <ClInclude Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\BaseSystem.h" />
     <ClInclude Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\CameraController.h" />
     <ClInclude Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\GameEntity.h" />
@@ -367,6 +365,8 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\Utils\ScreenSpaceReflections.h" />
     <ClInclude Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\Utils\SmaaUtils.h" />
     <ClInclude Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\Utils\TestUtils.h" />
+    <ClInclude Include="include\GraphicsGameState.h" />
+    <ClInclude Include="include\LogicGameState.h" />
     <ClInclude Include="src\FieldTest\Cell.h" />
     <ClInclude Include="src\FieldTest\Field.h" />
   </ItemGroup>

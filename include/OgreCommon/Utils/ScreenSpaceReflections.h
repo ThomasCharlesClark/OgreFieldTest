@@ -4,7 +4,7 @@
 #include "OgreGpuProgramParams.h"
 #include "OgreMatrix4.h"
 
-namespace Demo
+namespace MyThirdOgre
 {
     class ScreenSpaceReflections
     {

@@ -11,7 +11,7 @@
 #include "OgreHlmsPbsDatablock.h"
 #include "OgreHlmsUnlitDatablock.h"
 
-namespace Demo
+namespace MyThirdOgre
 {
     TestUtils::TestUtils() :
         mNumGenTextures( 0 ),

@@ -23,7 +23,7 @@
     #include <SDL_syswm.h>
 #endif
 
-namespace Demo
+namespace MyThirdOgre
 {
     LogicSystem::LogicSystem( GameState *gameState ) :
         BaseSystem( gameState ),
@@ -91,10 +91,49 @@ namespace Demo
                                                                 data ) );
             break;
         case Mq::SDL_EVENT:
-            //TODO
+            {
+                //TODO
+                auto evt = *reinterpret_cast<const SDL_Event*>(data);
+                switch (evt.type) {
+                    case SDL_KEYDOWN:
+                        keyPressed(*reinterpret_cast<const SDL_KeyboardEvent*>(data));
+                        break;
+                    case SDL_KEYUP:
+                        keyReleased(*reinterpret_cast<const SDL_KeyboardEvent*>(data));
+                        break;
+                    case SDL_MOUSEMOTION:
+                        mouseMoved(*reinterpret_cast<const SDL_MouseMotionEvent*>(data));
+                        break;
+                    case SDL_MOUSEWHEEL:
+                        mouseWheelChanged(*reinterpret_cast<const SDL_MouseWheelEvent*>(data));
+                        break;
+                    default: 
+                        break;
+                }
+            }
             break;
         default:
             break;
         }
+    }
+    //-----------------------------------------------------------------------------------
+    void LogicSystem::keyPressed(const SDL_KeyboardEvent& arg) 
+    {
+
+    }
+    //-----------------------------------------------------------------------------------
+    void LogicSystem::keyReleased(const SDL_KeyboardEvent& arg)
+    {
+
+    }
+    //-----------------------------------------------------------------------------------
+    void LogicSystem::mouseMoved(const SDL_MouseMotionEvent& arg) 
+    {
+
+    }
+    //-----------------------------------------------------------------------------------
+    void LogicSystem::mouseWheelChanged(const SDL_MouseWheelEvent& arg)
+    {
+
     }
 }

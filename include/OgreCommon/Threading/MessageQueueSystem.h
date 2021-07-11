@@ -9,7 +9,7 @@
 
 #include <map>
 
-namespace Demo
+namespace MyThirdOgre
 {
 namespace Mq
 {

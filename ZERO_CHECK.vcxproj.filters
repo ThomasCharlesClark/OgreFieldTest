@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\CMakeFiles\5fcf6b3387d0595250c242120cd03f4f\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{781AB3D5-1A8F-3F61-90E3-4E5D03BDD2C6}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

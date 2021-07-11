@@ -354,5 +354,5 @@ HAVE_ARCH_PTR_SIZE:INTERNAL=TRUE
 SDL2_BINARY_DBG-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: SDL2_BINARY_REL
 SDL2_BINARY_REL-ADVANCED:INTERNAL=1
-SDL2_LIBRARY_TEMP:INTERNAL=winmm;imm32;version;msimg32;C:/Program Files (x86)/SDL2/lib/SDL2maind.lib;winmm;imm32;version;msimg32;C:/Program Files (x86)/SDL2/lib/SDL2maind.lib;winmm;imm32;version;msimg32;C:/Users/Thoams/source/repos/ThomasCharlesClark/Ogre/my-third-ogre/Dependencies/Ogre/Dependencies/lib/SDL2main.lib;C:/Users/Thoams/source/repos/ThomasCharlesClark/Ogre/my-third-ogre/Dependencies/Ogre/Dependencies/lib/SDL2.lib
+SDL2_LIBRARY_TEMP:INTERNAL=winmm;imm32;version;msimg32;C:/Program Files (x86)/SDL2/lib/SDL2maind.lib;winmm;imm32;version;msimg32;C:/Program Files (x86)/SDL2/lib/SDL2maind.lib;winmm;imm32;version;msimg32;C:/Program Files (x86)/SDL2/lib/SDL2maind.lib;winmm;imm32;version;msimg32;C:/Users/Thoams/source/repos/ThomasCharlesClark/Ogre/my-third-ogre/Dependencies/Ogre/Dependencies/lib/SDL2main.lib;C:/Users/Thoams/source/repos/ThomasCharlesClark/Ogre/my-third-ogre/Dependencies/Ogre/Dependencies/lib/SDL2.lib
 

@@ -15,7 +15,7 @@
 #include "OgreTechnique.h"
 #include "OgrePass.h"
 
-namespace Demo
+namespace MyThirdOgre
 {
     void HdrUtils::init( Ogre::uint8 fsaa )
     {

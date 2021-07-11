@@ -1,0 +1,180 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="MinSizeRel|x64">
+      <Configuration>MinSizeRel</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="RelWithDebInfo|x64">
+      <Configuration>RelWithDebInfo</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{77D9192D-64CE-3701-99FF-C1A21EA9D11D}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+    <Keyword>Win32Proj</Keyword>
+    <Platform>x64</Platform>
+    <ProjectName>ALL_BUILD</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\OgreMain\include;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\build\include;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Common\include;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Unlit\include;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Pbs\include;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Overlay\include;C:\Program Files (x86)\SDL2\include\SDL2;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\.\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\OgreMain\include;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\build\include;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Common\include;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Unlit\include;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Pbs\include;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Overlay\include;C:\Program Files (x86)\SDL2\include\SDL2;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\.\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\OgreMain\include;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\build\include;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Common\include;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Unlit\include;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Pbs\include;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Overlay\include;C:\Program Files (x86)\SDL2\include\SDL2;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\.\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\OgreMain\include;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\build\include;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Common\include;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Unlit\include;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Pbs\include;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Overlay\include;C:\Program Files (x86)\SDL2\include\SDL2;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\.\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\CMakeLists.txt">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Building Custom Rule C:/Users/Thoams/source/repos/ThomasCharlesClark/Ogre/my-third-ogre/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/Thoams/source/repos/ThomasCharlesClark/Ogre/my-third-ogre -BC:/Users/Thoams/source/repos/ThomasCharlesClark/Ogre/my-third-ogre --check-stamp-file C:/Users/Thoams/source/repos/ThomasCharlesClark/Ogre/my-third-ogre/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Program Files\CMake\share\cmake-3.20\Modules\CMakeCInformation.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CMakeCXXInformation.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CheckCSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CheckIncludeFile.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CheckIncludeFileCXX.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CheckLibraryExists.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CheckTypeSize.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\Compiler\MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\FindThreads.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\Internal\CheckSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\Platform\WindowsPaths.cmake;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\CMake\Bootstrap.cmake;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\CMake\Dependencies\OGRE.cmake;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\CMake\Templates\Plugins.cfg.in;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\CMake\Templates\Resources.cfg.in;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\CMakeFiles\3.20.5\CMakeCCompiler.cmake;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\CMakeFiles\3.20.5\CMakeCXXCompiler.cmake;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\CMakeFiles\3.20.5\CMakeRCCompiler.cmake;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\CMakeFiles\3.20.5\CMakeSystem.cmake;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\CMake\Packages\FindSDL2.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building Custom Rule C:/Users/Thoams/source/repos/ThomasCharlesClark/Ogre/my-third-ogre/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/Thoams/source/repos/ThomasCharlesClark/Ogre/my-third-ogre -BC:/Users/Thoams/source/repos/ThomasCharlesClark/Ogre/my-third-ogre --check-stamp-file C:/Users/Thoams/source/repos/ThomasCharlesClark/Ogre/my-third-ogre/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Program Files\CMake\share\cmake-3.20\Modules\CMakeCInformation.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CMakeCXXInformation.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CheckCSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CheckIncludeFile.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CheckIncludeFileCXX.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CheckLibraryExists.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CheckTypeSize.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\Compiler\MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\FindThreads.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\Internal\CheckSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\Platform\WindowsPaths.cmake;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\CMake\Bootstrap.cmake;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\CMake\Dependencies\OGRE.cmake;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\CMake\Templates\Plugins.cfg.in;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\CMake\Templates\Resources.cfg.in;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\CMakeFiles\3.20.5\CMakeCCompiler.cmake;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\CMakeFiles\3.20.5\CMakeCXXCompiler.cmake;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\CMakeFiles\3.20.5\CMakeRCCompiler.cmake;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\CMakeFiles\3.20.5\CMakeSystem.cmake;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\CMake\Packages\FindSDL2.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Building Custom Rule C:/Users/Thoams/source/repos/ThomasCharlesClark/Ogre/my-third-ogre/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/Thoams/source/repos/ThomasCharlesClark/Ogre/my-third-ogre -BC:/Users/Thoams/source/repos/ThomasCharlesClark/Ogre/my-third-ogre --check-stamp-file C:/Users/Thoams/source/repos/ThomasCharlesClark/Ogre/my-third-ogre/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Program Files\CMake\share\cmake-3.20\Modules\CMakeCInformation.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CMakeCXXInformation.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CheckCSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CheckIncludeFile.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CheckIncludeFileCXX.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CheckLibraryExists.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CheckTypeSize.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\Compiler\MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\FindThreads.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\Internal\CheckSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\Platform\WindowsPaths.cmake;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\CMake\Bootstrap.cmake;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\CMake\Dependencies\OGRE.cmake;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\CMake\Templates\Plugins.cfg.in;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\CMake\Templates\Resources.cfg.in;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\CMakeFiles\3.20.5\CMakeCCompiler.cmake;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\CMakeFiles\3.20.5\CMakeCXXCompiler.cmake;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\CMakeFiles\3.20.5\CMakeRCCompiler.cmake;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\CMakeFiles\3.20.5\CMakeSystem.cmake;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\CMake\Packages\FindSDL2.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Building Custom Rule C:/Users/Thoams/source/repos/ThomasCharlesClark/Ogre/my-third-ogre/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/Thoams/source/repos/ThomasCharlesClark/Ogre/my-third-ogre -BC:/Users/Thoams/source/repos/ThomasCharlesClark/Ogre/my-third-ogre --check-stamp-file C:/Users/Thoams/source/repos/ThomasCharlesClark/Ogre/my-third-ogre/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Program Files\CMake\share\cmake-3.20\Modules\CMakeCInformation.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CMakeCXXInformation.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CheckCSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CheckIncludeFile.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CheckIncludeFileCXX.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CheckLibraryExists.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\CheckTypeSize.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\Compiler\MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\FindThreads.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\Internal\CheckSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-3.20\Modules\Platform\WindowsPaths.cmake;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\CMake\Bootstrap.cmake;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\CMake\Dependencies\OGRE.cmake;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\CMake\Templates\Plugins.cfg.in;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\CMake\Templates\Resources.cfg.in;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\CMakeFiles\3.20.5\CMakeCCompiler.cmake;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\CMakeFiles\3.20.5\CMakeCXXCompiler.cmake;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\CMakeFiles\3.20.5\CMakeRCCompiler.cmake;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\CMakeFiles\3.20.5\CMakeSystem.cmake;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\CMake\Packages\FindSDL2.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\ZERO_CHECK.vcxproj">
+      <Project>{3FF22699-762F-318A-A058-940A3A3AA94B}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\MyThirdOgre.vcxproj">
+      <Project>{5D37D374-74CC-3591-8A00-6CBDE9EE4E5D}</Project>
+      <Name>MyThirdOgre</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

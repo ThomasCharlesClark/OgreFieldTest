@@ -6,7 +6,7 @@
 #include "OgreMeshManager2.h"
 #include "OgreMesh2.h"
 
-namespace Demo
+namespace MyThirdOgre
 {
     void MeshUtils::importV1Mesh( const Ogre::String &meshName, const Ogre::String &groupName )
     {

@@ -32,7 +32,7 @@ THE SOFTWARE.
 
 #include "System/MainEntryPoints.h"
 
-namespace Demo
+namespace MyThirdOgre
 {
     double MainEntryPoints::Frametime = 1.0 / 60.0;
 }

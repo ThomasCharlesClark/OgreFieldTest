@@ -8,7 +8,7 @@
 #include "OgreTechnique.h"
 #include "OgrePass.h"
 
-namespace Demo
+namespace MyThirdOgre
 {
     void SmaaUtils::initialize( Ogre::RenderSystem *renderSystem, PresetQuality quality,
                                 EdgeDetectionMode edgeDetectionMode )

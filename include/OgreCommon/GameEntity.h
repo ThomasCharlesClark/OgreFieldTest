@@ -6,7 +6,9 @@
 #include "OgreQuaternion.h"
 #include "OgreStringVector.h"
 
-namespace Demo
+#include <vector>
+
+namespace MyThirdOgre
 {
     #define NUM_GAME_ENTITY_BUFFERS 4
 
@@ -14,7 +16,9 @@ namespace Demo
     {
         MoTypeItem,
         MoTypeEntity,
-        NumMovableObjectType
+        NumMovableObjectType,
+        MoTypeStaticManualLineList,
+        MoTypeDynamicManualObject
     };
 
     struct MovableObjectDefinition
@@ -32,6 +36,12 @@ namespace Demo
         Ogre::Vector3       vScale;
     };
 
+    struct ManualObjectLineListDefinition
+    {
+        std::vector<Ogre::Vector3> points;
+        std::vector<std::pair<int, int>> lines;
+    };
+
     struct GameEntity
     {
     private:
@@ -43,6 +53,9 @@ namespace Demo
         //----------------------------------------
         Ogre::SceneNode         *mSceneNode;
         Ogre::MovableObject     *mMovableObject; //Could be Entity, InstancedEntity, Item.
+
+        Ogre::String            mManualObjectDatablockName;
+        ManualObjectLineListDefinition  mManualObjectDefinition;
 
         //Your custom pointers go here, i.e. physics representation.
         //used only by Logic thread (hkpEntity, btRigidBody, etc)

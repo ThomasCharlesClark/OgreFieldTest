@@ -9,7 +9,7 @@
 #include "OgreMaterial.h"
 #include "OgreTechnique.h"
 
-namespace Demo
+namespace MyThirdOgre
 {
     void MiscUtils::setGaussianLogFilterParams( Ogre::HlmsComputeJob *job, Ogre::uint8 kernelRadius,
                                                 float gaussianDeviationFactor, Ogre::uint16 K )

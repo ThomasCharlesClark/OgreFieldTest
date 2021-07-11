@@ -13,7 +13,7 @@ namespace Ogre
     }
 }
 
-namespace Demo
+namespace MyThirdOgre
 {
     class GraphicsSystem;
     class CameraController;

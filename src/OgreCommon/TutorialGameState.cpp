@@ -18,9 +18,11 @@
 #include "OgreHlmsCompute.h"
 #include "OgreGpuProgramManager.h"
 
-using namespace Demo;
+#include "OgreCamera.h"
 
-namespace Demo
+using namespace MyThirdOgre;
+
+namespace MyThirdOgre
 {
     TutorialGameState::TutorialGameState( const Ogre::String &helpDescription ) :
         mGraphicsSystem( 0 ),
@@ -46,6 +48,15 @@ namespace Demo
     void TutorialGameState::createScene01(void)
     {
         createDebugTextOverlay();
+
+        Ogre::Light* light = mGraphicsSystem->getSceneManager()->createLight();
+        Ogre::SceneNode* lightNode = mGraphicsSystem->getSceneManager()->getRootSceneNode()->createChildSceneNode();
+        lightNode->attachObject(light);
+        light->setPowerScale(Ogre::Math::PI); //Since we don't do HDR, counter the PBS' division by PI
+        light->setType(Ogre::Light::LT_DIRECTIONAL);
+        light->setDirection(Ogre::Vector3(-1, -1, -1).normalisedCopy());
+
+        mCameraController = new CameraController(mGraphicsSystem, false);
     }
     //-----------------------------------------------------------------------------------
     void TutorialGameState::createDebugTextOverlay(void)
@@ -80,14 +91,16 @@ namespace Demo
             outText = mHelpDescription;
             outText += "\n\nPress F1 to toggle help";
             outText += "\n\nProtip: Ctrl+F1 will reload PBS shaders (for real time template editing).\n"
-                       "Ctrl+F2 reloads Unlit shaders.\n"
-                       "Ctrl+F3 reloads Compute shaders.\n"
-                       "Note: If the modified templates produce invalid shader code, "
-                       "crashes or exceptions can happen.\n";
+                "Ctrl+F2 reloads Unlit shaders.\n"
+                "Ctrl+F3 reloads Compute shaders.\n"
+                "Note: If the modified templates produce invalid shader code, "
+                "crashes or exceptions can happen.";
             return;
         }
 
         const Ogre::FrameStats *frameStats = mGraphicsSystem->getRoot()->getFrameStats();
+
+        const Ogre::Vector3 cameraPosition = mGraphicsSystem->getCamera()->getPosition();
 
         Ogre::String finalText;
         finalText.reserve( 128 );
@@ -102,6 +115,10 @@ namespace Demo
         finalText += "Avg FPS:\t";
         finalText += Ogre::StringConverter::toString( 1000.0f / frameStats->getAvgTime() );
         finalText += "\n\nPress F1 to toggle help";
+
+        finalText += "\n\nCamera Position: (" + Ogre::StringConverter::toString(cameraPosition.x) + ", " +
+            Ogre::StringConverter::toString(cameraPosition.y) + ", " +
+            Ogre::StringConverter::toString(cameraPosition.z) + ")\n";
 
         outText.swap( finalText );
 

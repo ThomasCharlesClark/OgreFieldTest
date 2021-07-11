@@ -35,6 +35,8 @@
 
 #include "OgreLogManager.h"
 
+#include "OgreEntity.h"
+
 #include <fstream>
 
 #if OGRE_USE_SDL2
@@ -50,7 +52,7 @@
     #endif
 #endif
 
-namespace Demo
+namespace MyThirdOgre
 {
     GraphicsSystem::GraphicsSystem( GameState *gameState,
                                     Ogre::String resourcePath ,
@@ -368,6 +370,12 @@ namespace Demo
                 break;
             case SDL_QUIT:
                 mQuit = true;
+                break;
+            case SDL_KEYDOWN:
+            case SDL_KEYUP:
+            case SDL_MOUSEMOTION:
+            case SDL_MOUSEWHEEL:
+                this->queueSendMessage(mLogicSystem, Mq::SDL_EVENT, evt);
                 break;
             default:
                 break;
@@ -827,9 +835,9 @@ namespace Demo
         mCamera = mSceneManager->createCamera( "Main Camera" );
 
         // Position it at 500 in Z direction
-        mCamera->setPosition( Ogre::Vector3( 0, 5, 15 ) );
+        mCamera->setPosition( Ogre::Vector3( 11, 10, 15 ) );
         // Look back along -Z
-        mCamera->lookAt( Ogre::Vector3( 0, 0, 0 ) );
+        mCamera->lookAt( Ogre::Vector3( 11, 0, -11 ) );
         mCamera->setNearClipDistance( 0.2f );
         mCamera->setFarClipDistance( 1000.0f );
         mCamera->setAutoAspectRatio( true );
@@ -921,6 +929,26 @@ namespace Demo
             }
 
             cge->gameEntity->mMovableObject = item;
+        }
+
+
+        if (cge->gameEntity->mMoDefinition->moType == MoTypeStaticManualLineList)
+        {
+            Ogre::ManualObject* mo = mSceneManager->createManualObject(Ogre::SCENE_STATIC);
+
+            mo->begin(cge->gameEntity->mManualObjectDatablockName, Ogre::OT_LINE_LIST);
+
+            for (auto p : cge->gameEntity->mManualObjectDefinition.points) {
+                mo->position(p);
+            }
+
+            for (auto l : cge->gameEntity->mManualObjectDefinition.lines) {
+                mo->line(l.first, l.second);
+            }
+
+            mo->end();
+
+            cge->gameEntity->mMovableObject = mo;
         }
 
         sceneNode->attachObject( cge->gameEntity->mMovableObject );

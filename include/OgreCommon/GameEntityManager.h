@@ -4,11 +4,13 @@
 
 #include "Threading/MessageQueueSystem.h"
 #include "GameEntity.h"
+#include "OgreManualObject2.h"
 
-namespace Demo
+namespace MyThirdOgre
 {
     class GraphicsSystem;
     class LogicSystem;
+    struct ManualObjectLineListDefinition;
 
     class GameEntityManager
     {
@@ -84,12 +86,20 @@ namespace Demo
                                    const Ogre::Quaternion &initialRot,
                                    const Ogre::Vector3 &initialScale );
 
+        GameEntity* addGameEntity( Ogre::SceneMemoryMgrTypes type,
+                                   const MovableObjectDefinition* moDefinition,
+                                   const Ogre::Vector3& initialPos,
+                                   const Ogre::Quaternion& initialRot,
+                                   const Ogre::Vector3& initialScale,
+                                   const Ogre::String& manualObjectDatablockName,
+                                   const ManualObjectLineListDefinition& manualObjectDef );
+
         /** Removes the GameEntity from the world. The pointer is not immediately destroyed,
             we first need to release data in other threads (i.e. Graphics).
             It will be destroyed after the Render thread confirms it is done with it
             (via a Mq::GAME_ENTITY_SCHEDULED_FOR_REMOVAL_SLOT message)
         */
-        void removeGameEntity( GameEntity *toRemove );
+		void removeGameEntity( GameEntity *toRemove );
 
         /// Must be called by LogicSystem when Mq::GAME_ENTITY_SCHEDULED_FOR_REMOVAL_SLOT message arrives
         void _notifyGameEntitiesRemoved( size_t slot );

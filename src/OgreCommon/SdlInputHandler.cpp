@@ -9,7 +9,7 @@
 
 #include <SDL_syswm.h>
 
-namespace Demo
+namespace MyThirdOgre
 {
     SdlInputHandler::SdlInputHandler( SDL_Window *sdlWindow,
                                       MouseListener *mouseListener,
@@ -21,8 +21,8 @@ namespace Demo
         mKeyboardListener( keyboardListener ),
         mJoystickListener( joystickListener ),
         mWantRelative( false ),
-        mWantMouseGrab( false ),
-        mWantMouseVisible( true ),
+        mWantMouseGrab( true ),
+        mWantMouseVisible( false ),
         mIsMouseRelative( !mWantRelative ),
         mWrapPointerManually( false ),
         mGrabPointer( false ),

@@ -4,10 +4,11 @@
 
 #include "BaseSystem.h"
 #include "OgrePrerequisites.h"
+#include "SDL_events.h"
 
 #include <deque>
 
-namespace Demo
+namespace MyThirdOgre
 {
     class GameEntityManager;
 
@@ -34,6 +35,11 @@ namespace Demo
 
         GameEntityManager* getGameEntityManager(void)               { return mGameEntityManager; }
         Ogre::uint32 getCurrentTransformIdx(void) const             { return mCurrentTransformIdx; }
+
+        virtual void keyPressed(const SDL_KeyboardEvent& arg);
+        virtual void keyReleased(const SDL_KeyboardEvent& arg);
+        virtual void mouseMoved(const SDL_MouseMotionEvent& arg);
+        virtual void mouseWheelChanged(const SDL_MouseWheelEvent& arg);
     };
 }
 

@@ -5,7 +5,7 @@
 #include "OgrePrerequisites.h"
 #include "TutorialGameState.h"
 
-namespace Demo
+namespace MyThirdOgre
 {
     class CameraController
     {

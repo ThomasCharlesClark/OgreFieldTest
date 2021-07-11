@@ -4,7 +4,7 @@
 
 #include "InputListeners.h"
 
-namespace Demo
+namespace MyThirdOgre
 {
     class GameState : public MouseListener, public KeyboardListener, public JoystickListener
     {

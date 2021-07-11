@@ -1,30 +1,33 @@
 #pragma once
 #include <vector>
+
 #include "Cell.h"
 #include "OgreSceneNode.h"
 #include "OgreManualObject2.h"
+#include "GameEntity.h"
+#include "GameEntityManager.h"
 
-class Field
+namespace MyThirdOgre 
 {
-	int cellCount;
-	int columnCount;
-	int rowCount;
-	Ogre::SceneManager* sceneManager;
+	class Field
+	{
+		int cellCount;
+		int mColumnCount;
+		int mRowCount;
+		GameEntityManager* mGameEntityManager;
 
-	Ogre::ManualObject* gridObject;
-	Ogre::SceneNode* gridSceneNode;
+		MyThirdOgre::GameEntity* mGridEntity;
+		MovableObjectDefinition* mGridLineMoDef;
 
-protected:
-	virtual void createGrid(void);
+	protected:
+		virtual void createGrid(void);
 
-public: 
-	Field(Ogre::SceneManager* scnMgr);
-	~Field();
+	public:
+		Field(GameEntityManager* geMgr);
+		~Field();
 
-	std::map<std::pair<int,int>, Cell*> cells;
+		std::map<std::pair<int, int>, Cell*> cells;
 
-	Cell* getCell(int x, int y);
-
-	std::vector<Cell*> getNeighbours(Ogre::Vector3 pos);
-};
-
+		Cell* getCell(int x, int y);
+	};
+}

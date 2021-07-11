@@ -30,7 +30,7 @@ THE SOFTWARE.
 
 #include "OgreVector2.h"
 
-namespace Demo
+namespace MyThirdOgre
 {
 	class iOSUtils
 	{

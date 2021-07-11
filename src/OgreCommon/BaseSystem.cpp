@@ -2,7 +2,7 @@
 #include "BaseSystem.h"
 #include "GameState.h"
 
-namespace Demo
+namespace MyThirdOgre
 {
     BaseSystem::BaseSystem( GameState *gameState ) :
         mCurrentGameState( gameState )

@@ -11,7 +11,7 @@
 
 #include "OgreCamera.h"
 
-namespace Demo
+namespace MyThirdOgre
 {
     const Ogre::Matrix4 PROJECTIONCLIPSPACE2DTOIMAGESPACE_PERSPECTIVE(
         0.5,    0,    0,  0.5,

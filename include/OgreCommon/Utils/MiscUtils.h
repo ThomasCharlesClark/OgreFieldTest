@@ -1,7 +1,7 @@
 
 #include "OgrePrerequisites.h"
 
-namespace Demo
+namespace MyThirdOgre
 {
     class MiscUtils
     {

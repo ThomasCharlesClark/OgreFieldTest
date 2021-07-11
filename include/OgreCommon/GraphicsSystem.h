@@ -17,7 +17,7 @@
     #include <SDL.h>
 #endif
 
-namespace Demo
+namespace MyThirdOgre
 {
     class SdlInputHandler;
 
