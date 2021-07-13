@@ -8,6 +8,8 @@
 #include "BaseSystem.h"
 #include "OgrePrerequisites.h"
 #include "SdlEmulationLayer.h"
+#include "GraphicsSystem.h"
+#include "LogicSystem.h"
 
 #if OGRE_USE_SDL2
 
@@ -88,6 +90,11 @@ namespace MyThirdOgre
 
         /// Shows or hides the mouse cursor.
         void setMouseVisible( bool visible );
+
+
+        void _notifyLogicSystem(LogicSystem* logicSystem) { mLogicSystem = logicSystem; }
+        void _notifyGraphicsSystem(GraphicsSystem* graphicsSystem) { mGraphicsSystem = graphicsSystem; }
+
     };
 }
 

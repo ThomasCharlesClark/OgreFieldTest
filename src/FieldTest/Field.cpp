@@ -15,15 +15,18 @@ namespace MyThirdOgre
 		mColumnCount = 22;
 		mRowCount = 22;
 		mGameEntityManager = geMgr;
+		mCells = std::map<std::pair<int, int>, Cell*> { };
 
 		createGrid();
+
+		//createCells();
 	}
 
 	Field::~Field() {
 		delete mGridLineMoDef;
 		mGridLineMoDef = 0;
 
-		for (auto i = cells.begin(); i != cells.end(); i++) {
+		for (auto i = mCells.begin(); i != mCells.end(); i++) {
 			delete i->second;
 		}
 	}
@@ -56,40 +59,26 @@ namespace MyThirdOgre
 			pointCounter += 2;
 		}
 
-		mGridEntity = mGameEntityManager->addGameEntity(Ogre::SceneMemoryMgrTypes::SCENE_STATIC,
+		mGridEntity = mGameEntityManager->addGameEntity(
+			Ogre::SceneMemoryMgrTypes::SCENE_STATIC,
 			mGridLineMoDef,
+			"UnlitBlack",
+			gridLineList,
 			Ogre::Vector3::ZERO,
 			Ogre::Quaternion::IDENTITY,
-			Ogre::Vector3::UNIT_SCALE,
-			"UnlitBlack",
-			gridLineList
+			Ogre::Vector3::UNIT_SCALE
 		);
+	}
 
-		//Ogre::ManualObject* gridObject = mGameEntityManager->createManualObject();
-
-		//gridObject->begin("BaseWhite", Ogre::OT_LINE_LIST);
-
-		//int xPointCounter = 0;
-		//int zPointCounter = 0;
-
-		//// rows go horizontally
-		//for (int i = 0; i < mRowCount; i++) {
-		//	gridObject->position(i, 0.0f, 0.0f);
-		//	gridObject->position(i, 0.0f, mColumnCount);
-		//	gridObject->line(xPointCounter, i + 1);
-		//	xPointCounter += 2;
-		//}
-
-		//// columns go vertically
-
-		//gridObject->end();
-
-		//Ogre::SceneNode* sceneNodeLines = mGameEntityManager->getRootSceneNode(Ogre::SCENE_DYNAMIC)->
-		//	createChildSceneNode(Ogre::SCENE_DYNAMIC);
-
-		//sceneNodeLines->attachObject(gridObject);
-		//sceneNodeLines->scale(1.0f, 1.0f, 1.0f);
-		//sceneNodeLines->translate(0.0f, 0.0f, 0.0f, Ogre::SceneNode::TS_LOCAL);
+	void Field::createCells(void) {
+		for (int i = 0; i < mColumnCount; i++) {
+			for (int j = 0; j < mRowCount; j++) {
+				mCells.insert({ 
+					{ i, j, }, 
+					new Cell(i, j, mColumnCount, mRowCount, mGameEntityManager) 
+				});
+			}
+		}
 	}
 
 	Cell* Field::getCell(int x, int y)
@@ -97,9 +86,9 @@ namespace MyThirdOgre
 		if (y > 0)
 			y = -y;
 
-		auto iter = cells.find(std::pair<int, int>(x, y));
+		auto iter = mCells.find(std::pair<int, int>(x, y));
 
-		if (iter != cells.end())
+		if (iter != mCells.end())
 			return iter->second;
 		else {
 			return 0;

@@ -13,6 +13,8 @@
 #include "SdlEmulationLayer.h"
 #include "OgreOverlaySystem.h"
 
+#include "LogicSystem.h"
+
 #if OGRE_USE_SDL2
     #include <SDL.h>
 #endif

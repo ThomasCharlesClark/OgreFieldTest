@@ -8,6 +8,8 @@
 #if OGRE_USE_SDL2
 
 #include <SDL_syswm.h>
+#include <GraphicsSystem.h>
+#include <LogicSystem.h>
 
 namespace MyThirdOgre
 {
@@ -17,6 +19,7 @@ namespace MyThirdOgre
                                       JoystickListener *joystickListener ) :
         mSdlWindow( sdlWindow ),
         mLogicSystem( 0 ),
+        mGraphicsSystem ( 0 ),
         mMouseListener( mouseListener ),
         mKeyboardListener( keyboardListener ),
         mJoystickListener( joystickListener ),

@@ -36,8 +36,8 @@ namespace MyThirdOgre
     //-----------------------------------------------------------------------------------
     TutorialGameState::~TutorialGameState()
     {
-        delete mCameraController;
-        mCameraController = 0;
+        /*delete mCameraController;
+        mCameraController = 0;*/
     }
     //-----------------------------------------------------------------------------------
     void TutorialGameState::_notifyGraphicsSystem( GraphicsSystem *graphicsSystem )
@@ -56,7 +56,7 @@ namespace MyThirdOgre
         light->setType(Ogre::Light::LT_DIRECTIONAL);
         light->setDirection(Ogre::Vector3(-1, -1, -1).normalisedCopy());
 
-        mCameraController = new CameraController(mGraphicsSystem, false);
+        //mCameraController = new CameraController(mGraphicsSystem, false);
     }
     //-----------------------------------------------------------------------------------
     void TutorialGameState::createDebugTextOverlay(void)
@@ -137,16 +137,16 @@ namespace MyThirdOgre
             mDebugTextShadow->setCaption( finalText );
         }
 
-        if( mCameraController )
-            mCameraController->update( timeSinceLast );
+        /*if( mCameraController )
+            mCameraController->update( timeSinceLast );*/
     }
     //-----------------------------------------------------------------------------------
     void TutorialGameState::keyPressed( const SDL_KeyboardEvent &arg )
     {
         bool handledEvent = false;
 
-        if( mCameraController )
-            handledEvent = mCameraController->keyPressed( arg );
+    /*    if( mCameraController )
+            handledEvent = mCameraController->keyPressed( arg );*/
 
         if( !handledEvent )
             GameState::keyPressed( arg );
@@ -198,8 +198,8 @@ namespace MyThirdOgre
         {
             bool handledEvent = false;
 
-            if( mCameraController )
-                handledEvent = mCameraController->keyReleased( arg );
+            //if( mCameraController )
+            //    handledEvent = mCameraController->keyReleased( arg );
 
             if( !handledEvent )
                 GameState::keyReleased( arg );
@@ -208,8 +208,8 @@ namespace MyThirdOgre
     //-----------------------------------------------------------------------------------
     void TutorialGameState::mouseMoved( const SDL_Event &arg )
     {
-        if( mCameraController )
-            mCameraController->mouseMoved( arg );
+       /* if( mCameraController )
+            mCameraController->mouseMoved( arg );*/
 
         GameState::mouseMoved( arg );
     }

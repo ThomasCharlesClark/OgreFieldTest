@@ -5,15 +5,20 @@
 #include "BaseSystem.h"
 #include "OgrePrerequisites.h"
 #include "SDL_events.h"
+#include "OgreWindow.h"
 
 #include <deque>
 
 namespace MyThirdOgre
 {
     class GameEntityManager;
+    class CameraController;
 
     class LogicSystem : public BaseSystem
     {
+        float               mWindowWidth;
+        float               mWindowHeight;
+
     protected:
         BaseSystem          *mGraphicsSystem;
         GameEntityManager   *mGameEntityManager;
@@ -30,16 +35,16 @@ namespace MyThirdOgre
 
         void _notifyGraphicsSystem( BaseSystem *graphicsSystem )    { mGraphicsSystem = graphicsSystem; }
         void _notifyGameEntityManager( GameEntityManager *mgr )     { mGameEntityManager = mgr; }
+        virtual void _notifyWindowWidth(float width);
+        virtual void _notifyWindowHeight(float height);
 
         void finishFrameParallel(void);
 
+        float getWindowWidth(void) { return mWindowWidth; }
+        float getWindowHeight(void) { return mWindowHeight; }
+
         GameEntityManager* getGameEntityManager(void)               { return mGameEntityManager; }
         Ogre::uint32 getCurrentTransformIdx(void) const             { return mCurrentTransformIdx; }
-
-        virtual void keyPressed(const SDL_KeyboardEvent& arg);
-        virtual void keyReleased(const SDL_KeyboardEvent& arg);
-        virtual void mouseMoved(const SDL_MouseMotionEvent& arg);
-        virtual void mouseWheelChanged(const SDL_MouseWheelEvent& arg);
     };
 }
 

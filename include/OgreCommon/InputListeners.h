@@ -4,6 +4,7 @@
 
 union SDL_Event;
 struct SDL_MouseButtonEvent;
+struct SDL_MouseWheelEvent;
 
 struct SDL_TextEditingEvent;
 struct SDL_TextInputEvent;
@@ -21,14 +22,15 @@ namespace MyThirdOgre
         //Receives SDL_MOUSEMOTION and SDL_MOUSEWHEEL events
         virtual void mouseMoved( const SDL_Event &arg ) {}
         virtual void mousePressed( const SDL_MouseButtonEvent &arg, Ogre::uint8 id ) {}
-        virtual void mouseReleased( const SDL_MouseButtonEvent &arg, Ogre::uint8 id ) {}
+        virtual void mouseReleased(const SDL_MouseButtonEvent &arg, Ogre::uint8 id) {}
+        virtual void mouseWheelChanged( const SDL_MouseWheelEvent &arg ) {}
     };
 
     class KeyboardListener
     {
     public:
-        virtual void textEditing( const SDL_TextEditingEvent& arg ) {}
-        virtual void textInput( const SDL_TextInputEvent& arg ) {}
+        virtual void textEditing( const SDL_TextEditingEvent &arg ) {}
+        virtual void textInput( const SDL_TextInputEvent &arg ) {}
         virtual void keyPressed( const SDL_KeyboardEvent &arg ) {}
         virtual void keyReleased (const SDL_KeyboardEvent &arg ) {}
     };

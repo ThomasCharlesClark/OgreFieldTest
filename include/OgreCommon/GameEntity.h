@@ -5,6 +5,7 @@
 #include "OgreVector3.h"
 #include "OgreQuaternion.h"
 #include "OgreStringVector.h"
+#include "OgreSceneManager.h"
 
 #include <vector>
 
@@ -18,7 +19,9 @@ namespace MyThirdOgre
         MoTypeEntity,
         NumMovableObjectType,
         MoTypeStaticManualLineList,
-        MoTypeDynamicManualObject
+        MoTypeDynamicManualObject,
+        MoTypePrefab,
+        MoTypeCamera
     };
 
     struct MovableObjectDefinition
@@ -51,10 +54,12 @@ namespace MyThirdOgre
         //----------------------------------------
         // Only used by Graphics thread
         //----------------------------------------
+        float                   mTransparency;
         Ogre::SceneNode         *mSceneNode;
         Ogre::MovableObject     *mMovableObject; //Could be Entity, InstancedEntity, Item.
 
-        Ogre::String            mManualObjectDatablockName;
+        Ogre::String                    mManualObjectDatablockName;
+        Ogre::SceneManager::PrefabType  mPrefabType;
         ManualObjectLineListDefinition  mManualObjectDefinition;
 
         //Your custom pointers go here, i.e. physics representation.
@@ -79,7 +84,8 @@ namespace MyThirdOgre
             mMovableObject( 0 ),
             mType( type ),
             mMoDefinition( moDefinition ),
-            mTransformBufferIdx( 0 )
+            mTransformBufferIdx( 0 ),
+            mTransparency( 0 )
         {
             for( int i=0; i<NUM_GAME_ENTITY_BUFFERS; ++i )
                 mTransform[i] = 0;

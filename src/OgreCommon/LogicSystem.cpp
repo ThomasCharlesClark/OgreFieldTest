@@ -29,7 +29,9 @@ namespace MyThirdOgre
         BaseSystem( gameState ),
         mGraphicsSystem( 0 ),
         mGameEntityManager( 0 ),
-        mCurrentTransformIdx( 1 )
+        mCurrentTransformIdx( 1 ),
+        mWindowWidth( 0 ),
+        mWindowHeight( 0 )
     {
         //mCurrentTransformIdx is 1, 0 and NUM_GAME_ENTITY_BUFFERS - 1 are taken by GraphicsSytem at startup
         //The range to fill is then [2; NUM_GAME_ENTITY_BUFFERS-1]
@@ -39,6 +41,16 @@ namespace MyThirdOgre
     //-----------------------------------------------------------------------------------
     LogicSystem::~LogicSystem()
     {
+    }
+    //-----------------------------------------------------------------------------------
+    void LogicSystem::_notifyWindowWidth(float width)
+    {
+        mWindowWidth = width;
+    }
+    //-----------------------------------------------------------------------------------
+    void LogicSystem::_notifyWindowHeight(float height)
+    {
+        mWindowHeight = height;
     }
     //-----------------------------------------------------------------------------------
     void LogicSystem::finishFrameParallel(void)
@@ -96,16 +108,22 @@ namespace MyThirdOgre
                 auto evt = *reinterpret_cast<const SDL_Event*>(data);
                 switch (evt.type) {
                     case SDL_KEYDOWN:
-                        keyPressed(*reinterpret_cast<const SDL_KeyboardEvent*>(data));
+                        mCurrentGameState->keyPressed(*reinterpret_cast<const SDL_KeyboardEvent*>(data));
                         break;
                     case SDL_KEYUP:
-                        keyReleased(*reinterpret_cast<const SDL_KeyboardEvent*>(data));
+                        mCurrentGameState->keyReleased(*reinterpret_cast<const SDL_KeyboardEvent*>(data));
+                        break;
+                    case SDL_MOUSEBUTTONDOWN:
+                        mCurrentGameState->mousePressed(*reinterpret_cast<const SDL_MouseButtonEvent*>(data), evt.button.button);
+                        break;
+                    case SDL_MOUSEBUTTONUP:
+                        mCurrentGameState->mouseReleased(*reinterpret_cast<const SDL_MouseButtonEvent*>(data), evt.button.button);
                         break;
                     case SDL_MOUSEMOTION:
-                        mouseMoved(*reinterpret_cast<const SDL_MouseMotionEvent*>(data));
+                        mCurrentGameState->mouseMoved(evt);
                         break;
                     case SDL_MOUSEWHEEL:
-                        mouseWheelChanged(*reinterpret_cast<const SDL_MouseWheelEvent*>(data));
+                        mCurrentGameState->mouseWheelChanged(*reinterpret_cast<const SDL_MouseWheelEvent*>(data));
                         break;
                     default: 
                         break;
@@ -115,25 +133,5 @@ namespace MyThirdOgre
         default:
             break;
         }
-    }
-    //-----------------------------------------------------------------------------------
-    void LogicSystem::keyPressed(const SDL_KeyboardEvent& arg) 
-    {
-
-    }
-    //-----------------------------------------------------------------------------------
-    void LogicSystem::keyReleased(const SDL_KeyboardEvent& arg)
-    {
-
-    }
-    //-----------------------------------------------------------------------------------
-    void LogicSystem::mouseMoved(const SDL_MouseMotionEvent& arg) 
-    {
-
-    }
-    //-----------------------------------------------------------------------------------
-    void LogicSystem::mouseWheelChanged(const SDL_MouseWheelEvent& arg)
-    {
-
     }
 }

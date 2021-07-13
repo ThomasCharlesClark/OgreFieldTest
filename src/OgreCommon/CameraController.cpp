@@ -4,68 +4,82 @@
 #include "GraphicsSystem.h"
 
 #include "OgreCamera.h"
+#include "OgreEntity.h"
 #include "OgreWindow.h"
-
-using namespace MyThirdOgre;
 
 namespace MyThirdOgre
 {
-    CameraController::CameraController( GraphicsSystem *graphicsSystem, bool useSceneNode ) :
+    CameraController::CameraController( GameEntity *cameraEntity, float windowWidth, float windowHeight, bool useSceneNode ) :
         mUseSceneNode( useSceneNode ),
         mSpeedMofifier( false ),
         mCameraYaw( 0 ),
         mCameraPitch( 0 ),
         mCameraBaseSpeed( 10 ),
         mCameraSpeedBoost( 5 ),
-        mGraphicsSystem( graphicsSystem )
+        mCameraEntity ( cameraEntity ),
+        mWindowWidth ( windowWidth ),
+        mWindowHeight ( windowHeight )
     {
         memset( mWASD, 0, sizeof(mWASD) );
         memset( mSlideUpDown, 0, sizeof(mSlideUpDown) );
     }
+
     //-----------------------------------------------------------------------------------
-    void CameraController::update( float timeSinceLast )
+    void CameraController::update( float timeSinceLast, Ogre::uint32 transformIndex )
     {
-        Ogre::Camera *camera = mGraphicsSystem->getCamera();
-
-        if( mCameraYaw != 0.0f || mCameraPitch != 0.0f )
+        if (getCamera()) 
         {
-            if( mUseSceneNode )
+            if (mCameraYaw != 0.0f || mCameraPitch != 0.0f)
             {
-                Ogre::Node *cameraNode = camera->getParentNode();
+                Ogre::Quaternion yaw = Ogre::Quaternion(Ogre::Math::Cos(Ogre::Radian(mCameraYaw) / 2),
+                    0.0f,
+                    0.0f,
+                    Ogre::Math::Sin(Ogre::Radian(mCameraYaw) / 2));
 
-                // Update now as yaw needs the derived orientation.
-                cameraNode->_getFullTransformUpdated();
-                cameraNode->yaw( Ogre::Radian( mCameraYaw ), Ogre::Node::TS_WORLD );
-                cameraNode->pitch( Ogre::Radian( mCameraPitch ) );
+                mCameraEntity->mTransform[transformIndex]->qRot = mCameraEntity->mTransform[transformIndex]->qRot * yaw;
+
+                //if (mUseSceneNode)
+                //{
+                //    Ogre::Node* cameraNode = getCamera()->getParentNode();
+
+                //    // Update now as yaw needs the derived orientation.
+                //    cameraNode->_getFullTransformUpdated();
+                //    cameraNode->yaw(Ogre::Radian(mCameraYaw), Ogre::Node::TS_WORLD);
+                //    cameraNode->pitch(Ogre::Radian(mCameraPitch));
+
+                //}
+                //else
+                //{
+                //    getCamera()->yaw(Ogre::Radian(mCameraYaw));
+                //    getCamera()->pitch(Ogre::Radian(mCameraPitch));
+                //}
+
+                mCameraYaw = 0.0f;
+                mCameraPitch = 0.0f;
             }
-            else
+
+            int camMovementZ = mWASD[2] - mWASD[0];
+            int camMovementX = mWASD[3] - mWASD[1];
+            int slideUpDown = mSlideUpDown[0] - mSlideUpDown[1];
+
+            if (camMovementZ || camMovementX || slideUpDown)
             {
-                camera->yaw( Ogre::Radian( mCameraYaw ) );
-                camera->pitch( Ogre::Radian( mCameraPitch ) );
-            }
+                Ogre::Vector3 camMovementDir(camMovementX, slideUpDown, camMovementZ);
+                camMovementDir.normalise();
+                camMovementDir *= timeSinceLast * mCameraBaseSpeed * (1 + mSpeedMofifier * mCameraSpeedBoost);
 
-            mCameraYaw   = 0.0f;
-            mCameraPitch = 0.0f;
-        }
+                mCameraEntity->mTransform[transformIndex]->vPos += camMovementDir;
 
-        int camMovementZ = mWASD[2] - mWASD[0];
-        int camMovementX = mWASD[3] - mWASD[1];
-        int slideUpDown = mSlideUpDown[0] - mSlideUpDown[1];
+                if (mUseSceneNode)
+                {
+                    /*Ogre::Node* cameraNode = getCamera()->getParentNode();
+                    cameraNode->translate(camMovementDir, Ogre::Node::TS_LOCAL);*/
+                }
+                else
+                {
 
-        if( camMovementZ || camMovementX || slideUpDown )
-        {
-            Ogre::Vector3 camMovementDir( camMovementX, slideUpDown, camMovementZ );
-            camMovementDir.normalise();
-            camMovementDir *= timeSinceLast * mCameraBaseSpeed * (1 + mSpeedMofifier * mCameraSpeedBoost);
-
-            if( mUseSceneNode )
-            {
-                Ogre::Node *cameraNode = camera->getParentNode();
-                cameraNode->translate( camMovementDir, Ogre::Node::TS_LOCAL );
-            }
-            else
-            {
-                camera->moveRelative( camMovementDir );
+                    //getCamera()->moveRelative(camMovementDir);
+                }
             }
         }
     }
@@ -118,10 +132,10 @@ namespace MyThirdOgre
     //-----------------------------------------------------------------------------------
     void CameraController::mouseMoved( const SDL_Event &arg )
     {
-        float width  = static_cast<float>( mGraphicsSystem->getRenderWindow()->getWidth() );
-        float height = static_cast<float>( mGraphicsSystem->getRenderWindow()->getHeight() );
+        /*float width  = static_cast<float>( mGraphicsSystem->getRenderWindow()->getWidth() );
+        float height = static_cast<float>( mGraphicsSystem->getRenderWindow()->getHeight() );*/
 
-        mCameraYaw   += -arg.motion.xrel / width;
-        mCameraPitch += -arg.motion.yrel / height;
+        mCameraYaw += -arg.motion.xrel / mWindowWidth;
+        mCameraPitch += -arg.motion.yrel / mWindowHeight;
     }
 }

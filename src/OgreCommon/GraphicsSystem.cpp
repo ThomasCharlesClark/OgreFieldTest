@@ -37,6 +37,13 @@
 
 #include "OgreEntity.h"
 
+#include "OgreHlmsPbsDatablock.h"
+#include "OgreHlmsSamplerblock.h"
+
+#include "OgreSceneManager.h"
+
+#include "LogicSystem.h"
+
 #include <fstream>
 
 #if OGRE_USE_SDL2
@@ -371,12 +378,15 @@ namespace MyThirdOgre
             case SDL_QUIT:
                 mQuit = true;
                 break;
-            case SDL_KEYDOWN:
+                /* Interestingly this was cheating: for some reason the SdlInputHandler had pointers to both graphic and logic systems,
+                    but these were never being set. I extended the handler to permit setting the pointers, this is done in the graphic thread's renderAppThread call,
+                    see MyThirdOgre.cpp */
+            /*case SDL_KEYDOWN:
             case SDL_KEYUP:
             case SDL_MOUSEMOTION:
             case SDL_MOUSEWHEEL:
                 this->queueSendMessage(mLogicSystem, Mq::SDL_EVENT, evt);
-                break;
+                break;*/
             default:
                 break;
             }
@@ -834,10 +844,9 @@ namespace MyThirdOgre
     {
         mCamera = mSceneManager->createCamera( "Main Camera" );
 
-        // Position it at 500 in Z direction
         mCamera->setPosition( Ogre::Vector3( 11, 10, 15 ) );
-        // Look back along -Z
         mCamera->lookAt( Ogre::Vector3( 11, 0, -11 ) );
+
         mCamera->setNearClipDistance( 0.2f );
         mCamera->setFarClipDistance( 1000.0f );
         mCamera->setAutoAspectRatio( true );
@@ -912,46 +921,83 @@ namespace MyThirdOgre
 
         cge->gameEntity->mSceneNode = sceneNode;
 
-        if( cge->gameEntity->mMoDefinition->moType == MoTypeItem )
+        switch (cge->gameEntity->mMoDefinition->moType) 
         {
-            Ogre::Item *item = mSceneManager->createItem( cge->gameEntity->mMoDefinition->meshName,
-                                                          cge->gameEntity->mMoDefinition->resourceGroup,
-                                                          cge->gameEntity->mType );
-
-            Ogre::StringVector materialNames = cge->gameEntity->mMoDefinition->submeshMaterials;
-            size_t minMaterials = std::min( materialNames.size(), item->getNumSubItems() );
-
-            for( size_t i=0; i<minMaterials; ++i )
+            case MoTypeItem:
             {
-                item->getSubItem(i)->setDatablockOrMaterialName( materialNames[i],
-                                                                 cge->gameEntity->mMoDefinition->
-                                                                                    resourceGroup );
-            }
+                Ogre::Item* item = mSceneManager->createItem(cge->gameEntity->mMoDefinition->meshName,
+                    cge->gameEntity->mMoDefinition->resourceGroup,
+                    cge->gameEntity->mType);
 
-            cge->gameEntity->mMovableObject = item;
+                Ogre::StringVector materialNames = cge->gameEntity->mMoDefinition->submeshMaterials;
+                size_t minMaterials = std::min(materialNames.size(), item->getNumSubItems());
+
+                for (size_t i = 0; i < minMaterials; ++i)
+                {
+                    item->getSubItem(i)->setDatablockOrMaterialName(materialNames[i],
+                        cge->gameEntity->mMoDefinition->
+                        resourceGroup);
+                }
+
+                cge->gameEntity->mMovableObject = item;
+            }
+            break;
+            case MoTypeStaticManualLineList: 
+            {
+                Ogre::ManualObject* mo = mSceneManager->createManualObject(Ogre::SCENE_STATIC);
+
+                mo->begin(cge->gameEntity->mManualObjectDatablockName, Ogre::OT_LINE_LIST);
+
+                for (auto p : cge->gameEntity->mManualObjectDefinition.points) {
+                    mo->position(p);
+                }
+
+                for (auto l : cge->gameEntity->mManualObjectDefinition.lines) {
+                    mo->line(l.first, l.second);
+                }
+
+                mo->end();
+
+                cge->gameEntity->mMovableObject = mo;
+            }
+            break;
+            case MoTypePrefab:
+            {
+                Ogre::v1::Entity* pft = mSceneManager->createEntity(Ogre::SceneManager::PrefabType::PT_PLANE, Ogre::SCENE_STATIC);
+
+                pft->setDatablock(cge->gameEntity->mManualObjectDatablockName);
+
+                assert(dynamic_cast<Ogre::HlmsPbsDatablock*>(pft->getSubEntity(0)->getDatablock()));
+
+                auto datablock = dynamic_cast<Ogre::HlmsPbsDatablock*>(pft->getSubEntity(0)->getDatablock());
+
+                Ogre::HlmsSamplerblock diffuseBlock(*datablock->getSamplerblock(Ogre::PBSM_DIFFUSE));
+                diffuseBlock.mU = Ogre::TAM_WRAP;
+                diffuseBlock.mV = Ogre::TAM_WRAP;
+                diffuseBlock.mW = Ogre::TAM_WRAP;
+                datablock->setSamplerblock(Ogre::PBSM_DIFFUSE, diffuseBlock);
+
+                datablock->setTransparency(cge->gameEntity->mTransparency, Ogre::HlmsPbsDatablock::Transparent, true);
+
+                cge->gameEntity->mMovableObject = pft;
+            }
+            break;
+            case MoTypeCamera:
+            {
+                cge->gameEntity->mMovableObject = mSceneManager->getCameras()[0];
+
+                cge->gameEntity->mSceneNode = cge->gameEntity->mMovableObject->getParentSceneNode();
+            }
+            break;
+            default: 
+            {
+                throw "MyThirdOgre::MovableObjectType not catered for in GraphicsSystem::gameEntityAdded!";
+            }
+            break;
         }
 
-
-        if (cge->gameEntity->mMoDefinition->moType == MoTypeStaticManualLineList)
-        {
-            Ogre::ManualObject* mo = mSceneManager->createManualObject(Ogre::SCENE_STATIC);
-
-            mo->begin(cge->gameEntity->mManualObjectDatablockName, Ogre::OT_LINE_LIST);
-
-            for (auto p : cge->gameEntity->mManualObjectDefinition.points) {
-                mo->position(p);
-            }
-
-            for (auto l : cge->gameEntity->mManualObjectDefinition.lines) {
-                mo->line(l.first, l.second);
-            }
-
-            mo->end();
-
-            cge->gameEntity->mMovableObject = mo;
-        }
-
-        sceneNode->attachObject( cge->gameEntity->mMovableObject );
+        if (cge->gameEntity->mMoDefinition->moType != MoTypeCamera)
+            sceneNode->attachObject( cge->gameEntity->mMovableObject );
 
         //Keep them sorted on how Ogre's internal memory manager assigned them memory,
         //to avoid false cache sharing when we update the nodes concurrently.

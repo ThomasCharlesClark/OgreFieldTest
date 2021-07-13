@@ -7,5 +7,5 @@ hlms BaseBlack pbs
 
 	specular	0 0 0
 
-	emissive 0.0 0.0 0.00
+	emissive 	0.0 0.0 0.0
 }

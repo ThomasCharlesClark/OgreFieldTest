@@ -5,6 +5,7 @@
 #include "Threading/MessageQueueSystem.h"
 #include "GameEntity.h"
 #include "OgreManualObject2.h"
+#include "OgreSceneManager.h"
 
 namespace MyThirdOgre
 {
@@ -86,13 +87,22 @@ namespace MyThirdOgre
                                    const Ogre::Quaternion &initialRot,
                                    const Ogre::Vector3 &initialScale );
 
+        GameEntity* addGameEntity(  Ogre::SceneMemoryMgrTypes type,
+                                    const MovableObjectDefinition* moDefinition,
+                                    const Ogre::SceneManager::PrefabType prefabType,
+                                    const Ogre::String datablockName,
+                                    const float transparency,
+                                    const Ogre::Vector3& initialPos,
+                                    const Ogre::Quaternion& initialRot,
+                                    const Ogre::Vector3& initialScale);
+
         GameEntity* addGameEntity( Ogre::SceneMemoryMgrTypes type,
                                    const MovableObjectDefinition* moDefinition,
+                                   const Ogre::String& datablockName,
+                                   const ManualObjectLineListDefinition& manualObjectDef,
                                    const Ogre::Vector3& initialPos,
                                    const Ogre::Quaternion& initialRot,
-                                   const Ogre::Vector3& initialScale,
-                                   const Ogre::String& manualObjectDatablockName,
-                                   const ManualObjectLineListDefinition& manualObjectDef );
+                                   const Ogre::Vector3& initialScale);
 
         /** Removes the GameEntity from the world. The pointer is not immediately destroyed,
             we first need to release data in other threads (i.e. Graphics).

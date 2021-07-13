@@ -4,6 +4,7 @@
 #include "GameEntityManager.h"
 #include "GraphicsGameState.h"
 #include "LogicGameState.h"
+#include "SdlInputHandler.h"
 
 #include "Threading/YieldTimer.h"
 
@@ -77,6 +78,7 @@ int main()
     GraphicsSystem graphicsSystem(&graphicsGameState);
     LogicGameState logicGameState;
     LogicSystem logicSystem(&logicGameState);
+
     Ogre::Barrier barrier(2);
 
     graphicsGameState._notifyGraphicsSystem(&graphicsSystem);
@@ -107,9 +109,16 @@ unsigned long renderThreadApp(Ogre::ThreadHandle* threadHandle)
 {
     ThreadData* threadData = reinterpret_cast<ThreadData*>(threadHandle->getUserParam());
     GraphicsSystem* graphicsSystem = threadData->graphicsSystem;
+    LogicSystem* logicSystem = threadData->logicSystem;
     Ogre::Barrier* barrier = threadData->barrier;
 
     graphicsSystem->initialize("Tutorial 06: Multithreading");
+
+    // can only notify inputHandler after it actually exists - new is called in graphicsSystem::initialise
+
+    graphicsSystem->getInputHandler()->_notifyGraphicsSystem(threadData->graphicsSystem);
+    graphicsSystem->getInputHandler()->_notifyLogicSystem(threadData->logicSystem);
+    
     barrier->sync();
 
     if (graphicsSystem->getQuit())
@@ -204,6 +213,12 @@ unsigned long logicThread(Ogre::ThreadHandle* threadHandle)
         logicSystem->deinitialize();
         return 0; //Render thread cancelled early
     }
+
+    float width = graphicsSystem->getRenderWindow()->getWidth(), 
+         height = graphicsSystem->getRenderWindow()->getHeight();
+
+    logicSystem->_notifyWindowWidth(width);
+    logicSystem->_notifyWindowHeight(height);
 
     logicSystem->createScene01();
     barrier->sync();

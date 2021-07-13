@@ -16,17 +16,18 @@ namespace MyThirdOgre
 		int mRowCount;
 		GameEntityManager* mGameEntityManager;
 
-		MyThirdOgre::GameEntity* mGridEntity;
+		GameEntity* mGridEntity;
 		MovableObjectDefinition* mGridLineMoDef;
 
 	protected:
 		virtual void createGrid(void);
+		virtual void createCells(void);
 
 	public:
 		Field(GameEntityManager* geMgr);
 		~Field();
 
-		std::map<std::pair<int, int>, Cell*> cells;
+		std::map<std::pair<int, int>, Cell*> mCells;
 
 		Cell* getCell(int x, int y);
 	};

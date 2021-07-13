@@ -79,17 +79,55 @@ namespace MyThirdOgre
         return gameEntity;
     }
     //-----------------------------------------------------------------------------------
-	GameEntity* GameEntityManager::addGameEntity( Ogre::SceneMemoryMgrTypes type, 
+    GameEntity* GameEntityManager::addGameEntity( Ogre::SceneMemoryMgrTypes type, 
                                                   const MovableObjectDefinition* moDefinition, 
+                                                  const Ogre::SceneManager::PrefabType prefabType,
+                                                  const Ogre::String datablockName,
+                                                  const float transparency,
+                                                  const Ogre::Vector3& initialPos, 
+                                                  const Ogre::Quaternion& initialRot,
+                                                  const Ogre::Vector3& initialScale)
+    {
+        GameEntity* gameEntity = new GameEntity(mCurrentId++, moDefinition, type);
+
+        gameEntity->mManualObjectDatablockName = datablockName;
+        gameEntity->mPrefabType = prefabType;
+        gameEntity->mTransparency = transparency;
+
+        CreatedGameEntity cge;
+        cge.gameEntity = gameEntity;
+        cge.initialTransform.vPos = initialPos;
+        cge.initialTransform.qRot = initialRot;
+        cge.initialTransform.vScale = initialScale;
+
+        size_t slot, bufferIdx;
+        aquireTransformSlot(slot, bufferIdx);
+
+        gameEntity->mTransformBufferIdx = bufferIdx;
+        for (int i = 0; i < NUM_GAME_ENTITY_BUFFERS; ++i)
+        {
+            gameEntity->mTransform[i] = mTransformBuffers[bufferIdx] + slot + cNumTransforms * i;
+            memcpy(gameEntity->mTransform[i], &cge.initialTransform, sizeof(GameEntityTransform));
+        }
+
+        mGameEntities[type].push_back(gameEntity);
+
+        mLogicSystem->queueSendMessage(mGraphicsSystem, Mq::GAME_ENTITY_ADDED, cge);
+
+        return gameEntity;
+    }
+    //-----------------------------------------------------------------------------------
+	GameEntity* GameEntityManager::addGameEntity( Ogre::SceneMemoryMgrTypes type, 
+                                                  const MovableObjectDefinition* moDefinition,
+                                                  const Ogre::String& datablockName,
+                                                  const ManualObjectLineListDefinition& manualObjectLineListDef,
                                                   const Ogre::Vector3& initialPos, 
                                                   const Ogre::Quaternion& initialRot, 
-                                                  const Ogre::Vector3& initialScale,
-                                                  const Ogre::String& manualObjectDatablockName,
-                                                  const ManualObjectLineListDefinition& manualObjectLineListDef )
+                                                  const Ogre::Vector3& initialScale)
 	{
         GameEntity* gameEntity = new GameEntity(mCurrentId++, moDefinition, type);
 
-        gameEntity->mManualObjectDatablockName = manualObjectDatablockName;
+        gameEntity->mManualObjectDatablockName = datablockName;
         gameEntity->mManualObjectDefinition = manualObjectLineListDef;
 
         CreatedGameEntity cge;
