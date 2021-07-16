@@ -15,10 +15,13 @@ namespace MyThirdOgre
 		mScale( 1 ),
 		mColumnCount ( 22 ),
 		mRowCount ( 22 ),
-		mCells ( std::map<std::pair<int, int>, Cell*> { } )
+		mCells ( std::map<std::pair<int, int>, Cell*> { } ),
+		mActiveCell( 0 )
 
 	{
 		createGrid();
+
+
 
 		createCells();
 	}
@@ -96,5 +99,10 @@ namespace MyThirdOgre
 		else {
 			return 0;
 		}
+	}
+
+	void Field::update(float timeSinceLast)
+	{
+
 	}
 }

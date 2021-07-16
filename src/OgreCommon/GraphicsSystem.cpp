@@ -989,13 +989,17 @@ namespace MyThirdOgre
 
                 auto datablock = dynamic_cast<Ogre::HlmsPbsDatablock*>(pft->getSubEntity(0)->getDatablock());
 
-                Ogre::HlmsSamplerblock diffuseBlock(*datablock->getSamplerblock(Ogre::PBSM_DIFFUSE));
+                auto personalDatablock = dynamic_cast<Ogre::HlmsPbsDatablock*>(datablock->clone(Ogre::StringConverter::toString(cge->gameEntity->getId()) + Ogre::String("personalDataBlock")));
+
+                Ogre::HlmsSamplerblock diffuseBlock(*personalDatablock->getSamplerblock(Ogre::PBSM_DIFFUSE));
                 diffuseBlock.mU = Ogre::TAM_WRAP;
                 diffuseBlock.mV = Ogre::TAM_WRAP;
                 diffuseBlock.mW = Ogre::TAM_WRAP;
-                datablock->setSamplerblock(Ogre::PBSM_DIFFUSE, diffuseBlock);
+                personalDatablock->setSamplerblock(Ogre::PBSM_DIFFUSE, diffuseBlock);
 
-                datablock->setTransparency(cge->gameEntity->mTransparency, Ogre::HlmsPbsDatablock::Transparent, true);
+                personalDatablock->setTransparency(cge->gameEntity->mTransparency, Ogre::HlmsPbsDatablock::Transparent, true);
+
+                pft->getSubEntity(0)->setDatablock(personalDatablock);
 
                 cge->gameEntity->mMovableObject = pft;
             }

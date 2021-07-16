@@ -18,51 +18,28 @@
 
 namespace MyThirdOgre 
 {
-    Cell::Cell(int rowIndex, int columnIndex, int columnCount, int rowCount, GameEntityManager* geMgr) :
-        xIndex ( 0 ),
-        zIndex ( 0 ),
-        boundary ( false ),
-        mArrowEntity ( 0 ),
-        mArrowMoDef ( 0 ),
-        mPlaneEntity ( 0 ),
-        mPlaneMoDef ( 0 ),
-        mSphereEntity ( 0 ),
-        mSphereMoDef ( 0 ),
-        mSphere ( 0 ),
-        initialVelocity( Ogre::Vector3::ZERO ),
-        velocity( Ogre::Vector3::ZERO ),
-        originalPressure ( 0 ),
-        pressure ( 0 ),
-        gridReference ( Ogre::Vector2::ZERO ),
-        originalPosition ( Ogre::Vector3::ZERO ) 
+    Cell::Cell(int rowIndex, int columnIndex, int rowCount, int columnCount, GameEntityManager* geMgr) :
+        mIndexX(rowIndex),
+        mIndexZ(columnIndex),
+        mRowCount(rowCount),
+        mColumnCount(columnCount),
+        mBoundary(false),
+        mArrowEntity(0),
+        mArrowMoDef(0),
+        mPlaneEntity(0),
+        mPlaneMoDef(0),
+        mSphereEntity(0),
+        mSphereMoDef(0),
+        mSphere(0),
+        mState ( mState.vVel = Ogre::Vector3::ZERO, mState.qRot = Ogre::Quaternion::IDENTITY, mState.rPressure = Ogre::Math::RangeRandom(0.0f, 0.8f) )
     {
-        xIndex = rowIndex;
-        zIndex = columnIndex;
-        boundary = rowIndex == 0 || columnIndex == 0 || rowIndex == rowCount - 1 || columnIndex == columnCount  - 1;
-
-        bool centerBoundary = false;
-
-        if (centerBoundary) {
-            if ((rowIndex == 10 && columnIndex == 10) ||
-                (rowIndex == 11 && columnIndex == 11) ||
-                (rowIndex == 11 && columnIndex == 10) ||
-                (rowIndex == 10 && columnIndex == 11)) {
-                boundary = true;
-            }
-        }
-
-        //originalVelocity = Ogre::Vector3::ZERO;
-        initialVelocity = Ogre::Vector3(Ogre::Math::RangeRandom(-2.0f, 2.0f), 0.0f, -Ogre::Math::RangeRandom(-2.0f, 2.0f));
-
-        velocity = initialVelocity;
-
-        gridReference = Ogre::Vector2(rowIndex, columnIndex);
+        mBoundary = rowIndex == 0 || columnIndex == 0 || rowIndex == rowCount - 1 || columnIndex == columnCount  - 1;
 
         createArrow(geMgr);
 
-        createPlane(geMgr);
+        createPressureIndicator(geMgr);
 
-        createBoundingSphere(geMgr);
+        //createBoundingSphere(geMgr);
 
         // Quaternion Cheatsheet:
         // Take the degrees you want to rotate e.g. 135°
@@ -72,109 +49,6 @@ namespace MyThirdOgre
         // == 0.3827rad
         // for W, cosine it
         // for x,y,z, sine it
-
-        //if (boundary) {
-
-        //    velocity = Ogre::Vector3::ZERO;
-        //    initialVelocity = Ogre::Vector3::ZERO;
-
-        //    //outer edges:
-        //    if (rowIndex == 0) { // x == 0 edge
-        //        arrowNode->setOrientation(arrowNode->getOrientation() * Ogre::Quaternion(0.5253, 0.0, -0.5253, 0.0));
-        //        velocity = Ogre::Vector3(1.0f, 0, 0); // boundary gives x+ve velocity
-        //    }
-
-        //    if (rowIndex == rowCount - 1) { // opposite x edge
-        //        arrowNode->setOrientation(arrowNode->getOrientation() * Ogre::Quaternion(0.5253, 0.0, 0.5253, 0.0));
-        //        velocity = Ogre::Vector3(-1.0f, 0, 0); // boundary gives x-ve velocity
-
-        //    }
-
-        //    if (columnIndex == 0) { // z == 0 edge
-        //        arrowNode->setOrientation(arrowNode->getOrientation() * Ogre::Quaternion(1.0, 0.0, 0.0, 0.0));
-        //        //velocity = Ogre::Vector3(0.0f, 0, -1.0f); // boundary gives z-ve velocitye
-
-        //    }
-
-        //    if (columnIndex == -columnCount + 1) { // opposite z edge
-        //        arrowNode->setOrientation(arrowNode->getOrientation() * Ogre::Quaternion(0.0, 0.0, 1.0, 0.0));
-        //        velocity = Ogre::Vector3(0.0f, 0, 1.0f); // boundary gives z+ve velocity
-
-        //    }
-
-        //    //  
-        //    //corners:
-        //    if (rowIndex == 0 && columnIndex == 0) { // x == 0, y == 0
-        //        arrowNode->setOrientation(Ogre::Quaternion(0.9239, 0.0, -0.3827, 0.0));
-        //        velocity = Ogre::Vector3(0.5f, 0, 0.5f); // corner gives 1/2 x, 1/2 y + ve
-        //    }
-
-        //    if (rowIndex == rowCount - 1 && columnIndex == 0) { // x == max, y == 0
-        //        arrowNode->setOrientation(Ogre::Quaternion(0.9239, 0.0, 0.3827, 0.0));
-        //        velocity = Ogre::Vector3(-0.5f, 0, 0.5f); // corner gives -1/2 x, 1/2 y + ve
-
-        //    }
-
-        //    if (rowIndex == 0 && columnIndex == -columnCount + 1) { // x == 0, y == max
-        //        arrowNode->setOrientation(Ogre::Quaternion(-0.3827, 0.0, 0.9239, 0.0));
-        //        velocity = Ogre::Vector3(-0.5f, 0, 0.5f); // corner gives 1/2 x, -1/2 y + ve
-        //    }
-
-        //    if (rowIndex == rowCount - 1 && columnIndex == -columnCount + 1) { // x == max, y == max
-        //        arrowNode->setOrientation(Ogre::Quaternion(0.3827, 0.0, 0.9239, 0.0));
-        //        velocity = Ogre::Vector3(-0.5f, 0, -0.5f); // corner gives -1/2 x, -1/2 y + ve
-
-        //    }
-
-        //    // center:
-
-        //    //if (centerBoundary) {
-        //    //    if (rowIndex == 10 && columnIndex == 10) {
-        //    //        arrowNode->setOrientation(arrowNode->getOrientation() * Ogre::Quaternion(0.9239, 0.0, 0.0, 0.3827));
-        //    //    }
-
-        //    //    if (rowIndex == 11 && columnIndex == 11) {
-        //    //        arrowNode->setOrientation(arrowNode->getOrientation() * Ogre::Quaternion(0.3827, 0.0, 0.0, -0.923879));
-        //    //    }
-
-        //    //    if (rowIndex == 11 && columnIndex == 10) {
-        //    //        arrowNode->setOrientation(arrowNode->getOrientation() * Ogre::Quaternion(0.9239, 0.0, 0.0, -0.3827));
-        //    //    }
-
-        //    //    if (rowIndex == 10 && columnIndex == 11) {
-        //    //        arrowNode->setOrientation(arrowNode->getOrientation() * Ogre::Quaternion(0.3827, 0.0, 0.0, 0.923879));
-        //    //    }
-        //    //}
-
-        //    //velocity = arrowNode->getOrientation() * velocity;
-
-        //    //velocity *= 0.000005f; // less
-
-        //    //originalVelocity = velocity;
-
-        //    //if (columnIndex == columnCount - 1)
-        //        //arrowNode->setOrientation(Ogre::Quaternion(0.707, 0.707, 0.0, 0.0));
-        //}
-        //else {
-        //    // set the inital orientation to some interesting random value
-        //    //Ogre::Real randomRotationAboutZ = Ogre::Math::RangeRandom(0, Ogre::Math::PI);
-
-        //   /* Ogre::Real randomRotationAboutZ = Ogre::Math::RangeRandom(0, Ogre::Math::PI * 2);
-        //    randomRotationAboutZ /= 2;
-        //    arrowNode->setOrientation(arrowNode->getOrientation() * Ogre::Quaternion(Ogre::Math::Cos(randomRotationAboutZ), 0.0f, 0.0f, Ogre::Math::Sin(randomRotationAboutZ)));*/
-        //}
-
-        //if (boundary)
-        //    arrowNode->scale(0.5f, 0.0f, 0.5f);
-        //else
-        //    arrowNode->scale(0.0f, 0.0f, 0.0f);
-
-        //if (!boundary) {
-        //    originalOrientation = arrowNode->getOrientation();
-
-        //}
-
-        //originalPosition = arrowNode->getPosition();
     }
 
     Cell::~Cell()
@@ -223,17 +97,49 @@ namespace MyThirdOgre
             { 1, 4 }
         };
 
+        Ogre::Quaternion qRot;
+
+        if (mBoundary) {
+            //outer edges:
+            if (mIndexX == 0) { // x == 0 edge
+                qRot = Ogre::Quaternion(0.5253, 0.0, -0.5253, 0.0);
+            } else if (mIndexX == mRowCount - 1) { // opposite x edge
+                qRot = Ogre::Quaternion(0.5253, 0.0, 0.5253, 0.0);
+            } else if (mIndexZ == 0) { 
+                qRot = Ogre::Quaternion(1.0, 0.0, 0.0, 0.0);
+            } else if (mIndexZ == mColumnCount - 1) { // opposite z edge
+                qRot = Ogre::Quaternion(0.0, 0.0, 1.0, 0.0);
+            }
+
+            //corners:
+            if (mIndexX == 0 && mIndexZ == 0) { // x == 0, y == 0
+                qRot = Ogre::Quaternion(0.9239, 0.0, -0.3827, 0.0);
+            } else if (mIndexX == mRowCount - 1 && mIndexZ == 0) { // x == max, y == 0
+                qRot = Ogre::Quaternion(0.9239, 0.0, 0.3827, 0.0);
+            } else if (mIndexX == 0 && mIndexZ == mColumnCount - 1) { // x == 0, y == max
+                qRot = Ogre::Quaternion(-0.3827, 0.0, 0.9239, 0.0);
+            } else if (mIndexX == mRowCount - 1 && mIndexZ == mColumnCount - 1) { // x == max, y == max
+                qRot = Ogre::Quaternion(0.3827, 0.0, 0.9239, 0.0);
+            }
+        }
+        else {
+            // set the inital orientation to some interesting random value?
+            // Ogre::Real randomRotationAboutZ = Ogre::Math::RangeRandom(-Ogre::Math::PI * 2, Ogre::Math::PI * 2);
+        }
+
         mArrowEntity = geMgr->addGameEntity(Ogre::SceneMemoryMgrTypes::SCENE_STATIC,
             mArrowMoDef,
-            boundary ? "UnlitRed" : "UnlitWhite",
+            mBoundary ? "UnlitRed" : "UnlitWhite",
             arrowLineList,
-            Ogre::Vector3(xIndex, 0, -zIndex),
-            Ogre::Quaternion::IDENTITY,
-            Ogre::Vector3::UNIT_SCALE
+            Ogre::Vector3(mIndexX, 0, -mIndexZ),
+            qRot,
+            mBoundary ? Ogre::Vector3::UNIT_SCALE : mState.vVel
         );
+
+        mState.qRot = qRot;
     }
 
-    void Cell::createPlane(GameEntityManager* geMgr) 
+    void Cell::createPressureIndicator(GameEntityManager* geMgr) 
     {
         mPlaneMoDef = new MovableObjectDefinition();
         mPlaneMoDef->meshName = "";
@@ -247,17 +153,17 @@ namespace MyThirdOgre
         mPlaneEntity = geMgr->addGameEntity(Ogre::SceneMemoryMgrTypes::SCENE_STATIC,
             mPlaneMoDef,
             Ogre::SceneManager::PrefabType::PT_PLANE,
-            boundary ? "Red" : "Transparent",
-            Ogre::Vector3(xIndex, 0, -zIndex),
+            mBoundary ? "Red" : "Blue",
+            Ogre::Vector3(mIndexX, 0, -mIndexZ),
             pRot,
             Ogre::Vector3(0.005f, 0.005f, 0.005f),
             true,
-            boundary ? 0.4f : 0.0f);
+            mBoundary ? 0.4f : mState.rPressure);
     }
 
     void Cell::createBoundingSphere(GameEntityManager* geMgr) 
     {
-        Ogre::Vector3 sPos = Ogre::Vector3(xIndex, 0, -zIndex);
+        Ogre::Vector3 sPos = Ogre::Vector3(mIndexX, 0, -mIndexZ);
 
         mSphere = new Ogre::Sphere(sPos, 1.0f);
 
@@ -277,11 +183,13 @@ namespace MyThirdOgre
 
     Ogre::Vector3 Cell::getVelocity()
     {
-        return velocity;
+        //return velocity;
+
+        return mState.vVel;
     }
 
     void Cell::setVelocity(Ogre::Vector3 v, float timeSinceLast) {
-        velocity = v;
+        //velocity = v;
     }
 
     //
@@ -318,83 +226,68 @@ namespace MyThirdOgre
 
     void Cell::updatePressureAlpha()
     {
-        personalDatablock->setTransparency(pressure, Ogre::HlmsPbsDatablock::Transparent, true);
+        //personalDatablock->setTransparency(pressure, Ogre::HlmsPbsDatablock::Transparent, true);
     }
 
     void Cell::setPressure(Ogre::Real p)
     {
-        pressure = p;
+        //pressure = p;
     }
 
     Ogre::Real Cell::getPressure()
     {
-        return pressure;
+        //return pressure;
+        return mState.rPressure;
     }
 
-    void Cell::updateVelocity() {
+    //void Cell::updateVelocity() {
         //velocity = originalVelocity;
         //velocity = arrowNode->getOrientation() * velocity;
-    }
+    //}
 
     void Cell::restoreOriginalState()
     {
-        pressure = originalPressure;
-
-        this->updatePressureAlpha();
-
-        //arrowNode->setOrientation(originalOrientation);
-        //arrowNode->setPosition(originalPosition);
-
-        planeItem->setDatablock(personalDatablock);
-
-        if (!boundary)
-            update(initialVelocity, 0.0f);
+        mState = mOriginalState;
     }
 
-    void Cell::randomiseVelocity() {
-        if (!boundary)
-            initialVelocity = Ogre::Vector3(Ogre::Math::RangeRandom(-2.0f, 2.0f), 0.0f, -Ogre::Math::RangeRandom(-2.0f, 2.0f));
-        restoreOriginalState();
-    }
+    //void Cell::setActive() {
+    //    planeItem->setDatablock("Active");
+    //    assert(dynamic_cast<Ogre::HlmsPbsDatablock*>(planeItem->getSubItem(0)->getDatablock()));
+    //    auto datablock = dynamic_cast<Ogre::HlmsPbsDatablock*>(planeItem->getSubItem(0)->getDatablock());
+    //    Ogre::HlmsSamplerblock diffuseBlock(*datablock->getSamplerblock(Ogre::PBSM_DIFFUSE));
+    //    diffuseBlock.mU = Ogre::TAM_WRAP;
+    //    diffuseBlock.mV = Ogre::TAM_WRAP;
+    //    diffuseBlock.mW = Ogre::TAM_WRAP;
+    //    datablock->setSamplerblock(Ogre::PBSM_DIFFUSE, diffuseBlock);
+    //    datablock->setTransparency(0.7f, Ogre::HlmsPbsDatablock::Transparent, true);
+    //}
 
-    void Cell::setActive() {
-        planeItem->setDatablock("Active");
-        assert(dynamic_cast<Ogre::HlmsPbsDatablock*>(planeItem->getSubItem(0)->getDatablock()));
-        auto datablock = dynamic_cast<Ogre::HlmsPbsDatablock*>(planeItem->getSubItem(0)->getDatablock());
-        Ogre::HlmsSamplerblock diffuseBlock(*datablock->getSamplerblock(Ogre::PBSM_DIFFUSE));
-        diffuseBlock.mU = Ogre::TAM_WRAP;
-        diffuseBlock.mV = Ogre::TAM_WRAP;
-        diffuseBlock.mW = Ogre::TAM_WRAP;
-        datablock->setSamplerblock(Ogre::PBSM_DIFFUSE, diffuseBlock);
-        datablock->setTransparency(0.7f, Ogre::HlmsPbsDatablock::Transparent, true);
-    }
+    //void Cell::unsetActive() {
+    //    planeItem->setDatablock(personalDatablock);
+    //}
 
-    void Cell::unsetActive() {
-        planeItem->setDatablock(personalDatablock);
-    }
+    //void Cell::setNeighbourly()
+    //{
+    //    planeItem->setDatablock("Neighbourly");
+    //    assert(dynamic_cast<Ogre::HlmsPbsDatablock*>(planeItem->getSubItem(0)->getDatablock()));
+    //    auto datablock = dynamic_cast<Ogre::HlmsPbsDatablock*>(planeItem->getSubItem(0)->getDatablock());
+    //    Ogre::HlmsSamplerblock diffuseBlock(*datablock->getSamplerblock(Ogre::PBSM_DIFFUSE));
+    //    diffuseBlock.mU = Ogre::TAM_WRAP;
+    //    diffuseBlock.mV = Ogre::TAM_WRAP;
+    //    diffuseBlock.mW = Ogre::TAM_WRAP;
+    //    datablock->setSamplerblock(Ogre::PBSM_DIFFUSE, diffuseBlock);
+    //    datablock->setTransparency(0.7f, Ogre::HlmsPbsDatablock::Transparent, true);
+    //}
 
-    void Cell::setNeighbourly()
-    {
-        planeItem->setDatablock("Neighbourly");
-        assert(dynamic_cast<Ogre::HlmsPbsDatablock*>(planeItem->getSubItem(0)->getDatablock()));
-        auto datablock = dynamic_cast<Ogre::HlmsPbsDatablock*>(planeItem->getSubItem(0)->getDatablock());
-        Ogre::HlmsSamplerblock diffuseBlock(*datablock->getSamplerblock(Ogre::PBSM_DIFFUSE));
-        diffuseBlock.mU = Ogre::TAM_WRAP;
-        diffuseBlock.mV = Ogre::TAM_WRAP;
-        diffuseBlock.mW = Ogre::TAM_WRAP;
-        datablock->setSamplerblock(Ogre::PBSM_DIFFUSE, diffuseBlock);
-        datablock->setTransparency(0.7f, Ogre::HlmsPbsDatablock::Transparent, true);
-    }
+    //void Cell::unsetNeighbourly()
+    //{
+    //    planeItem->setDatablock(personalDatablock);
+    //}
 
-    void Cell::unsetNeighbourly()
-    {
-        planeItem->setDatablock(personalDatablock);
-    }
-
-    Ogre::Sphere* Cell::getSphere()
-    {
-        return mSphere;
-    }
+    //Ogre::Sphere* Cell::getSphere()
+    //{
+    //    return mSphere;
+    //}
 
 
 
@@ -413,24 +306,24 @@ namespace MyThirdOgre
 
 
 
-    // This function simply updates our "arrow" node to point in the direction our velocity is pointing.
+    // Updates our transform
     void Cell::update(Ogre::Vector3 v, Ogre::Real timeSinceLastFrame) {
 
-        velocity = v;
+        //velocity = v;
 
-        Cell::setScale();
+        //Cell::setScale();
 
-        Cell::orientArrow();
+        //Cell::orientArrow();
     }
 
     void Cell::warpBackInTime(float timeSinceLast)
     {
-        mSphere->setCenter(mSphere->getCenter() + (velocity * -timeSinceLast));
+        //mSphere->setCenter(mSphere->getCenter() + (velocity * -timeSinceLast));
     }
 
     void Cell::warpForwardInTime(Ogre::Vector3 v, float timeSinceLast)
     {
-        mSphere->setCenter(mSphere->getCenter() + (v * timeSinceLast));
+        //mSphere->setCenter(mSphere->getCenter() + (v * timeSinceLast));
     }
 
     void Cell::undoTimewarp()
@@ -443,11 +336,11 @@ namespace MyThirdOgre
     }
 
     void Cell::orientArrow() {
-        Ogre::Quaternion q;
+  /*      Ogre::Quaternion q;
 
         auto normal = velocity.normalisedCopy();
 
-        auto radians = normal.angleBetween(Ogre::Vector3(0, 0, 1));
+        auto radians = normal.angleBetween(Ogre::Vector3(0, 0, 1));*/
 
         //arrowNode->setOrientation(Ogre::Quaternion(Ogre::Math::Cos(radians), 0, Ogre::Math::Sin(radians), 0));
     }

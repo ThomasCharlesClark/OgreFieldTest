@@ -38,45 +38,47 @@ namespace MyThirdOgre
 {
 	class GameEntityManager;
 
+	struct CellState
+	{
+		Ogre::Vector3 vVel;
+		Ogre::Quaternion qRot;
+		Ogre::Real rPressure;
+
+		CellState() {};
+
+		CellState(Ogre::Vector3 v, Ogre::Quaternion q, Ogre::Real p) {};
+	};
+
 	class Cell
 	{
 
 protected:
 
-		int xIndex;
-		int zIndex;
-		bool boundary;
+		int mIndexX;
+		int mIndexZ;
+		int mRowCount;
+		int mColumnCount;
+		bool mBoundary;
 
-		GameEntity* mArrowEntity;
-		MovableObjectDefinition* mArrowMoDef;
+		CellState					mState;
+		CellState					mOriginalState;
 
-		GameEntity* mPlaneEntity;
-		MovableObjectDefinition* mPlaneMoDef;
+		GameEntity					*mArrowEntity;
+		MovableObjectDefinition		*mArrowMoDef;
 
-		GameEntity* mSphereEntity;
-		MovableObjectDefinition* mSphereMoDef;
+		GameEntity					*mPlaneEntity;
+		MovableObjectDefinition		*mPlaneMoDef;
 
-		Ogre::Sphere* mSphere;
+		GameEntity					*mSphereEntity;
+		MovableObjectDefinition		*mSphereMoDef;
 
-		Ogre::Vector3 initialVelocity;
-		Ogre::Vector3 velocity;
-
-		Ogre::Real originalPressure;
-		Ogre::Real pressure;
-
-		Ogre::Vector2 gridReference;
-
-		Ogre::Quaternion originalOrientation;
-
-		Ogre::Item* planeItem;
+		Ogre::Sphere				*mSphere;
 
 		Ogre::HlmsPbsDatablock* personalDatablock;
 
-		Ogre::Vector3 originalPosition;
-
 		virtual void createArrow(GameEntityManager* geMgr);
 
-		virtual void createPlane(GameEntityManager* geMgr);
+		virtual void createPressureIndicator(GameEntityManager* geMgr);
 
 		virtual void createBoundingSphere(GameEntityManager* geMgr);
 
@@ -91,9 +93,9 @@ protected:
 
 // Possibly nonsense:
 
-		virtual int getXIndex() { return xIndex; }
+		virtual int getXIndex() { return mIndexX; }
 
-		virtual int getYIndex() { return -zIndex; }
+		virtual int getYIndex() { return -mIndexZ; }
 
 		Ogre::Vector3 getVelocity();
 
@@ -110,25 +112,25 @@ protected:
 
 		virtual void restoreOriginalState();
 
-		virtual void randomiseVelocity();
+		//virtual void randomiseVelocity();
 
-		virtual void updateVelocity();
+		//virtual void updateVelocity();
 
-		virtual void setActive();
+		//virtual void setActive();
 
-		virtual void unsetActive();
+		//virtual void unsetActive();
 
-		virtual void setNeighbourly();
+		//virtual void setNeighbourly();
 
-		virtual void unsetNeighbourly();
+		//virtual void unsetNeighbourly();
 
-		virtual Ogre::Sphere* getSphere();
+		//virtual Ogre::Sphere* getSphere();
 
 
 
 
 // Good stuff:
-		bool getIsBoundary() { return boundary; };
+		bool getIsBoundary() { return mBoundary; };
 
 		virtual void warpForwardInTime(Ogre::Vector3 v, float timeSinceLast);
 
