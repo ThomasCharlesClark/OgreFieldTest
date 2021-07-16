@@ -115,9 +115,9 @@ unsigned long renderThreadApp(Ogre::ThreadHandle* threadHandle)
     graphicsSystem->initialize("Tutorial 06: Multithreading");
 
     // can only notify inputHandler after it actually exists - new is called in graphicsSystem::initialise
-
+    // it is quite possible to notify the input handler about the logic system in here, but for neatness I have 
+    // left that up to the logic thread.
     graphicsSystem->getInputHandler()->_notifyGraphicsSystem(threadData->graphicsSystem);
-    graphicsSystem->getInputHandler()->_notifyLogicSystem(threadData->logicSystem);
     
     barrier->sync();
 
@@ -208,6 +208,8 @@ unsigned long logicThread(Ogre::ThreadHandle* threadHandle)
     logicSystem->initialize();
     barrier->sync();
 
+    graphicsSystem->getInputHandler()->_notifyLogicSystem(threadData->logicSystem);
+
     if (graphicsSystem->getQuit())
     {
         logicSystem->deinitialize();
@@ -236,6 +238,10 @@ unsigned long logicThread(Ogre::ThreadHandle* threadHandle)
     while (!graphicsSystem->getQuit())
     {
         logicSystem->beginFrameParallel();
+        
+        SDL_GetRelativeMouseState(logicSystem->getMouseX(), logicSystem->getMouseY());
+        //SDL_GetMouseState(logicSystem->getMouseX(), logicSystem->getMouseY());
+
         logicSystem->update(static_cast<float>(cFrametime));
         logicSystem->finishFrameParallel();
 

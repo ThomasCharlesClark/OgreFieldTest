@@ -1,0 +1,10 @@
+hlms DebugCube pbs
+{
+	
+}
+
+hlms DebugSphere1000 pbs
+{
+	diffuse 0.37 0.37 0.37
+    transparency_mode transparent
+}

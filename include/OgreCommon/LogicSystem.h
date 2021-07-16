@@ -19,6 +19,9 @@ namespace MyThirdOgre
         float               mWindowWidth;
         float               mWindowHeight;
 
+        int* mMouseX;
+        int* mMouseY;
+
     protected:
         BaseSystem          *mGraphicsSystem;
         GameEntityManager   *mGameEntityManager;
@@ -42,6 +45,9 @@ namespace MyThirdOgre
 
         float getWindowWidth(void) { return mWindowWidth; }
         float getWindowHeight(void) { return mWindowHeight; }
+
+        int* getMouseX(void) { return mMouseX; }
+        int* getMouseY(void) { return mMouseY; }
 
         GameEntityManager* getGameEntityManager(void)               { return mGameEntityManager; }
         Ogre::uint32 getCurrentTransformIdx(void) const             { return mCurrentTransformIdx; }

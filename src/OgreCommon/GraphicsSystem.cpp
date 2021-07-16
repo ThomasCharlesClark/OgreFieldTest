@@ -378,19 +378,9 @@ namespace MyThirdOgre
             case SDL_QUIT:
                 mQuit = true;
                 break;
-                /* Interestingly this was cheating: for some reason the SdlInputHandler had pointers to both graphic and logic systems,
-                    but these were never being set. I extended the handler to permit setting the pointers, this is done in the graphic thread's renderAppThread call,
-                    see MyThirdOgre.cpp */
-            /*case SDL_KEYDOWN:
-            case SDL_KEYUP:
-            case SDL_MOUSEMOTION:
-            case SDL_MOUSEWHEEL:
-                this->queueSendMessage(mLogicSystem, Mq::SDL_EVENT, evt);
-                break;*/
             default:
                 break;
             }
-
             mInputHandler->_handleSdlEvents( evt );
         }
     #endif
@@ -844,8 +834,8 @@ namespace MyThirdOgre
     {
         mCamera = mSceneManager->createCamera( "Main Camera" );
 
-        mCamera->setPosition( Ogre::Vector3( 11, 10, 15 ) );
-        mCamera->lookAt( Ogre::Vector3( 11, 0, -11 ) );
+        mCamera->setPosition( Ogre::Vector3( 0, 0, 0 ) );
+        mCamera->lookAt( Ogre::Vector3( 0, 0, -1 ) );
 
         mCamera->setNearClipDistance( 0.2f );
         mCamera->setFarClipDistance( 1000.0f );
@@ -937,6 +927,34 @@ namespace MyThirdOgre
                     item->getSubItem(i)->setDatablockOrMaterialName(materialNames[i],
                         cge->gameEntity->mMoDefinition->
                         resourceGroup);
+
+                    if (cge->useAlpha) {
+
+                        auto datablock = dynamic_cast<Ogre::HlmsPbsDatablock*>(item->getSubItem(i)->getDatablock());
+
+                        Ogre::HlmsSamplerblock diffuseBlock(*datablock->getSamplerblock(Ogre::PBSM_DIFFUSE));
+                        diffuseBlock.mU = Ogre::TAM_WRAP;
+                        diffuseBlock.mV = Ogre::TAM_WRAP;
+                        diffuseBlock.mW = Ogre::TAM_WRAP;
+                        datablock->setSamplerblock(Ogre::PBSM_DIFFUSE, diffuseBlock);
+
+                        datablock->setTransparency(cge->gameEntity->mTransparency, Ogre::HlmsPbsDatablock::Transparent, true);
+                    }
+                }
+
+                if (cge->useAlpha) {
+
+                    auto datablock = dynamic_cast<Ogre::HlmsPbsDatablock*>(item->getSubItem(0)->getDatablock());
+
+                    if (datablock)
+                    {
+                        //Ogre::HlmsSamplerblock diffuseBlock(*datablock->getSamplerblock(Ogre::PBSM_DIFFUSE));
+                        //diffuseBlock.mU = Ogre::TAM_WRAP;
+                        //diffuseBlock.mV = Ogre::TAM_WRAP;
+                        //diffuseBlock.mW = Ogre::TAM_WRAP;
+                        //datablock->setSamplerblock(Ogre::PBSM_DIFFUSE, diffuseBlock);
+                        datablock->setTransparency(cge->gameEntity->mTransparency, Ogre::HlmsPbsDatablock::Transparent, true);
+                    }
                 }
 
                 cge->gameEntity->mMovableObject = item;
@@ -984,9 +1002,26 @@ namespace MyThirdOgre
             break;
             case MoTypeCamera:
             {
-                cge->gameEntity->mMovableObject = mSceneManager->getCameras()[0];
+                auto c = mSceneManager->getCameras()[0];
+                auto o = c->getOrientation();
+                auto p = c->getPosition();
 
-                cge->gameEntity->mSceneNode = cge->gameEntity->mMovableObject->getParentSceneNode();
+                cge->gameEntity->mMovableObject = c;
+
+                //mSceneManager->destroySceneNode(sceneNode);
+
+                //sceneNode = c->getParentSceneNode();
+
+                c->detachFromParent();
+
+                //sceneNode->rotate(o);
+                //sceneNode->translate(p);
+
+                //sceneNode->setOrientation(c->getOrientation());
+                //sceneNode->setPosition(c->getPosition());
+
+                //if (cge->gameEntity->mMovableObject->isAttached())
+                //    cge->gameEntity->mMovableObject->detachFromParent();
             }
             break;
             default: 
@@ -996,8 +1031,8 @@ namespace MyThirdOgre
             break;
         }
 
-        if (cge->gameEntity->mMoDefinition->moType != MoTypeCamera)
-            sceneNode->attachObject( cge->gameEntity->mMovableObject );
+        //if (!cge->gameEntity->mMovableObject->isAttached())
+        sceneNode->attachObject( cge->gameEntity->mMovableObject );
 
         //Keep them sorted on how Ogre's internal memory manager assigned them memory,
         //to avoid false cache sharing when we update the nodes concurrently.
@@ -1066,9 +1101,9 @@ namespace MyThirdOgre
             gEnt->mSceneNode->setScale( interpVec );
 
             Ogre::Quaternion interpQ = Ogre::Quaternion::nlerp(
-                mThreadWeight, gEnt->mTransform[prevIdx]->qRot, gEnt->mTransform[currIdx]->qRot, true );
-            gEnt->mSceneNode->setOrientation( interpQ );
-
+                mThreadWeight, gEnt->mTransform[prevIdx]->qRot, gEnt->mTransform[currIdx]->qRot, true);
+            gEnt->mSceneNode->setOrientation(interpQ);
+            
             ++itor;
         }
     }

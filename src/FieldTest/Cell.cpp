@@ -18,11 +18,27 @@
 
 namespace MyThirdOgre 
 {
-    Cell::Cell(int rowIndex, int columnIndex, int columnCount, int rowCount, GameEntityManager* geMgr)
+    Cell::Cell(int rowIndex, int columnIndex, int columnCount, int rowCount, GameEntityManager* geMgr) :
+        xIndex ( 0 ),
+        zIndex ( 0 ),
+        boundary ( false ),
+        mArrowEntity ( 0 ),
+        mArrowMoDef ( 0 ),
+        mPlaneEntity ( 0 ),
+        mPlaneMoDef ( 0 ),
+        mSphereEntity ( 0 ),
+        mSphereMoDef ( 0 ),
+        mSphere ( 0 ),
+        initialVelocity( Ogre::Vector3::ZERO ),
+        velocity( Ogre::Vector3::ZERO ),
+        originalPressure ( 0 ),
+        pressure ( 0 ),
+        gridReference ( Ogre::Vector2::ZERO ),
+        originalPosition ( Ogre::Vector3::ZERO ) 
     {
         xIndex = rowIndex;
         zIndex = columnIndex;
-        boundary = rowIndex == 0 || columnIndex == 0 || rowIndex == rowCount || columnIndex == columnCount;
+        boundary = rowIndex == 0 || columnIndex == 0 || rowIndex == rowCount - 1 || columnIndex == columnCount  - 1;
 
         bool centerBoundary = false;
 
@@ -46,7 +62,7 @@ namespace MyThirdOgre
 
         createPlane(geMgr);
 
-        createBoundingSphere();
+        createBoundingSphere(geMgr);
 
         // Quaternion Cheatsheet:
         // Take the degrees you want to rotate e.g. 135°
@@ -166,19 +182,19 @@ namespace MyThirdOgre
         // mArrowEntity and mPlaneEntity are now in the hands of the SceneManager. They are created on the render thread,
         // and the graphics system will dispose of them when appropriate.
 
-        /*if (mArrowEntity) {
-            delete mArrowEntity;
-            mArrowEntity = 0;
+        if (mArrowMoDef) {
+            delete mArrowMoDef;
+            mArrowMoDef = 0;
         }
-        if (mPlaneEntity) {
-            delete mPlaneEntity;
-            mPlaneEntity = 0;
-        }*/
 
+        if (mPlaneMoDef) {
+            delete mPlaneMoDef;
+            mPlaneMoDef = 0;
+        }
 
-        if (mSphere) {
-            delete mSphere;
-            mSphere = 0;
+        if (mSphereMoDef) {
+            delete mSphereMoDef;
+            mSphereMoDef = 0;
         }
     }
 
@@ -211,7 +227,7 @@ namespace MyThirdOgre
             mArrowMoDef,
             boundary ? "UnlitRed" : "UnlitWhite",
             arrowLineList,
-            Ogre::Vector3::ZERO,
+            Ogre::Vector3(xIndex, 0, -zIndex),
             Ogre::Quaternion::IDENTITY,
             Ogre::Vector3::UNIT_SCALE
         );
@@ -224,19 +240,39 @@ namespace MyThirdOgre
         mPlaneMoDef->resourceGroup = Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME;
         mPlaneMoDef->moType = MoTypePrefab;
 
+        Ogre::Quaternion pRot = Ogre::Quaternion::IDENTITY;
+
+        pRot.FromAngleAxis(Ogre::Radian(Ogre::Degree(-90)), Ogre::Vector3::UNIT_X);
+
         mPlaneEntity = geMgr->addGameEntity(Ogre::SceneMemoryMgrTypes::SCENE_STATIC,
             mPlaneMoDef,
             Ogre::SceneManager::PrefabType::PT_PLANE,
             boundary ? "Red" : "Transparent",
-            boundary ? 0.4f :  1.0f,
-            Ogre::Vector3(xIndex, 0, zIndex),
-            Ogre::Quaternion(1.0f, -0.0137073546f, 0.0f, 0.0f),
-            Ogre::Vector3(0.01f, 0.01f, 0.01f));
+            Ogre::Vector3(xIndex, 0, -zIndex),
+            pRot,
+            Ogre::Vector3(0.005f, 0.005f, 0.005f),
+            true,
+            boundary ? 0.4f : 0.0f);
     }
 
-    void Cell::createBoundingSphere(void) 
+    void Cell::createBoundingSphere(GameEntityManager* geMgr) 
     {
-        mSphere = new Ogre::Sphere(originalPosition, 1.0f);
+        Ogre::Vector3 sPos = Ogre::Vector3(xIndex, 0, -zIndex);
+
+        mSphere = new Ogre::Sphere(sPos, 1.0f);
+
+        mSphereMoDef = new MovableObjectDefinition();
+        mSphereMoDef->meshName = "Sphere1000.mesh";
+        mSphereMoDef->resourceGroup = Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME;
+        mSphereMoDef->moType = MoTypeItem;
+
+        mSphereEntity = geMgr->addGameEntity(Ogre::SceneMemoryMgrTypes::SCENE_DYNAMIC,
+            mSphereMoDef,
+            sPos,
+            Ogre::Quaternion::IDENTITY,
+            Ogre::Vector3::UNIT_SCALE,
+            true,
+            0.2f);
     }
 
     Ogre::Vector3 Cell::getVelocity()

@@ -20,6 +20,7 @@ namespace MyThirdOgre
         {
             GameEntity          *gameEntity;
             GameEntityTransform initialTransform;
+            bool                useAlpha;
         };
 
         typedef std::vector<GameEntityVec> GameEntityVecVec;
@@ -85,16 +86,19 @@ namespace MyThirdOgre
                                    const MovableObjectDefinition *moDefinition,
                                    const Ogre::Vector3 &initialPos,
                                    const Ogre::Quaternion &initialRot,
-                                   const Ogre::Vector3 &initialScale );
+                                   const Ogre::Vector3 &initialScale,
+                                   const bool useAlpha = false, 
+                                   const float alpha = 1.0f );
 
         GameEntity* addGameEntity(  Ogre::SceneMemoryMgrTypes type,
                                     const MovableObjectDefinition* moDefinition,
                                     const Ogre::SceneManager::PrefabType prefabType,
                                     const Ogre::String datablockName,
-                                    const float transparency,
                                     const Ogre::Vector3& initialPos,
                                     const Ogre::Quaternion& initialRot,
-                                    const Ogre::Vector3& initialScale);
+                                    const Ogre::Vector3& initialScale,
+                                    const bool useAlpha = false,
+                                    const float alpha = 1.0f );
 
         GameEntity* addGameEntity( Ogre::SceneMemoryMgrTypes type,
                                    const MovableObjectDefinition* moDefinition,
@@ -102,7 +106,9 @@ namespace MyThirdOgre
                                    const ManualObjectLineListDefinition& manualObjectDef,
                                    const Ogre::Vector3& initialPos,
                                    const Ogre::Quaternion& initialRot,
-                                   const Ogre::Vector3& initialScale);
+                                   const Ogre::Vector3& initialScale,
+                                   const bool useAlpha = false,
+                                   const float alpha = 1.0f );
 
         /** Removes the GameEntity from the world. The pointer is not immediately destroyed,
             we first need to release data in other threads (i.e. Graphics).

@@ -13,14 +13,22 @@ namespace MyThirdOgre
     LogicGameState::LogicGameState() :
         mField( 0 ), 
         mLogicSystem( 0 ), 
-        mCameraController( 0 )
+        mCameraController( 0 ),
+        mCameraMoDef ( 0 )
     {
     }
     //-----------------------------------------------------------------------------------
     LogicGameState::~LogicGameState()
     {
-        delete mCameraMoDef;
-        mCameraMoDef = 0;
+        if (mCameraMoDef) {
+            delete mCameraMoDef;
+            mCameraMoDef = 0;
+        }
+
+        if (mCameraController) {
+            delete mCameraController;
+            mCameraController = 0;
+        }
 
         delete mField;
         mField = 0;
@@ -36,24 +44,20 @@ namespace MyThirdOgre
         mCameraMoDef = new MovableObjectDefinition();
         mCameraMoDef->moType = MoTypeCamera;
         mCameraEntity = geMgr->addGameEntity(Ogre::SCENE_DYNAMIC, mCameraMoDef,
-            Ogre::Vector3::ZERO,
-            Ogre::Quaternion::IDENTITY,
+            Ogre::Vector3(11, 10, 15),
+            Ogre::Quaternion(0.983195186, -0.182557389, 0.0f, 0.0f),
             Ogre::Vector3::UNIT_SCALE);
-
-        // Nooope because IT HASN'T FINISHED CREATING MY SCENE NODE YET
 
         float width = mLogicSystem->getWindowWidth(),
             height = mLogicSystem->getWindowHeight();
 
-        mCameraController = new CameraController(mCameraEntity, width, height, false);
+        mCameraController = new CameraControllerMultiThreading(mCameraEntity, width, height);
 
         mField = new Field(geMgr);
     }
     //-----------------------------------------------------------------------------------
     void LogicGameState::update(float timeSinceLast)
     {
-        const Ogre::Vector3 origin(-5.0f, 0.0f, 0.0f);
-
         const size_t currIdx = mLogicSystem->getCurrentTransformIdx();
         const size_t prevIdx = (currIdx + NUM_GAME_ENTITY_BUFFERS - 1) % NUM_GAME_ENTITY_BUFFERS;
 
@@ -67,24 +71,28 @@ namespace MyThirdOgre
         /*mCubeEntity->mTransform[currIdx]->vPos = mCubeEntity->mTransform[prevIdx]->vPos +
                                                       Ogre::Vector3::UNIT_X * timeSinceLast;*/
 
-        mCameraController->update(timeSinceLast, currIdx);
+        if (mCameraController)
+            mCameraController->update(timeSinceLast, currIdx, prevIdx, mLogicSystem->getMouseX(), mLogicSystem->getMouseY());
 
         GameState::update(timeSinceLast);
     }
     //-----------------------------------------------------------------------------------
     void LogicGameState::keyPressed(const SDL_KeyboardEvent& arg)
     {
-        mCameraController->keyPressed(arg);
+        if (mCameraController)
+            mCameraController->keyPressed(arg);
     }
     //-----------------------------------------------------------------------------------
     void LogicGameState::keyReleased(const SDL_KeyboardEvent& arg)
     {
-        mCameraController->keyPressed(arg);
+        if (mCameraController)
+            mCameraController->keyReleased(arg);
     }
     //-----------------------------------------------------------------------------------
     void LogicGameState::mouseMoved(const SDL_Event& arg) 
     {
-        mCameraController->mouseMoved(arg);
+        if (mCameraController)
+            mCameraController->mouseMoved(arg);
     }
     //-----------------------------------------------------------------------------------
     void LogicGameState::mousePressed(const SDL_MouseButtonEvent& arg, Ogre::uint8 buttonId)

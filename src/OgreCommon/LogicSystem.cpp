@@ -31,7 +31,9 @@ namespace MyThirdOgre
         mGameEntityManager( 0 ),
         mCurrentTransformIdx( 1 ),
         mWindowWidth( 0 ),
-        mWindowHeight( 0 )
+        mWindowHeight( 0 ),
+        mMouseX ( new int ),
+        mMouseY ( new int )
     {
         //mCurrentTransformIdx is 1, 0 and NUM_GAME_ENTITY_BUFFERS - 1 are taken by GraphicsSytem at startup
         //The range to fill is then [2; NUM_GAME_ENTITY_BUFFERS-1]
@@ -41,6 +43,11 @@ namespace MyThirdOgre
     //-----------------------------------------------------------------------------------
     LogicSystem::~LogicSystem()
     {
+        delete mMouseX;
+        mMouseX = 0;
+
+        delete mMouseY;
+        mMouseY = 0;
     }
     //-----------------------------------------------------------------------------------
     void LogicSystem::_notifyWindowWidth(float width)

@@ -23,7 +23,7 @@ namespace MyThirdOgre
         mMouseListener( mouseListener ),
         mKeyboardListener( keyboardListener ),
         mJoystickListener( joystickListener ),
-        mWantRelative( false ),
+        mWantRelative( true ),
         mWantMouseGrab( true ),
         mWantMouseVisible( false ),
         mIsMouseRelative( !mWantRelative ),

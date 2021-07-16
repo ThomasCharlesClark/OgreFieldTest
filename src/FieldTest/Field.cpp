@@ -10,16 +10,17 @@ using namespace MyThirdOgre;
 
 namespace MyThirdOgre 
 {
-	Field::Field(GameEntityManager* geMgr)
-	{
-		mColumnCount = 22;
-		mRowCount = 22;
-		mGameEntityManager = geMgr;
-		mCells = std::map<std::pair<int, int>, Cell*> { };
+	Field::Field(GameEntityManager* geMgr) :
+		mGameEntityManager ( geMgr ),
+		mScale( 1 ),
+		mColumnCount ( 22 ),
+		mRowCount ( 22 ),
+		mCells ( std::map<std::pair<int, int>, Cell*> { } )
 
+	{
 		createGrid();
 
-		//createCells();
+		createCells();
 	}
 
 	Field::~Field() {
@@ -45,16 +46,18 @@ namespace MyThirdOgre
 
 		int pointCounter = 0;
 
+		float adjuster = 0.5f;
+
 		for (int i = 0; i < mColumnCount + 1; i++) {
-			gridLineList.points.push_back(Ogre::Vector3(i, 0, 0));
-			gridLineList.points.push_back(Ogre::Vector3(i, 0, -mColumnCount));
+			gridLineList.points.push_back(Ogre::Vector3((i - adjuster) * mScale, 0, adjuster));
+			gridLineList.points.push_back(Ogre::Vector3((i - adjuster) * mScale, 0, -(mColumnCount - adjuster) * mScale));
 			gridLineList.lines.push_back({ pointCounter, pointCounter + 1 });
 			pointCounter += 2;
 		}
 
 		for (int i = 0; i < mRowCount + 1; i++) {
-			gridLineList.points.push_back(Ogre::Vector3(0, 0, -i));
-			gridLineList.points.push_back(Ogre::Vector3(mRowCount, 0, -i));
+			gridLineList.points.push_back(Ogre::Vector3(-adjuster, 0, -(i - adjuster) * mScale));
+			gridLineList.points.push_back(Ogre::Vector3((mRowCount - adjuster) * mScale, 0, -(i - adjuster) * mScale));
 			gridLineList.lines.push_back({ pointCounter, pointCounter + 1 });
 			pointCounter += 2;
 		}

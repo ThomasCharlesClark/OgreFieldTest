@@ -4,35 +4,28 @@
 
 #include "OgrePrerequisites.h"
 #include "TutorialGameState.h"
-#include "OgreCamera.h"
-#include "GameEntity.h"
-#include "OgrePlatform.h"
 
 namespace MyThirdOgre
 {
-
     class CameraController
     {
-        GameEntity*         mCameraEntity;
         bool                mUseSceneNode;
 
         bool                mSpeedMofifier;
         bool                mWASD[4];
         bool                mSlideUpDown[2];
-        float               mWindowWidth;
-        float               mWindowHeight;
         float               mCameraYaw;
         float               mCameraPitch;
         public: float       mCameraBaseSpeed;
         public: float       mCameraSpeedBoost;
 
-    protected:
-        Ogre::Camera*       getCamera(void) { return static_cast<Ogre::Camera*>(mCameraEntity->mMovableObject); }
+    private:
+        GraphicsSystem      *mGraphicsSystem;
 
     public:
-        CameraController( GameEntity *cameraEntity, float mWindowWidth, float mWindowHeight, bool useSceneNode=false );
+        CameraController( GraphicsSystem *graphicsSystem, bool useSceneNode=false );
 
-        void update( float timeSinceLast, Ogre::uint32 transformIndex);
+        void update( float timeSinceLast );
 
         /// Returns true if we've handled the event
         bool keyPressed( const SDL_KeyboardEvent &arg );

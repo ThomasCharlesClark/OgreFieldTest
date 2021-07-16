@@ -25,9 +25,6 @@
     <ClCompile Include="src\GraphicsGameState.cpp">
       <Filter>Source Files\Other</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\GraphicsSystem.cpp">
-      <Filter>Source Files\Other</Filter>
-    </ClCompile>
     <ClCompile Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\Utils\HdrUtils.cpp">
       <Filter>Source Files\Other</Filter>
     </ClCompile>
@@ -46,9 +43,6 @@
     <ClCompile Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\Utils\MiscUtils.cpp">
       <Filter>Source Files\Other</Filter>
     </ClCompile>
-    <ClCompile Include="src\MyThirdOgre.cpp">
-      <Filter>Source Files\Other</Filter>
-    </ClCompile>
     <ClCompile Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\Utils\ScreenSpaceReflections.cpp">
       <Filter>Source Files\Other</Filter>
     </ClCompile>
@@ -63,6 +57,15 @@
     </ClCompile>
     <ClCompile Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\Utils\TestUtils.cpp">
       <Filter>Source Files\Other</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MyThirdOgre.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\GraphicsSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\OgreCommon\CameraControllerMultiThreading.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -161,6 +164,9 @@
     </ClInclude>
     <ClInclude Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\TutorialGameState.h">
       <Filter>Header Files\Other</Filter>
+    </ClInclude>
+    <ClInclude Include="include\OgreCommon\CameraControllerMultiThreading.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

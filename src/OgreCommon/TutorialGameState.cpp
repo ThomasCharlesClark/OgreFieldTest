@@ -36,8 +36,10 @@ namespace MyThirdOgre
     //-----------------------------------------------------------------------------------
     TutorialGameState::~TutorialGameState()
     {
-        /*delete mCameraController;
-        mCameraController = 0;*/
+        if (mCameraController) {
+            delete mCameraController;
+            mCameraController = 0;
+        }
     }
     //-----------------------------------------------------------------------------------
     void TutorialGameState::_notifyGraphicsSystem( GraphicsSystem *graphicsSystem )
@@ -100,8 +102,6 @@ namespace MyThirdOgre
 
         const Ogre::FrameStats *frameStats = mGraphicsSystem->getRoot()->getFrameStats();
 
-        const Ogre::Vector3 cameraPosition = mGraphicsSystem->getCamera()->getPosition();
-
         Ogre::String finalText;
         finalText.reserve( 128 );
         finalText  = "Frame time:\t";
@@ -114,11 +114,15 @@ namespace MyThirdOgre
         finalText += " ms\n";
         finalText += "Avg FPS:\t";
         finalText += Ogre::StringConverter::toString( 1000.0f / frameStats->getAvgTime() );
+        finalText += "\nFPS:\t";
+        finalText += Ogre::StringConverter::toString(frameStats->getFps());
         finalText += "\n\nPress F1 to toggle help";
 
-        finalText += "\n\nCamera Position: (" + Ogre::StringConverter::toString(cameraPosition.x) + ", " +
-            Ogre::StringConverter::toString(cameraPosition.y) + ", " +
-            Ogre::StringConverter::toString(cameraPosition.z) + ")\n";
+        //const Ogre::Vector3 cameraPosition = mGraphicsSystem->getCamera()->getPosition();
+
+        //finalText += "\n\nCamera Position: (" + Ogre::StringConverter::toString(cameraPosition.x) + ", " +
+        //    Ogre::StringConverter::toString(cameraPosition.y) + ", " +
+        //    Ogre::StringConverter::toString(cameraPosition.z) + ")\n";
 
         outText.swap( finalText );
 
@@ -137,16 +141,16 @@ namespace MyThirdOgre
             mDebugTextShadow->setCaption( finalText );
         }
 
-        /*if( mCameraController )
-            mCameraController->update( timeSinceLast );*/
+        if( mCameraController )
+            mCameraController->update( timeSinceLast );
     }
     //-----------------------------------------------------------------------------------
     void TutorialGameState::keyPressed( const SDL_KeyboardEvent &arg )
     {
         bool handledEvent = false;
 
-    /*    if( mCameraController )
-            handledEvent = mCameraController->keyPressed( arg );*/
+        if( mCameraController )
+            handledEvent = mCameraController->keyPressed( arg );
 
         if( !handledEvent )
             GameState::keyPressed( arg );
@@ -198,8 +202,8 @@ namespace MyThirdOgre
         {
             bool handledEvent = false;
 
-            //if( mCameraController )
-            //    handledEvent = mCameraController->keyReleased( arg );
+            if( mCameraController )
+                handledEvent = mCameraController->keyReleased( arg );
 
             if( !handledEvent )
                 GameState::keyReleased( arg );
@@ -208,8 +212,8 @@ namespace MyThirdOgre
     //-----------------------------------------------------------------------------------
     void TutorialGameState::mouseMoved( const SDL_Event &arg )
     {
-       /* if( mCameraController )
-            mCameraController->mouseMoved( arg );*/
+       if( mCameraController )
+            mCameraController->mouseMoved( arg );
 
         GameState::mouseMoved( arg );
     }

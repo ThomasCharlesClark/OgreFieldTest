@@ -1,6 +1,6 @@
 //See the documentation of HlmsPbsDatablock::HlmsPbsDatablock and HlmsPbsMobileDatablock::HlmsPbsMobileDatablock
 //for all available settings; what they mean and what they do..
-hlms BaseBlack pbs
+hlms BaseWhite pbs
 {
 	//Note: Internally the diffuse colour is divided by PI.
 	diffuse		1 1 1

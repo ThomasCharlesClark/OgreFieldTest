@@ -2,104 +2,89 @@
 #include "CameraController.h"
 
 #include "GraphicsSystem.h"
-
 #include "OgreCamera.h"
-#include "OgreEntity.h"
 #include "OgreWindow.h"
+
+using namespace MyThirdOgre;
 
 namespace MyThirdOgre
 {
-    CameraController::CameraController( GameEntity *cameraEntity, float windowWidth, float windowHeight, bool useSceneNode ) :
-        mUseSceneNode( useSceneNode ),
-        mSpeedMofifier( false ),
-        mCameraYaw( 0 ),
-        mCameraPitch( 0 ),
-        mCameraBaseSpeed( 10 ),
-        mCameraSpeedBoost( 5 ),
-        mCameraEntity ( cameraEntity ),
-        mWindowWidth ( windowWidth ),
-        mWindowHeight ( windowHeight )
+    CameraController::CameraController(GraphicsSystem* graphicsSystem, bool useSceneNode) :
+        mUseSceneNode(useSceneNode),
+        mSpeedMofifier(false),
+        mCameraYaw(0),
+        mCameraPitch(0),
+        mCameraBaseSpeed(10),
+        mCameraSpeedBoost(5),
+        mGraphicsSystem(graphicsSystem)
     {
-        memset( mWASD, 0, sizeof(mWASD) );
-        memset( mSlideUpDown, 0, sizeof(mSlideUpDown) );
+        memset(mWASD, 0, sizeof(mWASD));
+        memset(mSlideUpDown, 0, sizeof(mSlideUpDown));
     }
-
     //-----------------------------------------------------------------------------------
-    void CameraController::update( float timeSinceLast, Ogre::uint32 transformIndex )
+    void CameraController::update(float timeSinceLast)
     {
-        if (getCamera()) 
+        Ogre::Camera* camera = mGraphicsSystem->getCamera();
+
+        if (mCameraYaw != 0.0f || mCameraPitch != 0.0f)
         {
-            if (mCameraYaw != 0.0f || mCameraPitch != 0.0f)
+            if (mUseSceneNode)
             {
-                Ogre::Quaternion yaw = Ogre::Quaternion(Ogre::Math::Cos(Ogre::Radian(mCameraYaw) / 2),
-                    0.0f,
-                    0.0f,
-                    Ogre::Math::Sin(Ogre::Radian(mCameraYaw) / 2));
+                Ogre::Node* cameraNode = camera->getParentNode();
 
-                mCameraEntity->mTransform[transformIndex]->qRot = mCameraEntity->mTransform[transformIndex]->qRot * yaw;
-
-                //if (mUseSceneNode)
-                //{
-                //    Ogre::Node* cameraNode = getCamera()->getParentNode();
-
-                //    // Update now as yaw needs the derived orientation.
-                //    cameraNode->_getFullTransformUpdated();
-                //    cameraNode->yaw(Ogre::Radian(mCameraYaw), Ogre::Node::TS_WORLD);
-                //    cameraNode->pitch(Ogre::Radian(mCameraPitch));
-
-                //}
-                //else
-                //{
-                //    getCamera()->yaw(Ogre::Radian(mCameraYaw));
-                //    getCamera()->pitch(Ogre::Radian(mCameraPitch));
-                //}
-
-                mCameraYaw = 0.0f;
-                mCameraPitch = 0.0f;
+                // Update now as yaw needs the derived orientation.
+                cameraNode->_getFullTransformUpdated();
+                cameraNode->yaw(Ogre::Radian(mCameraYaw), Ogre::Node::TS_WORLD);
+                cameraNode->pitch(Ogre::Radian(mCameraPitch));
+            }
+            else
+            {
+                camera->yaw(Ogre::Radian(mCameraYaw));
+                camera->pitch(Ogre::Radian(mCameraPitch));
             }
 
-            int camMovementZ = mWASD[2] - mWASD[0];
-            int camMovementX = mWASD[3] - mWASD[1];
-            int slideUpDown = mSlideUpDown[0] - mSlideUpDown[1];
+            mCameraYaw = 0.0f;
+            mCameraPitch = 0.0f;
+        }
 
-            if (camMovementZ || camMovementX || slideUpDown)
+        int camMovementZ = mWASD[2] - mWASD[0];
+        int camMovementX = mWASD[3] - mWASD[1];
+        int slideUpDown = mSlideUpDown[0] - mSlideUpDown[1];
+
+        if (camMovementZ || camMovementX || slideUpDown)
+        {
+            Ogre::Vector3 camMovementDir(camMovementX, slideUpDown, camMovementZ);
+            camMovementDir.normalise();
+            camMovementDir *= timeSinceLast * mCameraBaseSpeed * (1 + mSpeedMofifier * mCameraSpeedBoost);
+
+            if (mUseSceneNode)
             {
-                Ogre::Vector3 camMovementDir(camMovementX, slideUpDown, camMovementZ);
-                camMovementDir.normalise();
-                camMovementDir *= timeSinceLast * mCameraBaseSpeed * (1 + mSpeedMofifier * mCameraSpeedBoost);
-
-                mCameraEntity->mTransform[transformIndex]->vPos += camMovementDir;
-
-                if (mUseSceneNode)
-                {
-                    /*Ogre::Node* cameraNode = getCamera()->getParentNode();
-                    cameraNode->translate(camMovementDir, Ogre::Node::TS_LOCAL);*/
-                }
-                else
-                {
-
-                    //getCamera()->moveRelative(camMovementDir);
-                }
+                Ogre::Node* cameraNode = camera->getParentNode();
+                cameraNode->translate(camMovementDir, Ogre::Node::TS_LOCAL);
+            }
+            else
+            {
+                camera->moveRelative(camMovementDir);
             }
         }
     }
     //-----------------------------------------------------------------------------------
-    bool CameraController::keyPressed( const SDL_KeyboardEvent &arg )
+    bool CameraController::keyPressed(const SDL_KeyboardEvent& arg)
     {
-        if( arg.keysym.scancode == SDL_SCANCODE_LSHIFT )
+        if (arg.keysym.scancode == SDL_SCANCODE_LSHIFT)
             mSpeedMofifier = true;
 
-        if( arg.keysym.scancode == SDL_SCANCODE_W )
+        if (arg.keysym.scancode == SDL_SCANCODE_W)
             mWASD[0] = true;
-        else if( arg.keysym.scancode == SDL_SCANCODE_A )
+        else if (arg.keysym.scancode == SDL_SCANCODE_A)
             mWASD[1] = true;
-        else if( arg.keysym.scancode == SDL_SCANCODE_S )
+        else if (arg.keysym.scancode == SDL_SCANCODE_S)
             mWASD[2] = true;
-        else if( arg.keysym.scancode == SDL_SCANCODE_D )
+        else if (arg.keysym.scancode == SDL_SCANCODE_D)
             mWASD[3] = true;
-        else if( arg.keysym.scancode == SDL_SCANCODE_PAGEUP )
+        else if (arg.keysym.scancode == SDL_SCANCODE_PAGEUP)
             mSlideUpDown[0] = true;
-        else if( arg.keysym.scancode == SDL_SCANCODE_PAGEDOWN )
+        else if (arg.keysym.scancode == SDL_SCANCODE_PAGEDOWN)
             mSlideUpDown[1] = true;
         else
             return false;
@@ -107,22 +92,22 @@ namespace MyThirdOgre
         return true;
     }
     //-----------------------------------------------------------------------------------
-    bool CameraController::keyReleased( const SDL_KeyboardEvent &arg )
+    bool CameraController::keyReleased(const SDL_KeyboardEvent& arg)
     {
-        if( arg.keysym.scancode == SDL_SCANCODE_LSHIFT )
+        if (arg.keysym.scancode == SDL_SCANCODE_LSHIFT)
             mSpeedMofifier = false;
 
-        if( arg.keysym.scancode == SDL_SCANCODE_W )
+        if (arg.keysym.scancode == SDL_SCANCODE_W)
             mWASD[0] = false;
-        else if( arg.keysym.scancode == SDL_SCANCODE_A )
+        else if (arg.keysym.scancode == SDL_SCANCODE_A)
             mWASD[1] = false;
-        else if( arg.keysym.scancode == SDL_SCANCODE_S )
+        else if (arg.keysym.scancode == SDL_SCANCODE_S)
             mWASD[2] = false;
-        else if( arg.keysym.scancode == SDL_SCANCODE_D )
+        else if (arg.keysym.scancode == SDL_SCANCODE_D)
             mWASD[3] = false;
-        else if( arg.keysym.scancode == SDL_SCANCODE_PAGEUP )
+        else if (arg.keysym.scancode == SDL_SCANCODE_PAGEUP)
             mSlideUpDown[0] = false;
-        else if( arg.keysym.scancode == SDL_SCANCODE_PAGEDOWN )
+        else if (arg.keysym.scancode == SDL_SCANCODE_PAGEDOWN)
             mSlideUpDown[1] = false;
         else
             return false;
@@ -130,12 +115,12 @@ namespace MyThirdOgre
         return true;
     }
     //-----------------------------------------------------------------------------------
-    void CameraController::mouseMoved( const SDL_Event &arg )
+    void CameraController::mouseMoved(const SDL_Event& arg)
     {
-        /*float width  = static_cast<float>( mGraphicsSystem->getRenderWindow()->getWidth() );
-        float height = static_cast<float>( mGraphicsSystem->getRenderWindow()->getHeight() );*/
+        float width = static_cast<float>(mGraphicsSystem->getRenderWindow()->getWidth());
+        float height = static_cast<float>(mGraphicsSystem->getRenderWindow()->getHeight());
 
-        mCameraYaw += -arg.motion.xrel / mWindowWidth;
-        mCameraPitch += -arg.motion.yrel / mWindowHeight;
+        mCameraYaw += -arg.motion.xrel / width;
+        mCameraPitch += -arg.motion.yrel / height;
     }
 }

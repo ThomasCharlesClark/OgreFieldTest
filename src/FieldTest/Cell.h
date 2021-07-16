@@ -53,11 +53,10 @@ protected:
 		GameEntity* mPlaneEntity;
 		MovableObjectDefinition* mPlaneMoDef;
 
+		GameEntity* mSphereEntity;
+		MovableObjectDefinition* mSphereMoDef;
 
-
-
-		//Ogre::ManualObject* arrowObject;
-		//Ogre::SceneNode* arrowNode;
+		Ogre::Sphere* mSphere;
 
 		Ogre::Vector3 initialVelocity;
 		Ogre::Vector3 velocity;
@@ -75,13 +74,11 @@ protected:
 
 		Ogre::Vector3 originalPosition;
 
-		Ogre::Sphere* mSphere;
-
 		virtual void createArrow(GameEntityManager* geMgr);
 
 		virtual void createPlane(GameEntityManager* geMgr);
 
-		virtual void createBoundingSphere(void);
+		virtual void createBoundingSphere(GameEntityManager* geMgr);
 
 	public:
 		Cell(int rowIndex,

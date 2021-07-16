@@ -5,6 +5,7 @@
 #include "OgrePrerequisites.h"
 #include "TutorialGameState.h"
 #include "../src/FieldTest/Field.h"
+#include "CameraControllerMultiThreading.h"
 
 union SDL_Event;
 struct SDL_MouseButtonEvent;
@@ -31,7 +32,7 @@ namespace MyThirdOgre
 
         LogicSystem         *mLogicSystem;
 
-        CameraController    *mCameraController;
+        CameraControllerMultiThreading    *mCameraController;
         // Entities are destroyed by the GameEntityManager
 		GameEntity          *mCameraEntity;
         // MovableObjectDefinitions are not

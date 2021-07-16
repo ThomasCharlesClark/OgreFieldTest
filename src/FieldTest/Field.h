@@ -11,7 +11,8 @@ namespace MyThirdOgre
 {
 	class Field
 	{
-		int cellCount;
+		int mScale;
+		int mCellCount;
 		int mColumnCount;
 		int mRowCount;
 		GameEntityManager* mGameEntityManager;
