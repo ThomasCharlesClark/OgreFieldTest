@@ -7,6 +7,8 @@
 #include "GameEntity.h"
 #include "GameEntityManager.h"
 
+#include <map>
+
 namespace MyThirdOgre 
 {
 	class Field
@@ -31,13 +33,25 @@ namespace MyThirdOgre
 		Field(GameEntityManager* geMgr);
 		~Field();
 
-		Cell* getCell(int x, int y);
+		Cell* getCell(std::pair<int, int> coords);
 
-		virtual void update(float timeSinceLast);
+		virtual void update(float timeSinceLast, Ogre::uint32 currentTransformIndex, Ogre::uint32 previousTransformIndex);
 
 		// we want to be updating a "shadow" of all of our cells' transforms 
 		// this shadow needs to be processed through a number of different functions 
 		// before the end result is actually rendered
 
+		virtual float getPressureDerivativeX(void);
+		virtual float getPressureDerivativeY(void);
+
+		virtual void advect(float timeSinceLast, std::map<std::pair<int, int>, CellState> &state);
+
+		virtual void spinLeft();
+		virtual void spinRight();
+
+		virtual void traverseActiveCellZNegative();
+		virtual void traverseActiveCellXPositive();
+		virtual void traverseActiveCellZPositive();
+		virtual void traverseActiveCellXNegative();
 	};
 }

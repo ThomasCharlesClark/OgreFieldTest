@@ -118,12 +118,6 @@ namespace MyThirdOgre
         finalText += Ogre::StringConverter::toString(frameStats->getFps());
         finalText += "\n\nPress F1 to toggle help";
 
-        //const Ogre::Vector3 cameraPosition = mGraphicsSystem->getCamera()->getPosition();
-
-        //finalText += "\n\nCamera Position: (" + Ogre::StringConverter::toString(cameraPosition.x) + ", " +
-        //    Ogre::StringConverter::toString(cameraPosition.y) + ", " +
-        //    Ogre::StringConverter::toString(cameraPosition.z) + ")\n";
-
         outText.swap( finalText );
 
         mDebugText->setCaption( finalText );

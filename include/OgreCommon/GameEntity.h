@@ -19,8 +19,9 @@ namespace MyThirdOgre
         MoTypeEntity,
         NumMovableObjectType,
         MoTypeStaticManualLineList,
+        MoTypeDynamicManualLineList,
         MoTypeDynamicManualObject,
-        MoTypePrefab,
+        MoTypePrefabPlane,
         MoTypeCamera
     };
 

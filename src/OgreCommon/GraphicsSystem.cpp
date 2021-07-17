@@ -979,7 +979,26 @@ namespace MyThirdOgre
                 cge->gameEntity->mMovableObject = mo;
             }
             break;
-            case MoTypePrefab:
+            case MoTypeDynamicManualLineList:
+            {
+                Ogre::ManualObject* mo = mSceneManager->createManualObject(Ogre::SCENE_DYNAMIC);
+
+                mo->begin(cge->gameEntity->mManualObjectDatablockName, Ogre::OT_LINE_LIST);
+
+                for (auto p : cge->gameEntity->mManualObjectDefinition.points) {
+                    mo->position(p);
+                }
+
+                for (auto l : cge->gameEntity->mManualObjectDefinition.lines) {
+                    mo->line(l.first, l.second);
+                }
+
+                mo->end();
+
+                cge->gameEntity->mMovableObject = mo;
+            }
+            break;
+            case MoTypePrefabPlane:
             {
                 Ogre::v1::Entity* pft = mSceneManager->createEntity(Ogre::SceneManager::PrefabType::PT_PLANE, Ogre::SCENE_STATIC);
 
@@ -996,7 +1015,7 @@ namespace MyThirdOgre
                 diffuseBlock.mV = Ogre::TAM_WRAP;
                 diffuseBlock.mW = Ogre::TAM_WRAP;
                 personalDatablock->setSamplerblock(Ogre::PBSM_DIFFUSE, diffuseBlock);
-
+                //personalDatablock->setDiffuse(Ogre::Vector3(cge->gameEntity->mTransparency, cge->gameEntity->mTransparency, cge->gameEntity->mTransparency));
                 personalDatablock->setTransparency(cge->gameEntity->mTransparency, Ogre::HlmsPbsDatablock::Transparent, true);
 
                 pft->getSubEntity(0)->setDatablock(personalDatablock);

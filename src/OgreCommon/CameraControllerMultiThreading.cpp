@@ -30,7 +30,7 @@ namespace MyThirdOgre
         mCameraYaw += -*mouseX / mWindowWidth;
         mCameraPitch += -*mouseY / mWindowHeight;
 
-        Ogre::Quaternion qPrev = mCameraEntity->mTransform[previousTransformIndex]->qRot;
+        Ogre::Quaternion qNew = mCameraEntity->mTransform[previousTransformIndex]->qRot;
 
         int camMovementZ = mWASD[2] - mWASD[0];
         int camMovementX = mWASD[3] - mWASD[1];
@@ -39,7 +39,7 @@ namespace MyThirdOgre
 
         Ogre::Vector3 camMovementDir(camMovementX, slideUpDown, camMovementZ);
 
-        camMovementDir = qPrev * camMovementDir;
+        camMovementDir = qNew * camMovementDir;
 
         camMovementDir.normalise();
 
@@ -49,7 +49,7 @@ namespace MyThirdOgre
             mCameraEntity->mTransform[previousTransformIndex]->vPos + camMovementDir;       
          
         if (mCameraEntity->mSceneNode) {
-            Ogre::Vector3 mRight = qPrev * Ogre::Vector3(1, 0, 0);
+            Ogre::Vector3 mRight = qNew * Ogre::Vector3(1, 0, 0);
 
             mPitch.FromAngleAxis(Ogre::Radian(mCameraPitch * mCameraBaseAngularRotationSpeed), mRight);
             mPitch.normalise();
@@ -58,12 +58,12 @@ namespace MyThirdOgre
             mYaw.normalise();
         }
 
-        qPrev = mYaw * mPitch * qPrev;
+        qNew = mYaw * mPitch * qNew;
 
-        qPrev.normalise();
+        qNew.normalise();
 
         // There's no need to interpolate here - that is handled by GraphicsSystem's update.
-        mCameraEntity->mTransform[currentTransformIndex]->qRot = qPrev;
+        mCameraEntity->mTransform[currentTransformIndex]->qRot = qNew;
 
         mCameraYaw = 0;
 

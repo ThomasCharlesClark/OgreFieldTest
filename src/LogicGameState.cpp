@@ -14,8 +14,10 @@ namespace MyThirdOgre
         mField( 0 ), 
         mLogicSystem( 0 ), 
         mCameraController( 0 ),
-        mCameraMoDef ( 0 )
+        mCameraMoDef ( 0 ),
+        mSpaceKey ( false )
     {
+        memset(mInputKeys, 0, sizeof(mInputKeys));
     }
     //-----------------------------------------------------------------------------------
     LogicGameState::~LogicGameState()
@@ -61,15 +63,16 @@ namespace MyThirdOgre
         const size_t currIdx = mLogicSystem->getCurrentTransformIdx();
         const size_t prevIdx = (currIdx + NUM_GAME_ENTITY_BUFFERS - 1) % NUM_GAME_ENTITY_BUFFERS;
 
+        mField->update(timeSinceLast, currIdx, prevIdx);
 
-
-        //mCubeEntity->mTransform[currIdx]->vPos = origin + Ogre::Vector3::UNIT_X * mDisplacement;
-
-        // This code will read our last position we set and update it to the the new buffer.
-        // Graphics will be reading mCubeEntity->mTransform[prevIdx]; as long as we don't
-        // write to it, we're ok.
-        /*mCubeEntity->mTransform[currIdx]->vPos = mCubeEntity->mTransform[prevIdx]->vPos +
-                                                      Ogre::Vector3::UNIT_X * timeSinceLast;*/
+        if (mInputKeys[0]) // Up Arrow
+            mField->traverseActiveCellZNegative();
+        if (mInputKeys[1]) // Right Arrow
+            mField->traverseActiveCellXPositive();
+        if (mInputKeys[2]) // Down Arrow
+            mField->traverseActiveCellZPositive();
+        if (mInputKeys[3]) // Left Arrow
+            mField->traverseActiveCellXNegative();
 
         if (mCameraController)
             mCameraController->update(timeSinceLast, currIdx, prevIdx, mLogicSystem->getMouseX(), mLogicSystem->getMouseY());
@@ -79,12 +82,52 @@ namespace MyThirdOgre
     //-----------------------------------------------------------------------------------
     void LogicGameState::keyPressed(const SDL_KeyboardEvent& arg)
     {
+        switch (arg.keysym.scancode) {
+            case SDL_SCANCODE_SPACE:
+                mSpaceKey = true;
+                break;
+            case SDL_SCANCODE_UP:
+                mInputKeys[0] = true;
+                break;
+            case SDL_SCANCODE_RIGHT:
+                mInputKeys[1] = true;
+                break;
+            case SDL_SCANCODE_DOWN:
+                mInputKeys[2] = true;
+                break;
+            case SDL_SCANCODE_LEFT:
+                mInputKeys[3] = true;
+                break;
+            default:
+                break;
+        }
+
         if (mCameraController)
             mCameraController->keyPressed(arg);
     }
     //-----------------------------------------------------------------------------------
     void LogicGameState::keyReleased(const SDL_KeyboardEvent& arg)
     {
+        switch (arg.keysym.scancode) {
+            case SDL_SCANCODE_SPACE:
+                mSpaceKey = false;
+                break;
+            case SDL_SCANCODE_UP:
+                mInputKeys[0] = false;
+                break;
+            case SDL_SCANCODE_RIGHT:
+                mInputKeys[1] = false;
+                break;
+            case SDL_SCANCODE_DOWN:
+                mInputKeys[2] = false;
+                break;
+            case SDL_SCANCODE_LEFT:
+                mInputKeys[3] = false;
+                break;
+            default:
+                break;
+        }
+
         if (mCameraController)
             mCameraController->keyReleased(arg);
     }

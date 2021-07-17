@@ -40,13 +40,23 @@ namespace MyThirdOgre
 
 	struct CellState
 	{
+		Ogre::Vector3 vPos;
 		Ogre::Vector3 vVel;
 		Ogre::Quaternion qRot;
 		Ogre::Real rPressure;
 
 		CellState() {};
 
-		CellState(Ogre::Vector3 v, Ogre::Quaternion q, Ogre::Real p) {};
+		CellState(
+			Ogre::Vector3 vP, 
+			Ogre::Vector3 vV, 
+			Ogre::Quaternion qR, 
+			Ogre::Real rP) {
+			vPos = vP;
+			vVel = vV;
+			qRot = qR;
+			rPressure = rP;
+		};
 	};
 
 	class Cell
@@ -61,7 +71,6 @@ protected:
 		bool mBoundary;
 
 		CellState					mState;
-		CellState					mOriginalState;
 
 		GameEntity					*mArrowEntity;
 		MovableObjectDefinition		*mArrowMoDef;
@@ -91,15 +100,23 @@ protected:
 
 		~Cell();
 
-// Possibly nonsense:
+		virtual CellState getState(void);
 
-		virtual int getXIndex() { return mIndexX; }
-
-		virtual int getYIndex() { return -mIndexZ; }
 
 		Ogre::Vector3 getVelocity();
 
-		void setVelocity(Ogre::Vector3 v, float timeSinceLast);
+		void setVelocity(Ogre::Vector3 v);
+
+		virtual int getXIndex() { return mIndexX; }
+
+		virtual int getZIndex() { return mIndexZ; }
+
+		virtual void update(float timeSinceLastFrame, Ogre::uint32 currentTransformIndex, Ogre::uint32 previousTransformIndex);
+
+
+
+
+// Possibly nonsense:
 
 		virtual void updatePressureAlpha();
 
@@ -109,8 +126,6 @@ protected:
 
 		//Ogre::SceneNode* getNode() { return arrowNode; };
 
-
-		virtual void restoreOriginalState();
 
 		//virtual void randomiseVelocity();
 
@@ -126,9 +141,6 @@ protected:
 
 		//virtual Ogre::Sphere* getSphere();
 
-
-
-
 // Good stuff:
 		bool getIsBoundary() { return mBoundary; };
 
@@ -138,12 +150,8 @@ protected:
 
 		virtual void undoTimewarp();
 
-		virtual void update(Ogre::Vector3 velocity, Ogre::Real timeSinceLastFrame);
-
 		virtual void setScale();
 
 		virtual void orientArrow();
 	};
-
-
 }

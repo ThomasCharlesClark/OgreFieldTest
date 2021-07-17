@@ -369,8 +369,9 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="include\OgreCommon\CameraControllerMultiThreading.h" />
     <ClInclude Include="include\GraphicsGameState.h" />
     <ClInclude Include="include\LogicGameState.h" />
-    <ClInclude Include="src\FieldTest\Cell.h" />
-    <ClInclude Include="src\FieldTest\Field.h" />
+    <ClInclude Include="src\FieldTest\Headers\MyMath.h" />
+    <ClInclude Include="src\FieldTest\Headers\Cell.h" />
+    <ClInclude Include="src\FieldTest\Headers\Field.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

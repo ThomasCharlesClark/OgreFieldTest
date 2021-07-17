@@ -4,7 +4,7 @@
 
 #include "OgrePrerequisites.h"
 #include "TutorialGameState.h"
-#include "../src/FieldTest/Field.h"
+#include "../src/FieldTest/Headers/Field.h"
 #include "CameraControllerMultiThreading.h"
 
 union SDL_Event;
@@ -37,6 +37,9 @@ namespace MyThirdOgre
 		GameEntity          *mCameraEntity;
         // MovableObjectDefinitions are not
 		MovableObjectDefinition *mCameraMoDef;
+
+        bool mSpaceKey;
+        bool                mInputKeys[4];
 
     public:
         LogicGameState();
