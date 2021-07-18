@@ -23,6 +23,28 @@ namespace MyThirdOgre
             bool                useAlpha;
         };
 
+        struct GameEntityColourChange 
+        {
+            GameEntity          *gameEntity;
+            Ogre::Vector3       colour;
+
+            GameEntityColourChange(GameEntity* ge, Ogre::Vector3 c) {
+                gameEntity = ge;
+                colour = c;
+            };
+        };
+
+        struct GameEntityAlphaChange
+        {
+            GameEntity          *gameEntity;
+            Ogre::Real          alpha;
+
+            GameEntityAlphaChange(GameEntity* ge, Ogre::Real a) {
+                gameEntity = ge;
+                alpha = a;
+            };
+        };
+
         typedef std::vector<GameEntityVec> GameEntityVecVec;
 
     private:
@@ -116,12 +138,15 @@ namespace MyThirdOgre
             (via a Mq::GAME_ENTITY_SCHEDULED_FOR_REMOVAL_SLOT message)
         */
 		void removeGameEntity( GameEntity *toRemove );
-
         /// Must be called by LogicSystem when Mq::GAME_ENTITY_SCHEDULED_FOR_REMOVAL_SLOT message arrives
         void _notifyGameEntitiesRemoved( size_t slot );
 
         /// Must be called every frame from the LOGIC THREAD.
         void finishFrameParallel(void);
+
+        virtual void gameEntityColourChange(GameEntity* entity, Ogre::Vector3 colour);
+
+        virtual void gameEntityAlphaChange(GameEntity* entity, Ogre::Real alpha);
     };
 }
 

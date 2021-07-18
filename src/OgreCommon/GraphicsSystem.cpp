@@ -477,6 +477,12 @@ namespace MyThirdOgre
             this->queueSendMessage( mLogicSystem, Mq::GAME_ENTITY_SCHEDULED_FOR_REMOVAL_SLOT,
                                     *reinterpret_cast<const Ogre::uint32*>( data ) );
             break;
+        case Mq::GAME_ENTITY_COLOUR_CHANGE:
+            this->changeGameEntityColour( reinterpret_cast<const GameEntityManager::GameEntityColourChange*>( data ));
+            break;
+        case Mq::GAME_ENTITY_ALPHA_CHANGE:
+            this->changeGameEntityAlpha(reinterpret_cast<const GameEntityManager::GameEntityAlphaChange*>(data));
+            break;
         default:
             break;
         }
@@ -1128,6 +1134,33 @@ namespace MyThirdOgre
             gEnt->mSceneNode->setOrientation(interpQ);
             
             ++itor;
+        }
+    }
+    //-----------------------------------------------------------------------------------
+    void GraphicsSystem::changeGameEntityColour(const GameEntityManager::GameEntityColourChange* change) 
+    {
+        if (change->gameEntity) {
+             Ogre::v1::Entity* pEnt = 0;
+             pEnt = static_cast<Ogre::v1::Entity*>(change->gameEntity->mMovableObject);
+             if (pEnt) {
+                 auto datablock = dynamic_cast<Ogre::HlmsPbsDatablock*>(pEnt->getSubEntity(0)->getDatablock());
+                 if (datablock) 
+                    datablock->setDiffuse(change->colour);
+             }
+         }
+    }
+    //-----------------------------------------------------------------------------------
+    void GraphicsSystem::changeGameEntityAlpha(const GameEntityManager::GameEntityAlphaChange* change)
+    {
+        if (change->gameEntity) {
+            Ogre::v1::Entity* pEnt = 0;
+            pEnt = static_cast<Ogre::v1::Entity*>(change->gameEntity->mMovableObject);
+            if (pEnt) {
+                auto datablock = dynamic_cast<Ogre::HlmsPbsDatablock*>(pEnt->getSubEntity(0)->getDatablock());
+                if (datablock) {
+                    datablock->setTransparency(change->alpha, Ogre::HlmsPbsDatablock::Transparent, true);
+                }
+            }
         }
     }
 }

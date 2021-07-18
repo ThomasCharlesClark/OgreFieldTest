@@ -19,6 +19,8 @@
     #include <SDL.h>
 #endif
 
+#include <GameEntityManager.h>
+
 namespace MyThirdOgre
 {
     class SdlInputHandler;
@@ -26,23 +28,23 @@ namespace MyThirdOgre
     class GraphicsSystem : public BaseSystem, public Ogre::UniformScalableTask
     {
     protected:
-        BaseSystem          *mLogicSystem;
+        BaseSystem* mLogicSystem;
 
-    #if OGRE_USE_SDL2
-        SDL_Window          *mSdlWindow;
-        SdlInputHandler     *mInputHandler;
-    #endif
+#if OGRE_USE_SDL2
+        SDL_Window* mSdlWindow;
+        SdlInputHandler* mInputHandler;
+#endif
 
-        Ogre::Root                  *mRoot;
-        Ogre::Window                *mRenderWindow;
-        Ogre::SceneManager          *mSceneManager;
-        Ogre::Camera                *mCamera;
-        Ogre::CompositorWorkspace   *mWorkspace;
+        Ogre::Root* mRoot;
+        Ogre::Window* mRenderWindow;
+        Ogre::SceneManager* mSceneManager;
+        Ogre::Camera* mCamera;
+        Ogre::CompositorWorkspace* mWorkspace;
         Ogre::String                mPluginsFolder;
         Ogre::String                mWriteAccessFolder;
         Ogre::String                mResourcePath;
 
-        Ogre::v1::OverlaySystem     *mOverlaySystem;
+        Ogre::v1::OverlaySystem* mOverlaySystem;
 
         StaticPluginLoader          mStaticPluginLoader;
 
@@ -51,7 +53,7 @@ namespace MyThirdOgre
         float               mAccumTimeSinceLastLogicFrame;
         Ogre::uint32        mCurrentTransformIdx;
         GameEntityVec       mGameEntities[Ogre::NUM_SCENE_MEMORY_MANAGER_TYPES];
-        GameEntityVec const *mThreadGameEntityToUpdate;
+        GameEntityVec const* mThreadGameEntityToUpdate;
         float               mThreadWeight;
 
         bool                mQuit;
@@ -61,17 +63,17 @@ namespace MyThirdOgre
 
         Ogre::ColourValue   mBackgroundColour;
 
-    #if OGRE_USE_SDL2
-        void handleWindowEvent( const SDL_Event& evt );
-    #endif
+#if OGRE_USE_SDL2
+        void handleWindowEvent(const SDL_Event& evt);
+#endif
 
-        bool isWriteAccessFolder( const Ogre::String &folderPath, const Ogre::String &fileToSave );
+        bool isWriteAccessFolder(const Ogre::String& folderPath, const Ogre::String& fileToSave);
 
         /// @see MessageQueueSystem::processIncomingMessage
-        virtual void processIncomingMessage( Mq::MessageId messageId, const void *data );
+        virtual void processIncomingMessage(Mq::MessageId messageId, const void* data);
 
-        static void addResourceLocation( const Ogre::String &archName, const Ogre::String &typeName,
-                                         const Ogre::String &secName );
+        static void addResourceLocation(const Ogre::String& archName, const Ogre::String& typeName,
+            const Ogre::String& secName);
         void loadTextureCache(void);
         void saveTextureCache(void);
         void loadHlmsDiskCache(void);
@@ -89,25 +91,25 @@ namespace MyThirdOgre
         virtual Ogre::CompositorWorkspace* setupCompositor(void);
 
         /// Called right before initializing Ogre's first window, so the params can be customized
-        virtual void initMiscParamsListener( Ogre::NameValuePairList &params );
+        virtual void initMiscParamsListener(Ogre::NameValuePairList& params);
 
         /// Optional override method where you can create resource listeners (e.g. for loading screens)
         virtual void createResourceListener(void) {}
 
-        void gameEntityAdded( const GameEntityManager::CreatedGameEntity *createdGameEntity );
-        void gameEntityRemoved( GameEntity *toRemove );
+        void gameEntityAdded(const GameEntityManager::CreatedGameEntity* createdGameEntity);
+        void gameEntityRemoved(GameEntity* toRemove);
     public:
-        GraphicsSystem( GameState *gameState,
-                        Ogre::String resourcePath = Ogre::String(""),
-                        Ogre::ColourValue backgroundColour = Ogre::ColourValue( 0.2f, 0.4f, 0.6f ) );
+        GraphicsSystem(GameState* gameState,
+            Ogre::String resourcePath = Ogre::String(""),
+            Ogre::ColourValue backgroundColour = Ogre::ColourValue(0.2f, 0.4f, 0.6f));
         virtual ~GraphicsSystem();
 
-        void _notifyLogicSystem( BaseSystem *logicSystem )      { mLogicSystem = logicSystem; }
+        void _notifyLogicSystem(BaseSystem* logicSystem) { mLogicSystem = logicSystem; }
 
-        void initialize( const Ogre::String &windowTitle );
+        void initialize(const Ogre::String& windowTitle);
         void deinitialize(void);
 
-        void update( float timeSinceLast );
+        void update(float timeSinceLast);
 
         /** Updates the SceneNodes of all the game entities in the container,
             interpolating them according to weight, reading the transforms from
@@ -117,38 +119,44 @@ namespace MyThirdOgre
         @param weight
             The interpolation weight, ideally in range [0; 1]
         */
-        void updateGameEntities( const GameEntityVec &gameEntities, float weight );
+        void updateGameEntities(const GameEntityVec& gameEntities, float weight);
 
         /// Overload Ogre::UniformScalableTask. @see updateGameEntities
-        virtual void execute( size_t threadId, size_t numThreads );
+        virtual void execute(size_t threadId, size_t numThreads);
 
         /// Returns the GameEntities that are ready to be rendered. May include entities
         /// that are scheduled to be removed (i.e. they are no longer updated by logic)
-        const GameEntityVec& getGameEntities( Ogre::SceneMemoryMgrTypes type ) const
-                                                                { return mGameEntities[type]; }
+        const GameEntityVec& getGameEntities(Ogre::SceneMemoryMgrTypes type) const
+        {
+            return mGameEntities[type];
+        }
 
-    #if OGRE_USE_SDL2
-        SdlInputHandler* getInputHandler(void)                  { return mInputHandler; }
-    #endif
+#if OGRE_USE_SDL2
+        SdlInputHandler* getInputHandler(void) { return mInputHandler; }
+#endif
 
-        void setQuit(void)                                      { mQuit = true; }
-        bool getQuit(void) const                                { return mQuit; }
+        void setQuit(void) { mQuit = true; }
+        bool getQuit(void) const { return mQuit; }
 
-        float getAccumTimeSinceLastLogicFrame(void) const       { return mAccumTimeSinceLastLogicFrame; }
+        float getAccumTimeSinceLastLogicFrame(void) const { return mAccumTimeSinceLastLogicFrame; }
 
-        Ogre::Root* getRoot(void) const                         { return mRoot; }
-        Ogre::Window* getRenderWindow(void) const               { return mRenderWindow; }
-        Ogre::SceneManager* getSceneManager(void) const         { return mSceneManager; }
-        Ogre::Camera* getCamera(void) const                     { return mCamera; }
+        Ogre::Root* getRoot(void) const { return mRoot; }
+        Ogre::Window* getRenderWindow(void) const { return mRenderWindow; }
+        Ogre::SceneManager* getSceneManager(void) const { return mSceneManager; }
+        Ogre::Camera* getCamera(void) const { return mCamera; }
         Ogre::CompositorWorkspace* getCompositorWorkspace(void) const { return mWorkspace; }
-        Ogre::v1::OverlaySystem* getOverlaySystem(void) const   { return mOverlaySystem; }
+        Ogre::v1::OverlaySystem* getOverlaySystem(void) const { return mOverlaySystem; }
 
-        const Ogre::String& getPluginsFolder(void) const        { return mPluginsFolder; }
-        const Ogre::String& getWriteAccessFolder(void) const    { return mWriteAccessFolder; }
-        const Ogre::String& getResourcePath(void) const         { return mResourcePath; }
+        const Ogre::String& getPluginsFolder(void) const { return mPluginsFolder; }
+        const Ogre::String& getWriteAccessFolder(void) const { return mWriteAccessFolder; }
+        const Ogre::String& getResourcePath(void) const { return mResourcePath; }
 
         virtual void stopCompositor(void);
         virtual void restartCompositor(void);
+
+        virtual void changeGameEntityColour(const GameEntityManager::GameEntityColourChange* change);
+
+        virtual void changeGameEntityAlpha(const GameEntityManager::GameEntityAlphaChange* change);
     };
 }
 

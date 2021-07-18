@@ -74,6 +74,20 @@ namespace MyThirdOgre
         if (mInputKeys[3]) // Left Arrow
             mField->increaseVelocityX(timeSinceLast);
 
+        if (mInputKeys[4]) // Num Pad 4
+            mField->traverseActiveCellXNegative();
+        if (mInputKeys[5]) // Num Pad 6
+            mField->traverseActiveCellXPositive();
+        if (mInputKeys[6]) // Num Pad 8
+            mField->traverseActiveCellZNegative();
+        if (mInputKeys[7]) // Num Pad 2
+            mField->traverseActiveCellZPositive();
+
+        mInputKeys[4] = false; // Num Pad 4
+        mInputKeys[5] = false; // Num Pad 6
+        mInputKeys[6] = false; // Num Pad 8
+        mInputKeys[7] = false; // Num Pad 2
+
         if (mCameraController)
             mCameraController->update(timeSinceLast, currIdx, prevIdx, mLogicSystem->getMouseX(), mLogicSystem->getMouseY());
 
@@ -100,6 +114,21 @@ namespace MyThirdOgre
                 break;
             case SDL_SCANCODE_LSHIFT:
                 mField->notifyShift(true);
+                break;
+            case SDL_SCANCODE_KP_4:
+                mInputKeys[4] = true;
+                break;
+            case SDL_SCANCODE_KP_6:
+                mInputKeys[5] = true;
+                break;
+            case SDL_SCANCODE_KP_8:
+                mInputKeys[6] = true;
+                break;
+            case SDL_SCANCODE_KP_2:
+                mInputKeys[7] = true;
+                break;
+            case SDL_SCANCODE_ESCAPE:
+                mField->clearActiveCell();
                 break;
             default:
                 break;
@@ -130,6 +159,21 @@ namespace MyThirdOgre
             case SDL_SCANCODE_LSHIFT:
                 mField->notifyShift(false);
                 break;
+            case SDL_SCANCODE_F5:
+                mField->resetState();
+                break;
+           /* case SDL_SCANCODE_KP_4:
+                mInputKeys[4] = false;
+                break;
+            case SDL_SCANCODE_KP_6:
+                mInputKeys[5] = false;
+                break;
+            case SDL_SCANCODE_KP_8:
+                mInputKeys[6] = false;
+                break;
+            case SDL_SCANCODE_KP_2:
+                mInputKeys[7] = false;
+                break;*/
             default:
                 break;
         }

@@ -20,7 +20,10 @@ namespace Mq
         //Graphics  -> Logic
         SDL_EVENT,
 
-        NUM_MESSAGE_IDS
+        GAME_ENTITY_COLOUR_CHANGE,
+        GAME_ENTITY_ALPHA_CHANGE,
+
+        NUM_MESSAGE_IDS,
     };
 }
 }

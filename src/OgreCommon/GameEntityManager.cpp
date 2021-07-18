@@ -276,4 +276,14 @@ namespace MyThirdOgre
             mScheduledForRemovalCurrentSlot = (size_t)-1;
         }
     }
+    //-----------------------------------------------------------------------------------
+    void GameEntityManager::gameEntityColourChange(GameEntity* entity, Ogre::Vector3 colour) {
+        mLogicSystem->queueSendMessage(mGraphicsSystem, Mq::GAME_ENTITY_COLOUR_CHANGE, 
+            GameEntityColourChange(entity, colour));
+    }
+    //-----------------------------------------------------------------------------------
+    void GameEntityManager::gameEntityAlphaChange(GameEntity* entity, Ogre::Real alpha) {
+        mLogicSystem->queueSendMessage(mGraphicsSystem, Mq::GAME_ENTITY_ALPHA_CHANGE,
+            GameEntityAlphaChange(entity, alpha));
+    }
 }

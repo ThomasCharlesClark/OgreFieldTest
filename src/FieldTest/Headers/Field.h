@@ -20,6 +20,9 @@ namespace MyThirdOgre
 		int mLayerCount;
 		float mBaseManualVelocityAdjustmentSpeed;
 		float mBoostedManualVelocityAdjustmentSpeed;
+
+		float mMaxCellPressure;
+
 		bool mManualVelocityAdjustmentSpeedModifier;
 		GameEntityManager* mGameEntityManager;
 		GameEntity* mGridEntity;
@@ -55,7 +58,10 @@ namespace MyThirdOgre
 		virtual void increaseVelocityZ(float timeSinceLast);
 		virtual void decreaseVelocityZ(float timeSinceLast);
 
-		void notifyShift(bool shift);
+		virtual void notifyShift(bool shift);
+
+		virtual void clearActiveCell(void);
+		virtual void resetState(void);
 
 		virtual void traverseActiveCellZNegative();
 		virtual void traverseActiveCellXPositive();

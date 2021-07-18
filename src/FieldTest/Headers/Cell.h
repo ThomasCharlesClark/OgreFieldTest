@@ -98,8 +98,11 @@ protected:
 		int mRowCount;
 		int mColumnCount;
 		bool mBoundary;
+		bool mActive;
 
 		CellState					mState;
+		CellState					mOriginalState;
+
 		CellCoord					mCellCoords;
 
 		GameEntity					*mArrowEntity;
@@ -111,15 +114,21 @@ protected:
 		GameEntity					*mSphereEntity;
 		MovableObjectDefinition		*mSphereMoDef;
 
+		GameEntityManager			*mGameEntityManager;
+
 		Ogre::Sphere				*mSphere;
 
 		Ogre::HlmsPbsDatablock* personalDatablock;
 
-		virtual void createArrow(GameEntityManager* geMgr);
+		float mMaxPressure;
 
-		virtual void createPressureIndicator(GameEntityManager* geMgr);
+		virtual void createArrow(void);
 
-		virtual void createBoundingSphere(GameEntityManager* geMgr);
+		virtual void createPressureIndicator(void);
+
+		virtual void createBoundingSphere(void);
+
+		virtual void updatePressureIndicator(void);
 
 	public:
 		Cell(int rowIndex,
@@ -127,11 +136,14 @@ protected:
 			 int layerIndex,
 			 int columnCount,
 			 int rowCount,
+			float maxPressure,
 			 GameEntityManager* geMgr);
 
 		~Cell();
 
 		virtual CellState getState(void);
+
+		virtual void resetState(void);
 
 		void setVelocity(Ogre::Vector3 v);
 

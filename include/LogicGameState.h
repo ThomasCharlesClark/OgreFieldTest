@@ -39,7 +39,7 @@ namespace MyThirdOgre
 		MovableObjectDefinition *mCameraMoDef;
 
         bool mSpaceKey;
-        bool                mInputKeys[4];
+        bool                mInputKeys[8];
 
     public:
         LogicGameState();

@@ -17,20 +17,33 @@
 #include "OgrePass.h"
 #include "Headers/MyMath.h"
 
+#include "OgreEntity.h"
+
 namespace MyThirdOgre 
 {
-    Cell::Cell(int rowIndex, int columnIndex, int layerIndex, int rowCount, int columnCount, GameEntityManager* geMgr) :
+    Cell::Cell(
+        int rowIndex,
+        int columnIndex,
+        int layerIndex,
+        int rowCount,
+        int columnCount,
+        float maxPressure,
+        GameEntityManager* geMgr
+    ) :
         mCellCoords(rowIndex, layerIndex, columnIndex),
         mRowCount(rowCount),
         mColumnCount(columnCount),
-        mBoundary (rowIndex == 0 || columnIndex == 0 || rowIndex == rowCount - 1 || columnIndex == columnCount - 1),
+        mBoundary(rowIndex == 0 || columnIndex == 0 || rowIndex == rowCount - 1 || columnIndex == columnCount - 1),
         mArrowEntity(0),
         mArrowMoDef(0),
         mPlaneEntity(0),
         mPlaneMoDef(0),
         mSphereEntity(0),
         mSphereMoDef(0),
-        mSphere(0)
+        mSphere(0),
+        mMaxPressure(maxPressure),
+        mGameEntityManager(geMgr),
+        mActive(false)
         // interesting pressure - based surfaces:
         // (0.2 * ((rowIndex * rowIndex) - (2 * (rowIndex * columnIndex))) + 3)
         //pow(2.71828, -((rowIndex*rowIndex) + (columnIndex * columnIndex)))
@@ -39,17 +52,18 @@ namespace MyThirdOgre
         mState = 
         {
             mState.vPos = Ogre::Vector3(mCellCoords.mIndexX, 0, -mCellCoords.mIndexZ),
-            mState.vVel = mBoundary ? Ogre::Vector3::ZERO : //Ogre::Vector3::ZERO,
+            mState.vVel = mBoundary ? Ogre::Vector3::ZERO :
                                       Ogre::Vector3(mCellCoords.mIndexX, mCellCoords.mIndexY, -mCellCoords.mIndexZ),
                                       //Ogre::Vector3(mCellCoords.mIndexX, 0, -mCellCoords.mIndexZ),
             mState.qRot = Ogre::Quaternion::IDENTITY,
             mState.rPressure = 0.5f 
         };
 
+        mOriginalState = CellState(mState);
 
-        createArrow(geMgr);
+        createArrow();
 
-        createPressureIndicator(geMgr);
+        createPressureIndicator();
 
         //createBoundingSphere(geMgr);
 
@@ -83,8 +97,16 @@ namespace MyThirdOgre
             mSphereMoDef = 0;
         }
     }
+    
+    // well why the fuck does this cause a huge FPS drop?!
+    void Cell::resetState(void) {
+        mState.vPos = mOriginalState.vPos;
+        mState.vVel = mOriginalState.vVel;
+        mState.qRot = mOriginalState.qRot;
+        mState.rPressure = mOriginalState.rPressure;
+    }
 
-    void Cell::createArrow(GameEntityManager* geMgr) 
+    void Cell::createArrow(void) 
     {
         mArrowMoDef = new MovableObjectDefinition();
         mArrowMoDef->meshName = "";
@@ -148,18 +170,18 @@ namespace MyThirdOgre
             q.normalise();
         }
 
-        mArrowEntity = geMgr->addGameEntity(Ogre::SceneMemoryMgrTypes::SCENE_DYNAMIC,
+        mArrowEntity = mGameEntityManager->addGameEntity(Ogre::SceneMemoryMgrTypes::SCENE_DYNAMIC,
             mArrowMoDef,
             mBoundary ? "UnlitRed" : "UnlitWhite",
             arrowLineList,
-            mState.vPos,
+            Ogre::Vector3(mState.vPos.x, 0.01f, mState.vPos.z),
             mState.qRot,
             Ogre::Vector3::UNIT_SCALE
             //Ogre::Vector3(1.0f, 0.0f, mState.vVel.length())
         );
     }
 
-    void Cell::createPressureIndicator(GameEntityManager* geMgr) 
+    void Cell::createPressureIndicator(void)
     {
         mPlaneMoDef = new MovableObjectDefinition();
         mPlaneMoDef->meshName = "";
@@ -170,7 +192,7 @@ namespace MyThirdOgre
 
         pRot.FromAngleAxis(Ogre::Radian(Ogre::Degree(-90)), Ogre::Vector3::UNIT_X);
 
-        mPlaneEntity = geMgr->addGameEntity(Ogre::SceneMemoryMgrTypes::SCENE_STATIC,
+        mPlaneEntity = mGameEntityManager->addGameEntity(Ogre::SceneMemoryMgrTypes::SCENE_STATIC,
             mPlaneMoDef,
             Ogre::SceneManager::PrefabType::PT_PLANE,
             mBoundary ? "Red" : "Blue",
@@ -182,7 +204,7 @@ namespace MyThirdOgre
             mBoundary ? 0.4f : mState.rPressure);
     }
 
-    void Cell::createBoundingSphere(GameEntityManager* geMgr) 
+    void Cell::createBoundingSphere(void)
     {
         mSphere = new Ogre::Sphere(mState.vPos, 1.0f);
 
@@ -191,7 +213,7 @@ namespace MyThirdOgre
         mSphereMoDef->resourceGroup = Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME;
         mSphereMoDef->moType = MoTypeItem;
 
-        mSphereEntity = geMgr->addGameEntity(Ogre::SceneMemoryMgrTypes::SCENE_DYNAMIC,
+        mSphereEntity = mGameEntityManager->addGameEntity(Ogre::SceneMemoryMgrTypes::SCENE_DYNAMIC,
             mSphereMoDef,
             mState.vPos,
             mState.qRot,
@@ -213,6 +235,13 @@ namespace MyThirdOgre
     void Cell::setVelocity(Ogre::Vector3 v) 
     {
         mState.vVel = v;
+        if (!mActive) {
+            mState.rPressure = abs(v.squaredLength());
+            if (mState.rPressure > mMaxPressure)
+                mState.rPressure = mMaxPressure;
+            else if (mState.rPressure < 0)
+                mState.rPressure = 0;
+        }
     }
 
     // Updates our transform buffer
@@ -223,8 +252,13 @@ namespace MyThirdOgre
         auto q = GetRotation(Ogre::Vector3(0, 0, 1), mState.vVel.normalisedCopy(), Ogre::Vector3::UNIT_Y);
 
         //mArrowEntity->mTransform[currIdx]->vScale.z = mState.vVel.length();
-
         mArrowEntity->mTransform[currIdx]->qRot = q;
+
+        updatePressureIndicator();
+    }
+
+    void Cell::updatePressureIndicator(void) {
+        mGameEntityManager->gameEntityAlphaChange(mPlaneEntity, mState.rPressure / mMaxPressure);
     }
 
     //
@@ -281,7 +315,19 @@ namespace MyThirdOgre
     //}
 
 
-    void Cell::setActive() {
+    void Cell::setActive() 
+    {
+        mActive = true;
+        mState.rPressure = 0.5f;
+        mGameEntityManager->gameEntityColourChange(mPlaneEntity, Ogre::Vector3(50.0f, 50.0f, 0.0f));
+
+        //Ogre::v1::Entity* pEnt = static_cast<Ogre::v1::Entity*>(mPlaneEntity->mMovableObject);
+        ////pEnt->setDatablock("Active");
+        //auto datablock = dynamic_cast<Ogre::HlmsPbsDatablock*>(pEnt->getSubEntity(0)->getDatablock());
+        //auto c = datablock->getDiffuseColour();
+        //datablock->setDiffuse(Ogre::Vector3(50.0f, 50.0f, 0.0f));
+        //datablock->setTransparency(0.15f, Ogre::HlmsPbsDatablock::Transparent, true);
+        //updatePressureIndicator();
 
         //Ogre::StringVector materialNames = mPlaneEntity->mMoDefinition->submeshMaterials;
         //size_t minMaterials = std::min(materialNames.size(), item->getNumSubItems());
@@ -318,7 +364,9 @@ namespace MyThirdOgre
     }
 
     void Cell::unsetActive() {
-        //planeItem->setDatablock(personalDatablock);
+        mActive = false;
+        mState.rPressure = abs(mState.vVel.squaredLength());
+        mGameEntityManager->gameEntityColourChange(mPlaneEntity, Ogre::Vector3(1, 1, 1));
     }
 
     //void Cell::setNeighbourly()

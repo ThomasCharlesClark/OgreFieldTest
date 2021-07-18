@@ -57,7 +57,7 @@ namespace MyThirdOgre
         //----------------------------------------
         float                   mTransparency;
         Ogre::SceneNode         *mSceneNode;
-        Ogre::MovableObject     *mMovableObject; //Could be Entity, InstancedEntity, Item.
+        Ogre::MovableObject* mMovableObject; //Could be Entity, InstancedEntity, Item.
 
         Ogre::String                    mManualObjectDatablockName;
         Ogre::SceneManager::PrefabType  mPrefabType;
