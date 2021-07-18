@@ -20,9 +20,12 @@ namespace MyThirdOgre
 		mScale(1),
 		mColumnCount(22),
 		mRowCount(22),
-		mCells(std::map<std::pair<int, int>, Cell*> { }),
-		mActiveCell(0)
-
+		mLayerCount(1),
+		mCells(std::map<CellCoord, Cell*> { }),
+		mActiveCell(0),
+		mBaseManualVelocityAdjustmentSpeed(2.0f),
+		mBoostedManualVelocityAdjustmentSpeed(5.0f),
+		mManualVelocityAdjustmentSpeedModifier(false)
 	{
 		createGrid();
 
@@ -80,17 +83,21 @@ namespace MyThirdOgre
 	}
 
 	void Field::createCells(void) {
+		assert(mLayerCount == 1);
 		for (int i = 0; i < mColumnCount; i++) {
 			for (int j = 0; j < mRowCount; j++) {
-				mCells.insert({
-					{ i, j },
-					new Cell(i, j, mColumnCount, mRowCount, mGameEntityManager)
-				});
+				for (int k = 0; k < mLayerCount; k++) {
+					auto c = new Cell(i, j, k, mColumnCount, mRowCount, mGameEntityManager);
+					mCells.insert({
+						c->getCellCoords(),
+						c
+					});
+				}
 			}
 		}
 	}
 
-	Cell* Field::getCell(std::pair<int, int> coords)
+	Cell* Field::getCell(CellCoord coords)
 	{
 		auto iter = mCells.find(coords);
 
@@ -101,7 +108,7 @@ namespace MyThirdOgre
 		}
 	}
 
-	void Field::advect(float timeSinceLast, std::map<std::pair<int, int>, CellState> &state)
+	void Field::advect(float timeSinceLast, std::map<CellCoord, CellState> &state)
 	{
 		for (auto& cell : state) {
 			auto vPosBackInTime = cell.second.vPos + (-cell.second.vVel * (timeSinceLast * 10));
@@ -122,10 +129,22 @@ namespace MyThirdOgre
 			dx = ceil(vPosBackInTime.x);
 			dz = ceil(vPosBackInTime.z);
 
-			auto a = state.find({ ax, az });
-			auto b = state.find({ bx, bz });
-			auto c = state.find({ cx, cz });
-			auto d = state.find({ dx, dz });
+			auto a = state.find({ ax, 0, az });
+			auto b = state.find({ bx, 0, bz });
+			auto c = state.find({ cx, 0, cz });
+			auto d = state.find({ dx, 0, dz });
+
+			//if (a == state.end())
+			//	a = state.find({ cell.first.mIndexX, 0, cell.first.mIndexZ - 1 });
+
+			//if (b == state.end())
+			//	b = state.find({ cell.first.mIndexX + 1, 0, cell.first.mIndexZ });
+
+			//if (c == state.end())
+			//	c = state.find({ cell.first.mIndexX, 0, cell.first.mIndexZ + 1 });
+
+			//if (d == state.end())
+			//	d = state.find({ cell.first.mIndexX - 1, 0, cell.first.mIndexZ });
 
 			if (a != state.end() &&
 				b != state.end() &&
@@ -145,7 +164,17 @@ namespace MyThirdOgre
 					vPosBackInTime.z
 				);
 
-				assert(cell.second.vVel != vNewVel); // just checking - velocities shouldn't normally remain the same following quad bilerp
+				auto nextPos = cell.second.vPos + (vNewVel * timeSinceLast);
+
+				if (nextPos.x < 1)
+					vNewVel = vNewVel.reflect(Ogre::Vector3::UNIT_X);
+				if (nextPos.x > mColumnCount - 1)
+					vNewVel = vNewVel.reflect(Ogre::Vector3(-1, 0, 0));
+
+				if (nextPos.z > -1)
+					vNewVel = vNewVel.reflect(Ogre::Vector3(0, 0, -1));
+				if (nextPos.z < -mRowCount + 1)
+					vNewVel = vNewVel.reflect(Ogre::Vector3(0, 0, 1));
 
 				cell.second.vVel = vNewVel;
 			}
@@ -154,11 +183,12 @@ namespace MyThirdOgre
 
 	void Field::update(float timeSinceLast, Ogre::uint32 currentTransformIndex, Ogre::uint32 previousTransformIndex)
 	{
-		std::map<std::pair<int, int>, CellState> state;
+		std::map<CellCoord, CellState> state;
 
 		for (auto c : mCells)
-			if (!c.second->getIsBoundary())
-				state.insert({ { c.second->getXIndex(), c.second->getZIndex() }, c.second->getState() });
+			if (!c.second->getIsBoundary()) {
+				state.insert({ c.second->getCellCoords() , c.second->getState() });
+			}
 
 		advect(timeSinceLast, state);
 
@@ -168,7 +198,7 @@ namespace MyThirdOgre
 
 		for (auto cell : mCells) {
 			if (!cell.second->getIsBoundary())
-				cell.second->update(timeSinceLast, currentTransformIndex, previousTransformIndex);
+				cell.second->updateTransforms(timeSinceLast, currentTransformIndex, previousTransformIndex);
 		}
 
 		if (mActiveCell)
@@ -187,17 +217,63 @@ namespace MyThirdOgre
 		return result;
 	}
 
-	void Field::spinLeft(void) {
+	void Field::notifyShift(bool shift) {
+		mManualVelocityAdjustmentSpeedModifier = shift;
+	}
+
+	void Field::increaseVelocityX(float timeSinceLast) {
 		for (auto& c : mCells) {
 			if (!c.second->getIsBoundary())
-				c.second->setVelocity(Ogre::Quaternion(Ogre::Radian(0.5f), Ogre::Vector3(0, 1, 0)) * c.second->getVelocity());
+				c.second->setVelocity(c.second->getVelocity() + 
+					Ogre::Vector3(
+						timeSinceLast
+							* mBaseManualVelocityAdjustmentSpeed 
+							* (1 + mManualVelocityAdjustmentSpeedModifier * mBoostedManualVelocityAdjustmentSpeed), 
+						0.0f, 
+						0.0f)
+				);
 		}
 	}
 
-	void Field::spinRight(void) {
+	void Field::decreaseVelocityX(float timeSinceLast) {
 		for (auto& c : mCells) {
 			if (!c.second->getIsBoundary())
-				c.second->setVelocity(Ogre::Quaternion(Ogre::Radian(-0.5f), Ogre::Vector3(0, 1, 0)) * c.second->getVelocity());
+				c.second->setVelocity(c.second->getVelocity() - 
+					Ogre::Vector3(
+						timeSinceLast
+						* mBaseManualVelocityAdjustmentSpeed
+						* (1 + mManualVelocityAdjustmentSpeedModifier * mBoostedManualVelocityAdjustmentSpeed),
+						0.0f, 
+						0.0f)
+				);
+		}
+	}
+
+	void Field::increaseVelocityZ(float timeSinceLast) {
+		for (auto& c : mCells) {
+			if (!c.second->getIsBoundary())
+				c.second->setVelocity(c.second->getVelocity() + 
+					Ogre::Vector3(
+						0.0f, 
+						0.0f,
+						timeSinceLast
+						* mBaseManualVelocityAdjustmentSpeed
+						* (1 + mManualVelocityAdjustmentSpeedModifier * mBoostedManualVelocityAdjustmentSpeed))
+				);
+		}
+	}
+
+	void Field::decreaseVelocityZ(float timeSinceLast) {
+		for (auto& c : mCells) {
+			if (!c.second->getIsBoundary())
+				c.second->setVelocity(c.second->getVelocity() -
+					Ogre::Vector3(
+						0.0f, 
+						0.0f,
+						timeSinceLast
+						* mBaseManualVelocityAdjustmentSpeed
+						* (1 + mManualVelocityAdjustmentSpeedModifier * mBoostedManualVelocityAdjustmentSpeed))
+				);
 		}
 	}
 

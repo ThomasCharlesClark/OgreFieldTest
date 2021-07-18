@@ -15,12 +15,16 @@ namespace MyThirdOgre
 	{
 		int mScale;
 		int mCellCount;
-		int mColumnCount;
 		int mRowCount;
+		int mColumnCount;
+		int mLayerCount;
+		float mBaseManualVelocityAdjustmentSpeed;
+		float mBoostedManualVelocityAdjustmentSpeed;
+		bool mManualVelocityAdjustmentSpeedModifier;
 		GameEntityManager* mGameEntityManager;
 		GameEntity* mGridEntity;
 		MovableObjectDefinition* mGridLineMoDef;
-		std::map<std::pair<int, int>, Cell*> mCells;
+		std::map<CellCoord, Cell*> mCells;
 
 		Cell* mActiveCell;
 
@@ -33,7 +37,7 @@ namespace MyThirdOgre
 		Field(GameEntityManager* geMgr);
 		~Field();
 
-		Cell* getCell(std::pair<int, int> coords);
+		Cell* getCell(CellCoord coords);
 
 		virtual void update(float timeSinceLast, Ogre::uint32 currentTransformIndex, Ogre::uint32 previousTransformIndex);
 
@@ -44,10 +48,14 @@ namespace MyThirdOgre
 		virtual float getPressureDerivativeX(void);
 		virtual float getPressureDerivativeY(void);
 
-		virtual void advect(float timeSinceLast, std::map<std::pair<int, int>, CellState> &state);
+		virtual void advect(float timeSinceLast, std::map<CellCoord, CellState> &state);
 
-		virtual void spinLeft();
-		virtual void spinRight();
+		virtual void increaseVelocityX(float timeSinceLast);
+		virtual void decreaseVelocityX(float timeSinceLast);
+		virtual void increaseVelocityZ(float timeSinceLast);
+		virtual void decreaseVelocityZ(float timeSinceLast);
+
+		void notifyShift(bool shift);
 
 		virtual void traverseActiveCellZNegative();
 		virtual void traverseActiveCellXPositive();

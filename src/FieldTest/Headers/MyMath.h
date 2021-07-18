@@ -1,6 +1,7 @@
 #pragma once
 
 #include "OgreVector3.h"
+#include "OgreQuaternion.h"
 
 namespace MyThirdOgre {
 	// Ooooh no it isn't :(
@@ -72,5 +73,33 @@ namespace MyThirdOgre {
 
 
 		return Ogre::Vector3(x, 0, z);
+	}
+
+	// Thanks, random StackOverflow dude!
+	// https://gamedev.stackexchange.com/questions/15070/orienting-a-model-to-face-a-target#answer-15078
+	static Ogre::Quaternion GetRotation(Ogre::Vector3 source, Ogre::Vector3 dest, Ogre::Vector3 up)
+	{
+		float dot = source.dotProduct(dest);
+
+		if (abs(dot - (-1.0f)) < 0.000001f)
+		{
+			// vector a and b point exactly in the opposite direction, 
+			// so it is a 180 degrees turn around the up-axis
+			return Ogre::Quaternion(Ogre::Radian(Ogre::Math::DegreesToRadians(180.0f)), up);
+		}
+		if (abs(dot - (1.0f)) < 0.000001f)
+		{
+			// vector a and b point exactly in the same direction
+			// so we return the identity quaternion
+			return Ogre::Quaternion::IDENTITY;
+		}
+
+		float rotAngle = (float)acos(dot);
+		Ogre::Vector3 rotAxis = source.crossProduct(dest);
+		rotAxis.normalise();
+		Ogre::Quaternion result;
+		result.FromAngleAxis(Ogre::Radian(rotAngle), rotAxis);
+		result.normalise();
+		return result;
 	}
 }

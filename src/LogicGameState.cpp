@@ -66,13 +66,13 @@ namespace MyThirdOgre
         mField->update(timeSinceLast, currIdx, prevIdx);
 
         if (mInputKeys[0]) // Up Arrow
-            mField->traverseActiveCellZNegative();
+            mField->increaseVelocityZ(timeSinceLast);
         if (mInputKeys[1]) // Right Arrow
-            mField->traverseActiveCellXPositive();
+            mField->decreaseVelocityX(timeSinceLast);
         if (mInputKeys[2]) // Down Arrow
-            mField->traverseActiveCellZPositive();
+            mField->decreaseVelocityZ(timeSinceLast);
         if (mInputKeys[3]) // Left Arrow
-            mField->traverseActiveCellXNegative();
+            mField->increaseVelocityX(timeSinceLast);
 
         if (mCameraController)
             mCameraController->update(timeSinceLast, currIdx, prevIdx, mLogicSystem->getMouseX(), mLogicSystem->getMouseY());
@@ -97,6 +97,9 @@ namespace MyThirdOgre
                 break;
             case SDL_SCANCODE_LEFT:
                 mInputKeys[3] = true;
+                break;
+            case SDL_SCANCODE_LSHIFT:
+                mField->notifyShift(true);
                 break;
             default:
                 break;
@@ -123,6 +126,9 @@ namespace MyThirdOgre
                 break;
             case SDL_SCANCODE_LEFT:
                 mInputKeys[3] = false;
+                break;
+            case SDL_SCANCODE_LSHIFT:
+                mField->notifyShift(false);
                 break;
             default:
                 break;

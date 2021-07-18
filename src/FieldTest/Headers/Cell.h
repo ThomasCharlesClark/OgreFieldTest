@@ -38,6 +38,37 @@ namespace MyThirdOgre
 {
 	class GameEntityManager;
 
+	struct CellCoord
+	{
+		int mIndexX;
+		int mIndexY;
+		int mIndexZ;
+
+		CellCoord() {};
+
+		CellCoord(
+			int x,
+			int y,
+			int z) {
+			mIndexX = x;
+			mIndexY = y;
+			mIndexZ = z;
+		};
+	};
+
+	// tyvm; https://stackoverflow.com/questions/4421706/what-are-the-basic-rules-and-idioms-for-operator-overloading#answer-4421719
+	// ty even more: https://stackoverflow.com/questions/3882467/defining-operator-for-a-struct#answer-16090720
+	inline bool operator==(const CellCoord& lhs, const CellCoord& rhs) { 
+		return lhs.mIndexX == rhs.mIndexX && lhs.mIndexZ == rhs.mIndexZ; 
+	}
+	inline bool operator!=(const CellCoord& lhs, const CellCoord& rhs) { return !operator==(lhs, rhs); }
+	inline bool operator< (const CellCoord& lhs, const CellCoord& rhs) { 
+		return std::tie(lhs.mIndexX, lhs.mIndexY, lhs.mIndexZ) < std::tie(rhs.mIndexX, rhs.mIndexY, rhs.mIndexZ);
+	}
+	inline bool operator> (const CellCoord& lhs, const CellCoord& rhs) { return  operator< (rhs, lhs); }
+	inline bool operator<=(const CellCoord& lhs, const CellCoord& rhs) { return !operator> (lhs, rhs); }
+	inline bool operator>=(const CellCoord& lhs, const CellCoord& rhs) { return !operator< (lhs, rhs); }
+
 	struct CellState
 	{
 		Ogre::Vector3 vPos;
@@ -64,13 +95,12 @@ namespace MyThirdOgre
 
 protected:
 
-		int mIndexX;
-		int mIndexZ;
 		int mRowCount;
 		int mColumnCount;
 		bool mBoundary;
 
 		CellState					mState;
+		CellCoord					mCellCoords;
 
 		GameEntity					*mArrowEntity;
 		MovableObjectDefinition		*mArrowMoDef;
@@ -93,25 +123,23 @@ protected:
 
 	public:
 		Cell(int rowIndex,
-			int columnIndex,
-			int columnCount,
-			int rowCount,
-			GameEntityManager* geMgr);
+			 int columnIndex,
+			 int layerIndex,
+			 int columnCount,
+			 int rowCount,
+			 GameEntityManager* geMgr);
 
 		~Cell();
 
 		virtual CellState getState(void);
 
+		void setVelocity(Ogre::Vector3 v);
 
 		Ogre::Vector3 getVelocity();
 
-		void setVelocity(Ogre::Vector3 v);
+		CellCoord getCellCoords() { return mCellCoords; }
 
-		virtual int getXIndex() { return mIndexX; }
-
-		virtual int getZIndex() { return mIndexZ; }
-
-		virtual void update(float timeSinceLastFrame, Ogre::uint32 currentTransformIndex, Ogre::uint32 previousTransformIndex);
+		virtual void updateTransforms(float timeSinceLastFrame, Ogre::uint32 currentTransformIndex, Ogre::uint32 previousTransformIndex);
 
 
 
@@ -131,9 +159,9 @@ protected:
 
 		//virtual void updateVelocity();
 
-		//virtual void setActive();
+		virtual void setActive();
 
-		//virtual void unsetActive();
+		virtual void unsetActive();
 
 		//virtual void setNeighbourly();
 

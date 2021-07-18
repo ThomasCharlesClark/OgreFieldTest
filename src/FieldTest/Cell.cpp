@@ -15,40 +15,37 @@
 
 #include "OgreMaterial.h"
 #include "OgrePass.h"
+#include "Headers/MyMath.h"
 
 namespace MyThirdOgre 
 {
-    Cell::Cell(int rowIndex, int columnIndex, int rowCount, int columnCount, GameEntityManager* geMgr) :
-        mIndexX(rowIndex),
-        mIndexZ(columnIndex),
+    Cell::Cell(int rowIndex, int columnIndex, int layerIndex, int rowCount, int columnCount, GameEntityManager* geMgr) :
+        mCellCoords(rowIndex, layerIndex, columnIndex),
         mRowCount(rowCount),
         mColumnCount(columnCount),
+        mBoundary (rowIndex == 0 || columnIndex == 0 || rowIndex == rowCount - 1 || columnIndex == columnCount - 1),
         mArrowEntity(0),
         mArrowMoDef(0),
         mPlaneEntity(0),
         mPlaneMoDef(0),
         mSphereEntity(0),
         mSphereMoDef(0),
-        mSphere(0),
-        mState({ mState.vPos = Ogre::Vector3(mIndexX, 0, -mIndexZ),
-            mState.vVel = Ogre::Vector3(mIndexX, 0, -mIndexZ),
-
-                                        //mState.vVel = Ogre::Vector3(0, 0, -1),
-
-            mState.qRot = Ogre::Quaternion::IDENTITY,
-
-           mState.rPressure = 0.5f })
-        // interesting surface:
+        mSphere(0)
+        // interesting pressure - based surfaces:
         // (0.2 * ((rowIndex * rowIndex) - (2 * (rowIndex * columnIndex))) + 3)
-
-
-
         //pow(2.71828, -((rowIndex*rowIndex) + (columnIndex * columnIndex)))
-        //((rowIndex * 3) / ((columnIndex +1) * 2)) + 3.423f)
-        //((rowIndex * columnIndex) +3.423f))
-        //((rowIndex + 0.423f) / (columnIndex * columnIndex) - +3.423f)))
     {
-        mBoundary = rowIndex == 0 || columnIndex == 0 || rowIndex == rowCount - 1 || columnIndex == columnCount  - 1;
+        // Set state. Can no longer do this in the default parameter constructor list, because of mCellCoord
+        mState = 
+        {
+            mState.vPos = Ogre::Vector3(mCellCoords.mIndexX, 0, -mCellCoords.mIndexZ),
+            mState.vVel = mBoundary ? Ogre::Vector3::ZERO : //Ogre::Vector3::ZERO,
+                                      Ogre::Vector3(mCellCoords.mIndexX, mCellCoords.mIndexY, -mCellCoords.mIndexZ),
+                                      //Ogre::Vector3(mCellCoords.mIndexX, 0, -mCellCoords.mIndexZ),
+            mState.qRot = Ogre::Quaternion::IDENTITY,
+            mState.rPressure = 0.5f 
+        };
+
 
         createArrow(geMgr);
 
@@ -114,36 +111,41 @@ namespace MyThirdOgre
 
         if (mBoundary) {
             //outer edges:
-            if (mIndexX == 0) { // x == 0 edge
+            if (mCellCoords.mIndexX == 0) { // x == 0 edge
                 mState.qRot = Ogre::Quaternion(0.5253, 0.0, -0.5253, 0.0);
-            } else if (mIndexX == mRowCount - 1) { // opposite x edge
+            } else if (mCellCoords.mIndexX == mRowCount - 1) { // opposite x edge
                 mState.qRot = Ogre::Quaternion(0.5253, 0.0, 0.5253, 0.0);
-            } else if (mIndexZ == 0) { 
+            } else if (mCellCoords.mIndexZ == 0) {
                 mState.qRot = Ogre::Quaternion(1.0, 0.0, 0.0, 0.0);
-            } else if (mIndexZ == mColumnCount - 1) { // opposite z edge
+            } else if (mCellCoords.mIndexZ == mColumnCount - 1) { // opposite z edge
                 mState.qRot = Ogre::Quaternion(0.0, 0.0, 1.0, 0.0);
             }
 
             //corners:
-            if (mIndexX == 0 && mIndexZ == 0) { // x == 0, y == 0
+            if (mCellCoords.mIndexX == 0 && mCellCoords.mIndexZ == 0) { // x == 0, y == 0
                 mState.qRot = Ogre::Quaternion(0.9239, 0.0, -0.3827, 0.0);
-            } else if (mIndexX == mRowCount - 1 && mIndexZ == 0) { // x == max, y == 0
+            } else if (mCellCoords.mIndexX == mRowCount - 1 && mCellCoords.mIndexZ == 0) { // x == max, y == 0
                 mState.qRot = Ogre::Quaternion(0.9239, 0.0, 0.3827, 0.0);
-            } else if (mIndexX == 0 && mIndexZ == mColumnCount - 1) { // x == 0, y == max
+            } else if (mCellCoords.mIndexX == 0 && mCellCoords.mIndexZ == mColumnCount - 1) { // x == 0, y == max
                 mState.qRot = Ogre::Quaternion(-0.3827, 0.0, 0.9239, 0.0);
-            } else if (mIndexX == mRowCount - 1 && mIndexZ == mColumnCount - 1) { // x == max, y == max
+            } else if (mCellCoords.mIndexX == mRowCount - 1 && mCellCoords.mIndexZ == mColumnCount - 1) { // x == max, y == max
                 mState.qRot = Ogre::Quaternion(0.3827, 0.0, 0.9239, 0.0);
             }
         }
         else {
-            // set the inital orientation to some interesting random value?
-            // Ogre::Real randomRotationAboutZ = Ogre::Math::RangeRandom(-Ogre::Math::PI * 2, Ogre::Math::PI * 2);
+            Ogre::Quaternion q;
 
-            auto normal = mState.vVel.normalisedCopy();
+            Ogre::Vector3 veln = mState.vVel.normalisedCopy();
+            Ogre::Vector3 a = veln.crossProduct(Ogre::Vector3(0, 1, 0));
 
-            auto radians = normal.angleBetween(Ogre::Vector3(0, 0, 1));
+            a.normalise();
 
-            mState.qRot = Ogre::Quaternion(Ogre::Math::Cos(radians), 0, Ogre::Math::Sin(radians), 0);
+            q.x = a.x;
+            q.z = a.y;
+            q.y = a.z;
+
+            q.w = sqrt((pow(veln.length(), 2) * (pow(veln.length(), 2)))) + veln.dotProduct(a);
+            q.normalise();
         }
 
         mArrowEntity = geMgr->addGameEntity(Ogre::SceneMemoryMgrTypes::SCENE_DYNAMIC,
@@ -153,6 +155,7 @@ namespace MyThirdOgre
             mState.vPos,
             mState.qRot,
             Ogre::Vector3::UNIT_SCALE
+            //Ogre::Vector3(1.0f, 0.0f, mState.vVel.length())
         );
     }
 
@@ -212,6 +215,18 @@ namespace MyThirdOgre
         mState.vVel = v;
     }
 
+    // Updates our transform buffer
+    void Cell::updateTransforms(float timeSinceLastFrame, Ogre::uint32 currIdx, Ogre::uint32 prevIdx)
+    {
+        auto qNew = mArrowEntity->mTransform[prevIdx]->qRot;
+
+        auto q = GetRotation(Ogre::Vector3(0, 0, 1), mState.vVel.normalisedCopy(), Ogre::Vector3::UNIT_Y);
+
+        //mArrowEntity->mTransform[currIdx]->vScale.z = mState.vVel.length();
+
+        mArrowEntity->mTransform[currIdx]->qRot = q;
+    }
+
     //
     //void Cell::setVelocity(Ogre::Vector3 v, float timeSinceLast)
     //{
@@ -266,21 +281,45 @@ namespace MyThirdOgre
     //}
 
 
-    //void Cell::setActive() {
-    //    planeItem->setDatablock("Active");
-    //    assert(dynamic_cast<Ogre::HlmsPbsDatablock*>(planeItem->getSubItem(0)->getDatablock()));
-    //    auto datablock = dynamic_cast<Ogre::HlmsPbsDatablock*>(planeItem->getSubItem(0)->getDatablock());
-    //    Ogre::HlmsSamplerblock diffuseBlock(*datablock->getSamplerblock(Ogre::PBSM_DIFFUSE));
-    //    diffuseBlock.mU = Ogre::TAM_WRAP;
-    //    diffuseBlock.mV = Ogre::TAM_WRAP;
-    //    diffuseBlock.mW = Ogre::TAM_WRAP;
-    //    datablock->setSamplerblock(Ogre::PBSM_DIFFUSE, diffuseBlock);
-    //    datablock->setTransparency(0.7f, Ogre::HlmsPbsDatablock::Transparent, true);
-    //}
+    void Cell::setActive() {
 
-    //void Cell::unsetActive() {
-    //    planeItem->setDatablock(personalDatablock);
-    //}
+        //Ogre::StringVector materialNames = mPlaneEntity->mMoDefinition->submeshMaterials;
+        //size_t minMaterials = std::min(materialNames.size(), item->getNumSubItems());
+
+        //for (size_t i = 0; i < minMaterials; ++i)
+        //{
+        //    item->getSubItem(i)->setDatablockOrMaterialName(materialNames[i],
+        //        cge->gameEntity->mMoDefinition->
+        //        resourceGroup);
+
+        //    if (cge->useAlpha) {
+
+        //        auto datablock = dynamic_cast<Ogre::HlmsPbsDatablock*>(item->getSubItem(i)->getDatablock());
+
+        //        Ogre::HlmsSamplerblock diffuseBlock(*datablock->getSamplerblock(Ogre::PBSM_DIFFUSE));
+        //        diffuseBlock.mU = Ogre::TAM_WRAP;
+        //        diffuseBlock.mV = Ogre::TAM_WRAP;
+        //        diffuseBlock.mW = Ogre::TAM_WRAP;
+        //        datablock->setSamplerblock(Ogre::PBSM_DIFFUSE, diffuseBlock);
+
+        //        datablock->setTransparency(cge->gameEntity->mTransparency, Ogre::HlmsPbsDatablock::Transparent, true);
+        //    }
+        //}
+
+        //planeItem->setDatablock("Active");
+        //assert(dynamic_cast<Ogre::HlmsPbsDatablock*>(planeItem->getSubItem(0)->getDatablock()));
+        //auto datablock = dynamic_cast<Ogre::HlmsPbsDatablock*>(planeItem->getSubItem(0)->getDatablock());
+        //Ogre::HlmsSamplerblock diffuseBlock(*datablock->getSamplerblock(Ogre::PBSM_DIFFUSE));
+        //diffuseBlock.mU = Ogre::TAM_WRAP;
+        //diffuseBlock.mV = Ogre::TAM_WRAP;
+        //diffuseBlock.mW = Ogre::TAM_WRAP;
+        //datablock->setSamplerblock(Ogre::PBSM_DIFFUSE, diffuseBlock);
+        //datablock->setTransparency(0.7f, Ogre::HlmsPbsDatablock::Transparent, true);
+    }
+
+    void Cell::unsetActive() {
+        //planeItem->setDatablock(personalDatablock);
+    }
 
     //void Cell::setNeighbourly()
     //{
@@ -319,22 +358,6 @@ namespace MyThirdOgre
 
 
 
-
-
-
-    // Updates our transform buffer
-    void Cell::update(float timeSinceLastFrame, Ogre::uint32 currentTransformIndex, Ogre::uint32 previousTransformIndex) 
-    {
-        auto qNew = mArrowEntity->mTransform[previousTransformIndex]->qRot;
-
-        auto normal = mState.vVel.normalisedCopy();
-
-        auto radians = normal.angleBetween(Ogre::Vector3(0, 0, -1));
-
-        qNew = Ogre::Quaternion(Ogre::Math::Cos(radians), 0, Ogre::Math::Sin(radians), 0);
-
-        mArrowEntity->mTransform[currentTransformIndex]->qRot = qNew;
-    }
 
     void Cell::warpBackInTime(float timeSinceLast)
     {
