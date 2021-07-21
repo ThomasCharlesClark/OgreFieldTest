@@ -42,21 +42,22 @@ namespace MyThirdOgre
         mSphereMoDef(0),
         mSphere(0),
         mMaxPressure(maxPressure),
-        mGameEntityManager(geMgr),
-        mActive(false)
+        mGameEntityManager(geMgr)
         // interesting pressure - based surfaces:
         // (0.2 * ((rowIndex * rowIndex) - (2 * (rowIndex * columnIndex))) + 3)
         //pow(2.71828, -((rowIndex*rowIndex) + (columnIndex * columnIndex)))
     {
         // Set state. Can no longer do this in the default parameter constructor list, because of mCellCoord
-        mState = 
+        mState =
         {
             mState.vPos = Ogre::Vector3(mCellCoords.mIndexX, 0, -mCellCoords.mIndexZ),
             mState.vVel = mBoundary ? Ogre::Vector3::ZERO :
-                                      Ogre::Vector3(mCellCoords.mIndexX, mCellCoords.mIndexY, -mCellCoords.mIndexZ),
+                                      //Ogre::Vector3::ZERO,
+                Ogre::Vector3(Ogre::Math::RangeRandom(-1.0f, 1.0f), 0.0, Ogre::Math::RangeRandom(-1.0f, 1.0f)),
                                       //Ogre::Vector3(mCellCoords.mIndexX, 0, -mCellCoords.mIndexZ),
             mState.qRot = Ogre::Quaternion::IDENTITY,
-            mState.rPressure = 0.5f 
+            mState.rPressure = 0.5f,
+            mState.bActive = true
         };
 
         mOriginalState = CellState(mState);
@@ -117,9 +118,9 @@ namespace MyThirdOgre
 
         arrowLineList.points = std::vector<Ogre::Vector3>
         {
-            Ogre::Vector3(0.0f, 0.0f, 0.25f),
-            Ogre::Vector3(0.0f, 0.f, -0.25f),
             Ogre::Vector3(0.0f, 0.0f, -0.25f),
+            Ogre::Vector3(0.0f, 0.f, 0.25f),
+            Ogre::Vector3(0.0f, 0.0f, 0.25f),
             Ogre::Vector3(0.2f, 0.0f, 0.0f),
             Ogre::Vector3(-0.2f, 0.0f, 0.0f)
         };
@@ -155,7 +156,7 @@ namespace MyThirdOgre
             }
         }
         else {
-            Ogre::Quaternion q;
+            /*Ogre::Quaternion q;
 
             Ogre::Vector3 veln = mState.vVel.normalisedCopy();
             Ogre::Vector3 a = veln.crossProduct(Ogre::Vector3(0, 1, 0));
@@ -167,7 +168,7 @@ namespace MyThirdOgre
             q.y = a.z;
 
             q.w = sqrt((pow(veln.length(), 2) * (pow(veln.length(), 2)))) + veln.dotProduct(a);
-            q.normalise();
+            q.normalise();*/
         }
 
         mArrowEntity = mGameEntityManager->addGameEntity(Ogre::SceneMemoryMgrTypes::SCENE_DYNAMIC,
@@ -235,13 +236,14 @@ namespace MyThirdOgre
     void Cell::setVelocity(Ogre::Vector3 v) 
     {
         mState.vVel = v;
-        if (!mActive) {
-            mState.rPressure = abs(v.squaredLength());
-            if (mState.rPressure > mMaxPressure)
-                mState.rPressure = mMaxPressure;
-            else if (mState.rPressure < 0)
-                mState.rPressure = 0;
-        }
+
+        //if (!mState.bActive) {
+        mState.rPressure = abs(v.squaredLength());
+        if (mState.rPressure > mMaxPressure)
+            mState.rPressure = mMaxPressure;
+        else if (mState.rPressure < 0)
+            mState.rPressure = 0;
+        //}
     }
 
     // Updates our transform buffer
@@ -251,7 +253,17 @@ namespace MyThirdOgre
 
         auto q = GetRotation(Ogre::Vector3(0, 0, 1), mState.vVel.normalisedCopy(), Ogre::Vector3::UNIT_Y);
 
-        //mArrowEntity->mTransform[currIdx]->vScale.z = mState.vVel.length();
+        //mArrowEntity->mTransform[currIdx]->vScale.x = -mState.vVel.x;
+        //mArrowEntity->mTransform[currIdx]->vScale.y = 0; // 1 / mState.vVel.length();
+        //mArrowEntity->mTransform[currIdx]->vScale.z = -mState.vVel.z;
+        //
+
+        auto vVelLen = mState.vVel.length();
+
+        mArrowEntity->mTransform[currIdx]->vScale.x = vVelLen;
+        mArrowEntity->mTransform[currIdx]->vScale.y = 0;
+        mArrowEntity->mTransform[currIdx]->vScale.z = vVelLen;
+
         mArrowEntity->mTransform[currIdx]->qRot = q;
 
         updatePressureIndicator();
@@ -317,8 +329,9 @@ namespace MyThirdOgre
 
     void Cell::setActive() 
     {
-        mActive = true;
-        mState.rPressure = 0.5f;
+        mState.bActive = true;
+        mState.rPressure = 0.4f;
+        //mState.vVel = Ogre::Vector3(0.0f, 0.0f, 1.0f);
         mGameEntityManager->gameEntityColourChange(mPlaneEntity, Ogre::Vector3(50.0f, 50.0f, 0.0f));
 
         //Ogre::v1::Entity* pEnt = static_cast<Ogre::v1::Entity*>(mPlaneEntity->mMovableObject);
@@ -364,7 +377,7 @@ namespace MyThirdOgre
     }
 
     void Cell::unsetActive() {
-        mActive = false;
+        mState.bActive = false;
         mState.rPressure = abs(mState.vVel.squaredLength());
         mGameEntityManager->gameEntityColourChange(mPlaneEntity, Ogre::Vector3(1, 1, 1));
     }

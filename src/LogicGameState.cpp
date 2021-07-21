@@ -66,13 +66,13 @@ namespace MyThirdOgre
         mField->update(timeSinceLast, currIdx, prevIdx);
 
         if (mInputKeys[0]) // Up Arrow
-            mField->increaseVelocityZ(timeSinceLast);
+            mField->increaseVelocity(timeSinceLast);
         if (mInputKeys[1]) // Right Arrow
-            mField->decreaseVelocityX(timeSinceLast);
+            mField->rotateVelocityClockwise(timeSinceLast);
         if (mInputKeys[2]) // Down Arrow
-            mField->decreaseVelocityZ(timeSinceLast);
+            mField->decreaseVelocity(timeSinceLast);
         if (mInputKeys[3]) // Left Arrow
-            mField->increaseVelocityX(timeSinceLast);
+            mField->rotateVelocityCounterClockwise(timeSinceLast);
 
         if (mInputKeys[4]) // Num Pad 4
             mField->traverseActiveCellXNegative();

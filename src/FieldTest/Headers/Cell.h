@@ -75,6 +75,7 @@ namespace MyThirdOgre
 		Ogre::Vector3 vVel;
 		Ogre::Quaternion qRot;
 		Ogre::Real rPressure;
+		bool bActive;
 
 		CellState() {};
 
@@ -82,11 +83,13 @@ namespace MyThirdOgre
 			Ogre::Vector3 vP, 
 			Ogre::Vector3 vV, 
 			Ogre::Quaternion qR, 
-			Ogre::Real rP) {
+			Ogre::Real rP,
+			bool a) {
 			vPos = vP;
 			vVel = vV;
 			qRot = qR;
 			rPressure = rP;
+			bActive = a;
 		};
 	};
 
@@ -98,7 +101,6 @@ protected:
 		int mRowCount;
 		int mColumnCount;
 		bool mBoundary;
-		bool mActive;
 
 		CellState					mState;
 		CellState					mOriginalState;
@@ -183,6 +185,7 @@ protected:
 
 // Good stuff:
 		bool getIsBoundary() { return mBoundary; };
+		bool getIsActive() { return mState.bActive; };
 
 		virtual void warpForwardInTime(Ogre::Vector3 v, float timeSinceLast);
 

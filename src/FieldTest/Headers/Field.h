@@ -53,19 +53,20 @@ namespace MyThirdOgre
 
 		virtual void advect(float timeSinceLast, std::map<CellCoord, CellState> &state);
 
-		virtual void increaseVelocityX(float timeSinceLast);
-		virtual void decreaseVelocityX(float timeSinceLast);
-		virtual void increaseVelocityZ(float timeSinceLast);
-		virtual void decreaseVelocityZ(float timeSinceLast);
+		virtual void increaseVelocity(float timeSinceLast);
+		virtual void decreaseVelocity(float timeSinceLast);
 
 		virtual void notifyShift(bool shift);
 
 		virtual void clearActiveCell(void);
 		virtual void resetState(void);
 
-		virtual void traverseActiveCellZNegative();
-		virtual void traverseActiveCellXPositive();
-		virtual void traverseActiveCellZPositive();
-		virtual void traverseActiveCellXNegative();
+		virtual void traverseActiveCellZNegative(void);
+		virtual void traverseActiveCellXPositive(void);
+		virtual void traverseActiveCellZPositive(void);
+		virtual void traverseActiveCellXNegative(void);
+
+		virtual void rotateVelocityClockwise(float timeSinceLast);
+		virtual void rotateVelocityCounterClockwise(float timeSinceLast);
 	};
 }

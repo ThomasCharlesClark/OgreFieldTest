@@ -23,8 +23,8 @@ namespace MyThirdOgre
 		mLayerCount(1),
 		mCells(std::map<CellCoord, Cell*> { }),
 		mActiveCell(0),
-		mBaseManualVelocityAdjustmentSpeed(1.0f),
-		mBoostedManualVelocityAdjustmentSpeed(5.0f),
+		mBaseManualVelocityAdjustmentSpeed(2.0f),
+		mBoostedManualVelocityAdjustmentSpeed(10.0f),
 		mManualVelocityAdjustmentSpeedModifier(false),
 		mMaxCellPressure(1.0f)
 	{
@@ -109,27 +109,51 @@ namespace MyThirdOgre
 		}
 	}
 
-	void Field::advect(float timeSinceLast, std::map<CellCoord, CellState> &state)
+	void Field::advect(float timeSinceLast, std::map<CellCoord, CellState>& state)
 	{
 		for (auto& cell : state) {
-			auto cVel = cell.second.vVel == Ogre::Vector3::ZERO ? Ogre::Vector3(0, 0, 1) : cell.second.vVel;
-			auto vPosBackInTime = cell.second.vPos - (cVel * (timeSinceLast * 10));
-			int ax, az, 
-				bx, bz,
-				cx, cz,
-				dx, dz;
 
-			ax = floor(vPosBackInTime.x);
-			az = ceil(vPosBackInTime.z);
+			auto cVel = cell.second.vVel;
 
-			bx = floor(vPosBackInTime.x);
-			bz = floor(vPosBackInTime.z);
+			auto vPosBackInTime = cell.second.vPos - (cVel);
 
-			cx = ceil(vPosBackInTime.x);
-			cz = floor(vPosBackInTime.z);
+			int ax = 0, az = 0,
+				bx = 0, bz = 0,
+				cx = 0, cz = 0,
+				dx = 0, dz = 0;
 
-			dx = ceil(vPosBackInTime.x);
-			dz = ceil(vPosBackInTime.z);
+			//if (cell.first.mIndexX == 5 && cell.first.mIndexZ == 5) {
+			//	int f = 0;
+			//}
+
+			// can't take my -x, -z, +x, +z neighbours: they don't form a square!
+			if (cVel == Ogre::Vector3::ZERO) {
+				ax = cell.first.mIndexX - 1;
+				az = cell.first.mIndexZ - 1;
+
+				bx = cell.first.mIndexX + 1;
+				bz = cell.first.mIndexZ - 1;
+
+				cx = cell.first.mIndexX + 1;
+				cz = cell.first.mIndexZ + 1;
+
+				dx = cell.first.mIndexX - 1;
+				dz = cell.first.mIndexZ + 1;
+			}
+			else {
+				ax = floor(vPosBackInTime.x);
+				az = ceil(vPosBackInTime.z);
+
+				bx = floor(vPosBackInTime.x);
+				bz = floor(vPosBackInTime.z);
+
+				cx = ceil(vPosBackInTime.x);
+				cz = floor(vPosBackInTime.z);
+
+				dx = ceil(vPosBackInTime.x);
+				dz = ceil(vPosBackInTime.z);
+			}
+
 
 			auto a = state.find({ ax, 0, -az });
 			auto b = state.find({ bx, 0, -bz });
@@ -162,7 +186,7 @@ namespace MyThirdOgre
 					b->second.vVel,
 					c->second.vVel,
 					d->second.vVel,
-					vPosBackInTime.x, 
+					vPosBackInTime.x,
 					vPosBackInTime.z
 				);
 
@@ -221,113 +245,101 @@ namespace MyThirdOgre
 		mManualVelocityAdjustmentSpeedModifier = shift;
 	}
 
-	void Field::increaseVelocityX(float timeSinceLast) {
+	void Field::rotateVelocityClockwise(float timeSinceLast) {
+		float rotationRadians = Ogre::Math::DegreesToRadians(
+			5 
+			* timeSinceLast
+			* mBaseManualVelocityAdjustmentSpeed
+			* (1 + mManualVelocityAdjustmentSpeedModifier * mBoostedManualVelocityAdjustmentSpeed));
+
+		auto q = Ogre::Quaternion(Ogre::Math::Cos(rotationRadians), 0.0f, -Ogre::Math::Sin(rotationRadians), 0.0f);
+
+		q.normalise();
+
+		for (auto& c : mCells) {
+			if (!c.second->getIsBoundary())
+				c.second->setVelocity(q * c.second->getVelocity());
+		}
+	}
+
+	void Field::rotateVelocityCounterClockwise(float timeSinceLast) {
+		float rotationRadians = Ogre::Math::DegreesToRadians(
+			5
+			* timeSinceLast
+			* mBaseManualVelocityAdjustmentSpeed
+			* (1 + mManualVelocityAdjustmentSpeedModifier * mBoostedManualVelocityAdjustmentSpeed));
+
+		auto q = Ogre::Quaternion(Ogre::Math::Cos(rotationRadians), 0.0f, Ogre::Math::Sin(rotationRadians), 0.0f);
+
+		q.normalise();
+
+		for (auto& c : mCells) {
+			if (!c.second->getIsBoundary())
+				c.second->setVelocity(q * c.second->getVelocity());
+		}
+	}
+
+	void Field::increaseVelocity(float timeSinceLast) {
 		if (mActiveCell) {
-			if (!mActiveCell->getIsBoundary())
-				mActiveCell->setVelocity(mActiveCell->getVelocity() +
-					Ogre::Vector3(
-						timeSinceLast
-						* mBaseManualVelocityAdjustmentSpeed
-						* (1 + mManualVelocityAdjustmentSpeedModifier * mBoostedManualVelocityAdjustmentSpeed),
-						0.0f,
-						0.0f)
-				);
+			if (!mActiveCell->getIsBoundary()) {
+
+				if (mActiveCell->getVelocity() == Ogre::Vector3::ZERO) {
+					mActiveCell->setVelocity(Ogre::Vector3(0, 0, -0.1f));
+				}
+
+				auto vCurr = mActiveCell->getVelocity();
+
+				auto vNew = vCurr * (1 + timeSinceLast
+					* mBaseManualVelocityAdjustmentSpeed
+					* (1 + mManualVelocityAdjustmentSpeedModifier * mBoostedManualVelocityAdjustmentSpeed));
+
+				mActiveCell->setVelocity(vNew);
+			}
 		}
 		else {
 			for (auto& c : mCells) {
-				if (!c.second->getIsBoundary())
-					c.second->setVelocity(c.second->getVelocity() +
-						Ogre::Vector3(
-							timeSinceLast
-							* mBaseManualVelocityAdjustmentSpeed
-							* (1 + mManualVelocityAdjustmentSpeedModifier * mBoostedManualVelocityAdjustmentSpeed),
-							0.0f,
-							0.0f)
-					);
+				if (!c.second->getIsBoundary()) {
+
+					auto vCurr = c.second->getVelocity();
+
+					auto vNew = vCurr * (1 + timeSinceLast
+						* mBaseManualVelocityAdjustmentSpeed
+						* (1 + mManualVelocityAdjustmentSpeedModifier * mBoostedManualVelocityAdjustmentSpeed));
+
+					c.second->setVelocity(vNew);
+				}
 			}
 		}
 	}
 
-	void Field::decreaseVelocityX(float timeSinceLast) {
+	void Field::decreaseVelocity(float timeSinceLast) {
 		if (mActiveCell) {
-			if (!mActiveCell->getIsBoundary())
-				mActiveCell->setVelocity(mActiveCell->getVelocity() -
-					Ogre::Vector3(
-						timeSinceLast
-						* mBaseManualVelocityAdjustmentSpeed
-						* (1 + mManualVelocityAdjustmentSpeedModifier * mBoostedManualVelocityAdjustmentSpeed),
-						0.0f,
-						0.0f)
-				);
-		}
-		else {
-			for (auto& c : mCells) {
-				if (!c.second->getIsBoundary())
-					c.second->setVelocity(c.second->getVelocity() -
-						Ogre::Vector3(
-							timeSinceLast
-							* mBaseManualVelocityAdjustmentSpeed
-							* (1 + mManualVelocityAdjustmentSpeedModifier * mBoostedManualVelocityAdjustmentSpeed),
-							0.0f,
-							0.0f)
-					);
-			}
-		}
-	}
-
-	void Field::increaseVelocityZ(float timeSinceLast) {
-		if (mActiveCell) {
-			if (!mActiveCell->getIsBoundary())
+			if (!mActiveCell->getIsBoundary()) {
 				if (mActiveCell->getVelocity() == Ogre::Vector3::ZERO) {
 					mActiveCell->setVelocity(Ogre::Vector3(0, 0, 0.1f));
 				}
-				mActiveCell->setVelocity(mActiveCell->getVelocity() +
-					Ogre::Vector3(
-						0.0f,
-						0.0f,
-						timeSinceLast
-						* mBaseManualVelocityAdjustmentSpeed
-						* (1 + mManualVelocityAdjustmentSpeedModifier * mBoostedManualVelocityAdjustmentSpeed))
-				);
-		}
-		else {
-			for (auto& c : mCells) {
-				if (!c.second->getIsBoundary())
-					c.second->setVelocity(c.second->getVelocity() +
-						Ogre::Vector3(
-							0.0f,
-							0.0f,
-							timeSinceLast
-							* mBaseManualVelocityAdjustmentSpeed
-							* (1 + mManualVelocityAdjustmentSpeedModifier * mBoostedManualVelocityAdjustmentSpeed))
-					);
+
+				auto vCurr = mActiveCell->getVelocity();
+
+				auto vNew = vCurr * (1 - timeSinceLast
+					* mBaseManualVelocityAdjustmentSpeed
+					* (1 + mManualVelocityAdjustmentSpeedModifier * mBoostedManualVelocityAdjustmentSpeed));
+
+				mActiveCell->setVelocity(vNew);
 			}
 		}
-	}
-
-	void Field::decreaseVelocityZ(float timeSinceLast) {
-		if (mActiveCell) {
-			if (!mActiveCell->getIsBoundary())
-				mActiveCell->setVelocity(mActiveCell->getVelocity() -
-					Ogre::Vector3(
-						0.0f,
-						0.0f,
-						timeSinceLast
-						* mBaseManualVelocityAdjustmentSpeed
-						* (1 + mManualVelocityAdjustmentSpeedModifier * mBoostedManualVelocityAdjustmentSpeed))
-				);
-		}
 		else {
 			for (auto& c : mCells) {
-				if (!c.second->getIsBoundary())
-					c.second->setVelocity(c.second->getVelocity() -
-						Ogre::Vector3(
-							0.0f,
-							0.0f,
-							timeSinceLast
-							* mBaseManualVelocityAdjustmentSpeed
-							* (1 + mManualVelocityAdjustmentSpeedModifier * mBoostedManualVelocityAdjustmentSpeed))
-					);
+				if (!c.second->getIsBoundary()) {
+
+					auto vCurr = c.second->getVelocity();
+
+					auto vNew = vCurr * (1 - timeSinceLast
+						* mBaseManualVelocityAdjustmentSpeed
+						* (1 + mManualVelocityAdjustmentSpeedModifier * mBoostedManualVelocityAdjustmentSpeed));
+
+					c.second->setVelocity(vNew);
+				}
 			}
 		}
 	}
