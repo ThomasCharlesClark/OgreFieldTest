@@ -33,7 +33,7 @@ hlms UnlitRed unlit
 
 hlms UnlitGreen unlit
 {
-	diffuse 	0.0 1.0 0.4 0.8
+	diffuse 	0.0 0.86 0.34 1.0
 }
 
 hlms UnlitWhite unlit

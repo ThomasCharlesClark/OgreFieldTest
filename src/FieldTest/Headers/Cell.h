@@ -59,7 +59,9 @@ namespace MyThirdOgre
 	// tyvm; https://stackoverflow.com/questions/4421706/what-are-the-basic-rules-and-idioms-for-operator-overloading#answer-4421719
 	// ty even more: https://stackoverflow.com/questions/3882467/defining-operator-for-a-struct#answer-16090720
 	inline bool operator==(const CellCoord& lhs, const CellCoord& rhs) { 
-		return lhs.mIndexX == rhs.mIndexX && lhs.mIndexZ == rhs.mIndexZ; 
+		return	lhs.mIndexX == rhs.mIndexX && 
+				lhs.mIndexY == rhs.mIndexY && 
+				lhs.mIndexZ == rhs.mIndexZ; 
 	}
 	inline bool operator!=(const CellCoord& lhs, const CellCoord& rhs) { return !operator==(lhs, rhs); }
 	inline bool operator< (const CellCoord& lhs, const CellCoord& rhs) { 
@@ -69,10 +71,26 @@ namespace MyThirdOgre
 	inline bool operator<=(const CellCoord& lhs, const CellCoord& rhs) { return !operator> (lhs, rhs); }
 	inline bool operator>=(const CellCoord& lhs, const CellCoord& rhs) { return !operator< (lhs, rhs); }
 
+	inline CellCoord operator-(const CellCoord& lhs, const CellCoord& rhs) { 
+		return CellCoord(
+			lhs.mIndexX - rhs.mIndexX, 
+			lhs.mIndexY - rhs.mIndexY, 
+			lhs.mIndexZ - rhs.mIndexZ); 
+	}
+
+	inline CellCoord operator+(const CellCoord& lhs, const CellCoord& rhs) {
+		return CellCoord(
+			lhs.mIndexX + rhs.mIndexX,
+			lhs.mIndexY + rhs.mIndexY,
+			lhs.mIndexZ + rhs.mIndexZ);
+	}
+
 	struct CellState
 	{
+		bool bIsBoundary;
 		Ogre::Vector3 vPos;
 		Ogre::Vector3 vVel;
+		Ogre::Vector3 vPressureGradient;
 		Ogre::Quaternion qRot;
 		Ogre::Real rPressure;
 		bool bActive;
@@ -80,13 +98,17 @@ namespace MyThirdOgre
 		CellState() {};
 
 		CellState(
+			bool b,
 			Ogre::Vector3 vP, 
 			Ogre::Vector3 vV, 
+			Ogre::Vector3 vPG,
 			Ogre::Quaternion qR, 
 			Ogre::Real rP,
 			bool a) {
+			bIsBoundary = b;
 			vPos = vP;
 			vVel = vV;
+			vPressureGradient = vPG;
 			qRot = qR;
 			rPressure = rP;
 			bActive = a;
@@ -107,8 +129,11 @@ protected:
 
 		CellCoord					mCellCoords;
 
-		GameEntity					*mArrowEntity;
-		MovableObjectDefinition		*mArrowMoDef;
+		GameEntity					*mVelocityArrowEntity;
+		MovableObjectDefinition		*mVelocityArrowMoDef;
+
+		GameEntity					*mPressureGradientArrowEntity;
+		MovableObjectDefinition		*mPressureGradientArrowMoDef;
 
 		GameEntity					*mPlaneEntity;
 		MovableObjectDefinition		*mPlaneMoDef;
@@ -124,7 +149,9 @@ protected:
 
 		float mMaxPressure;
 
-		virtual void createArrow(void);
+		virtual void createVelocityArrow(void);
+
+		virtual void createPressureGradientArrow(void);
 
 		virtual void createPressureIndicator(void);
 
@@ -143,58 +170,25 @@ protected:
 
 		~Cell();
 
-		virtual CellState getState(void);
+		CellCoord getCellCoords(void) { return mCellCoords; }
+		CellState* getState(void) { return &mState; };
+		Ogre::Vector3 getVelocity(void) { return mState.vVel; };
+		bool getIsBoundary(void) { return mBoundary; };
+		bool getIsActive(void) { return mState.bActive; };
 
 		virtual void resetState(void);
 
 		void setVelocity(Ogre::Vector3 v);
-
-		Ogre::Vector3 getVelocity();
-
-		CellCoord getCellCoords() { return mCellCoords; }
-
-		virtual void updateTransforms(float timeSinceLastFrame, Ogre::uint32 currentTransformIndex, Ogre::uint32 previousTransformIndex);
-
-
-
-
-// Possibly nonsense:
-
-		virtual void updatePressureAlpha();
-
-		virtual void setPressure(Ogre::Real p);
+		void setPressureGradient(Ogre::Vector3 v);
 
 		virtual Ogre::Real getPressure();
 
-		//Ogre::SceneNode* getNode() { return arrowNode; };
-
-
-		//virtual void randomiseVelocity();
-
-		//virtual void updateVelocity();
+		virtual void setPressure(Ogre::Real p);
 
 		virtual void setActive();
 
 		virtual void unsetActive();
 
-		//virtual void setNeighbourly();
-
-		//virtual void unsetNeighbourly();
-
-		//virtual Ogre::Sphere* getSphere();
-
-// Good stuff:
-		bool getIsBoundary() { return mBoundary; };
-		bool getIsActive() { return mState.bActive; };
-
-		virtual void warpForwardInTime(Ogre::Vector3 v, float timeSinceLast);
-
-		virtual void warpBackInTime(float timeSinceLast);
-
-		virtual void undoTimewarp();
-
-		virtual void setScale();
-
-		virtual void orientArrow();
+		virtual void updateTransforms(float timeSinceLastFrame, Ogre::uint32 currentTransformIndex, Ogre::uint32 previousTransformIndex);
 	};
 }

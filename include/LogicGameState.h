@@ -27,19 +27,21 @@ namespace MyThirdOgre
 
     class LogicGameState : public GameState
     {
+        int                                 mFieldScale;
+        int                                 mFieldColumnCount;
+        int                                 mFieldRowCount;
+        Field                               *mField;
 
-        Field               *mField;
+        LogicSystem                         *mLogicSystem;
 
-        LogicSystem         *mLogicSystem;
-
-        CameraControllerMultiThreading    *mCameraController;
+        CameraControllerMultiThreading      *mCameraController;
         // Entities are destroyed by the GameEntityManager
-		GameEntity          *mCameraEntity;
+		GameEntity                          *mCameraEntity;
         // MovableObjectDefinitions are not
-		MovableObjectDefinition *mCameraMoDef;
+		MovableObjectDefinition             *mCameraMoDef;
 
-        bool mSpaceKey;
-        bool                mInputKeys[8];
+        bool                                mSpaceKey;
+        bool                                mInputKeys[10];
 
     public:
         LogicGameState();

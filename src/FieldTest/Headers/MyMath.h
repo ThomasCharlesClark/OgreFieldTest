@@ -50,16 +50,8 @@ namespace MyThirdOgre {
 					q21z			= vC.z,
 					q22z			= vD.z;
 
-		// we need... we need the ability to avoid dividing by zero.
-
 		Ogre::Real  xLength			= xExtremis - xMinima,
 					zLength			= zExtremis - zMinima;
-
-		if (xLength == 0)
-			xLength = 1;
-
-		if (zLength == 0)
-			zLength = 1;
 
 		float fxz1 = ((xExtremis - pX) / (xLength) * q11x) + ((pX - xMinima) / (xLength) * q21x);
 		float fxz2 = ((xExtremis - pX) / (xLength) * q12x) + ((pX - xMinima) / (xLength) * q22x);

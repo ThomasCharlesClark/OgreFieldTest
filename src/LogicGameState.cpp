@@ -11,6 +11,9 @@ using namespace MyThirdOgre;
 namespace MyThirdOgre
 {
     LogicGameState::LogicGameState() :
+        mFieldScale( 1 ),
+        mFieldColumnCount ( 22 ),
+        mFieldRowCount ( 22 ),
         mField( 0 ), 
         mLogicSystem( 0 ), 
         mCameraController( 0 ),
@@ -46,7 +49,7 @@ namespace MyThirdOgre
         mCameraMoDef = new MovableObjectDefinition();
         mCameraMoDef->moType = MoTypeCamera;
         mCameraEntity = geMgr->addGameEntity(Ogre::SCENE_DYNAMIC, mCameraMoDef,
-            Ogre::Vector3(11, 10, 15),
+            Ogre::Vector3(mFieldColumnCount / 2, 10, 15),
             Ogre::Quaternion(0.983195186, -0.182557389, 0.0f, 0.0f),
             Ogre::Vector3::UNIT_SCALE);
 
@@ -55,7 +58,7 @@ namespace MyThirdOgre
 
         mCameraController = new CameraControllerMultiThreading(mCameraEntity, width, height);
 
-        mField = new Field(geMgr);
+        mField = new Field(geMgr, mFieldScale, mFieldColumnCount, mFieldRowCount);
     }
     //-----------------------------------------------------------------------------------
     void LogicGameState::update(float timeSinceLast)
@@ -83,10 +86,17 @@ namespace MyThirdOgre
         if (mInputKeys[7]) // Num Pad 2
             mField->traverseActiveCellZPositive();
 
+        if (mInputKeys[8])
+            mField->increasePressure(timeSinceLast);
+        if (mInputKeys[9])
+            mField->decreasePressure(timeSinceLast);
+
         mInputKeys[4] = false; // Num Pad 4
         mInputKeys[5] = false; // Num Pad 6
         mInputKeys[6] = false; // Num Pad 8
         mInputKeys[7] = false; // Num Pad 2
+        mInputKeys[8] = false; // Num Pad Plus
+        mInputKeys[9] = false; // Num Pad Minus
 
         if (mCameraController)
             mCameraController->update(timeSinceLast, currIdx, prevIdx, mLogicSystem->getMouseX(), mLogicSystem->getMouseY());
@@ -113,7 +123,7 @@ namespace MyThirdOgre
                 mInputKeys[3] = true;
                 break;
             case SDL_SCANCODE_LSHIFT:
-                mField->notifyShift(true);
+                mField->notifyShiftKey(true);
                 break;
             case SDL_SCANCODE_KP_4:
                 mInputKeys[4] = true;
@@ -126,6 +136,12 @@ namespace MyThirdOgre
                 break;
             case SDL_SCANCODE_KP_2:
                 mInputKeys[7] = true;
+                break;
+            case SDL_SCANCODE_KP_PLUS:
+                mInputKeys[8] = true;
+                break;
+            case SDL_SCANCODE_KP_MINUS:
+                mInputKeys[9] = true;
                 break;
             case SDL_SCANCODE_ESCAPE:
                 mField->clearActiveCell();
@@ -157,7 +173,7 @@ namespace MyThirdOgre
                 mInputKeys[3] = false;
                 break;
             case SDL_SCANCODE_LSHIFT:
-                mField->notifyShift(false);
+                mField->notifyShiftKey(false);
                 break;
             case SDL_SCANCODE_F5:
                 mField->resetState();
