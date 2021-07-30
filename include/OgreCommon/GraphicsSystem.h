@@ -157,6 +157,8 @@ namespace MyThirdOgre
         virtual void changeGameEntityColour(const GameEntityManager::GameEntityColourChange* change);
 
         virtual void changeGameEntityAlpha(const GameEntityManager::GameEntityAlphaChange* change);
+
+        virtual void changeGameEntityVisibility(const GameEntityManager::GameEntityVisibilityChange* change);
     };
 }
 

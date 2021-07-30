@@ -20,21 +20,34 @@ namespace MyThirdOgre
 		int mLayerCount;
 		float mBaseManualVelocityAdjustmentSpeed;
 		float mBoostedManualVelocityAdjustmentSpeed;
+		float mBaseManualPressureAdjustmentSpeed;
+		float mBoostedManualPressureAdjustmentSpeed;
 
+
+		float mMinCellPressure;
 		float mMaxCellPressure;
-		float mKinematicViscosity;
+		float mViscosity;
 		float mFluidDensity;
+		float mKinematicViscosity;
+		float mDiffusionConstant;
 
-		bool mManualVelocityAdjustmentSpeedModifier;
+		int mJacobiIterationsPressure;
+		int mJacobiIterationsDiffusion;
+
+		bool mManualAdjustmentSpeedModifier;
 		GameEntityManager* mGameEntityManager;
 		GameEntity* mGridEntity;
 		MovableObjectDefinition* mGridLineMoDef;
-		std::map<CellCoord, Cell*> mCells;
+		std::unordered_map<CellCoord, Cell*> mCells;
 
 		Cell* mActiveCell;
 
 		bool mIsRunning;
+
 		int mPressureSpreadHalfWidth;
+		int mVelocitySpreadHalfWidth;
+
+		bool mPressureGradientVisible;
 
 	protected:
 		virtual void createGrid(void);
@@ -54,20 +67,16 @@ namespace MyThirdOgre
 		// before the end result is actually rendered
 
 		bool getIsRunning(void) { return mIsRunning; }
-		virtual void setIsRunning(bool isRunning);
+		virtual void toggleIsRunning(void);
 
-		virtual void advect(float timeSinceLast, std::map<CellCoord, CellState> &state);
-		virtual void diffuse(float timeSinceLast, std::map<CellCoord, CellState>& state);
-		virtual void addForces(float timeSinceLast, std::map<CellCoord, CellState>& state);
-		virtual void computePressureGradient(float timeSinceLast, std::map<CellCoord, CellState>& state);
+		virtual void advect(float timeSinceLast, std::unordered_map<CellCoord, CellState>& state);
+		virtual void diffuse(float timeSinceLast, std::unordered_map<CellCoord, CellState>& state);
+		virtual void addForces(float timeSinceLast, std::unordered_map<CellCoord, CellState>& state);
+		virtual void computeVelocityGradient(float timeSinceLast, std::unordered_map<CellCoord, CellState>& state);
+		virtual void computePressureGradient(float timeSinceLast, std::unordered_map<CellCoord, CellState>& state);
 
-		//virtual void jacobi(
-		//	const CellCoord& coord,
-		//	Ogre::Vector3& xNew,
-		//	float alpha,
-		//	int rBeta,
-		//	const std::map<CellCoord, CellState>& x,
-		//	const std::map<CellCoord, CellState>& b);
+		virtual void jacobiPressure(float timeSinceLast, std::unordered_map<CellCoord, CellState>& state);
+		virtual void jacobiDiffusion(float timeSinceLaste, std::unordered_map<CellCoord, CellState>& state);
 
 
 		virtual void increaseVelocity(float timeSinceLast);
@@ -88,5 +97,7 @@ namespace MyThirdOgre
 
 		virtual void rotateVelocityClockwise(float timeSinceLast);
 		virtual void rotateVelocityCounterClockwise(float timeSinceLast);
+
+		virtual void togglePressureGradientIndicators(void);
 	};
 }

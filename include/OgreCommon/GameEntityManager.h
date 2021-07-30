@@ -7,6 +7,8 @@
 #include "OgreManualObject2.h"
 #include "OgreSceneManager.h"
 
+#include <string>
+
 namespace MyThirdOgre
 {
     class GraphicsSystem;
@@ -21,6 +23,8 @@ namespace MyThirdOgre
             GameEntity          *gameEntity;
             GameEntityTransform initialTransform;
             bool                useAlpha;
+            bool                visible;
+            Ogre::String        name;
         };
 
         struct GameEntityColourChange 
@@ -42,6 +46,17 @@ namespace MyThirdOgre
             GameEntityAlphaChange(GameEntity* ge, Ogre::Real a) {
                 gameEntity = ge;
                 alpha = a;
+            };
+        };
+
+        struct GameEntityVisibilityChange
+        {
+            GameEntity* gameEntity;
+            bool        visible;
+
+            GameEntityVisibilityChange(GameEntity* ge, bool v) {
+                gameEntity = ge;
+                visible = v;
             };
         };
 
@@ -104,15 +119,18 @@ namespace MyThirdOgre
             not all of its pointers may filled yet (the ones that are not meant to
             be used by the logic thread)
         */
-        GameEntity* addGameEntity( Ogre::SceneMemoryMgrTypes type,
+        GameEntity* addGameEntity( const Ogre::String& name,
+                                   const Ogre::SceneMemoryMgrTypes type,
                                    const MovableObjectDefinition *moDefinition,
                                    const Ogre::Vector3 &initialPos,
                                    const Ogre::Quaternion &initialRot,
                                    const Ogre::Vector3 &initialScale,
                                    const bool useAlpha = false, 
-                                   const float alpha = 1.0f );
+                                   const float alpha = 1.0f,
+                                   const bool visible = true );
 
-        GameEntity* addGameEntity(  Ogre::SceneMemoryMgrTypes type,
+        GameEntity* addGameEntity(  const Ogre::String& name,
+                                    const Ogre::SceneMemoryMgrTypes type,
                                     const MovableObjectDefinition* moDefinition,
                                     const Ogre::SceneManager::PrefabType prefabType,
                                     const Ogre::String datablockName,
@@ -120,9 +138,11 @@ namespace MyThirdOgre
                                     const Ogre::Quaternion& initialRot,
                                     const Ogre::Vector3& initialScale,
                                     const bool useAlpha = false,
-                                    const float alpha = 1.0f );
+                                    const float alpha = 1.0f,
+                                    const bool visible = true );
 
-        GameEntity* addGameEntity( Ogre::SceneMemoryMgrTypes type,
+        GameEntity* addGameEntity( const Ogre::String& name,
+                                   const Ogre::SceneMemoryMgrTypes type,
                                    const MovableObjectDefinition* moDefinition,
                                    const Ogre::String& datablockName,
                                    const ManualObjectLineListDefinition& manualObjectDef,
@@ -130,7 +150,8 @@ namespace MyThirdOgre
                                    const Ogre::Quaternion& initialRot,
                                    const Ogre::Vector3& initialScale,
                                    const bool useAlpha = false,
-                                   const float alpha = 1.0f );
+                                   const float alpha = 1.0f,
+                                   const bool visible = true );
 
         /** Removes the GameEntity from the world. The pointer is not immediately destroyed,
             we first need to release data in other threads (i.e. Graphics).
@@ -147,6 +168,8 @@ namespace MyThirdOgre
         virtual void gameEntityColourChange(GameEntity* entity, Ogre::Vector3 colour);
 
         virtual void gameEntityAlphaChange(GameEntity* entity, Ogre::Real alpha);
+        
+        virtual void toggleGameEntityVisibility(GameEntity* entity, bool visible);
     };
 }
 

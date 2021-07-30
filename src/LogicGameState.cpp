@@ -48,7 +48,10 @@ namespace MyThirdOgre
 
         mCameraMoDef = new MovableObjectDefinition();
         mCameraMoDef->moType = MoTypeCamera;
-        mCameraEntity = geMgr->addGameEntity(Ogre::SCENE_DYNAMIC, mCameraMoDef,
+        mCameraEntity = geMgr->addGameEntity(
+            "mainCamera",
+            Ogre::SCENE_DYNAMIC, 
+            mCameraMoDef,
             Ogre::Vector3(mFieldColumnCount / 2, 10, 15),
             Ogre::Quaternion(0.983195186, -0.182557389, 0.0f, 0.0f),
             Ogre::Vector3::UNIT_SCALE);
@@ -91,12 +94,16 @@ namespace MyThirdOgre
         if (mInputKeys[9])
             mField->decreasePressure(timeSinceLast);
 
+        if (mInputKeys[10])
+            mField->togglePressureGradientIndicators();
+
         mInputKeys[4] = false; // Num Pad 4
         mInputKeys[5] = false; // Num Pad 6
         mInputKeys[6] = false; // Num Pad 8
         mInputKeys[7] = false; // Num Pad 2
         mInputKeys[8] = false; // Num Pad Plus
         mInputKeys[9] = false; // Num Pad Minus
+        mInputKeys[10] = false; // Number Row 5
 
         if (mCameraController)
             mCameraController->update(timeSinceLast, currIdx, prevIdx, mLogicSystem->getMouseX(), mLogicSystem->getMouseY());
@@ -142,6 +149,12 @@ namespace MyThirdOgre
                 break;
             case SDL_SCANCODE_KP_MINUS:
                 mInputKeys[9] = true;
+                break;
+            case SDL_SCANCODE_5:
+                mInputKeys[10] = true;
+                break;
+            case SDL_SCANCODE_RETURN:
+                mField->toggleIsRunning();
                 break;
             case SDL_SCANCODE_ESCAPE:
                 mField->clearActiveCell();

@@ -23,6 +23,8 @@ namespace Mq
         GAME_ENTITY_COLOUR_CHANGE,
         GAME_ENTITY_ALPHA_CHANGE,
 
+        GAME_ENTITY_VISIBILITY_CHANGE,
+
         NUM_MESSAGE_IDS,
     };
 }

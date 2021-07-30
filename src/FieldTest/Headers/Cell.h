@@ -34,10 +34,7 @@
 
 // Therefore all operations should occur on our velocity, and our orientation should be updated to match.
 
-namespace MyThirdOgre 
-{
-	class GameEntityManager;
-
+namespace MyThirdOgre {
 	struct CellCoord
 	{
 		int mIndexX;
@@ -58,24 +55,24 @@ namespace MyThirdOgre
 
 	// tyvm; https://stackoverflow.com/questions/4421706/what-are-the-basic-rules-and-idioms-for-operator-overloading#answer-4421719
 	// ty even more: https://stackoverflow.com/questions/3882467/defining-operator-for-a-struct#answer-16090720
-	inline bool operator==(const CellCoord& lhs, const CellCoord& rhs) { 
-		return	lhs.mIndexX == rhs.mIndexX && 
-				lhs.mIndexY == rhs.mIndexY && 
-				lhs.mIndexZ == rhs.mIndexZ; 
+	inline bool operator==(const CellCoord& lhs, const CellCoord& rhs) {
+		return	lhs.mIndexX == rhs.mIndexX &&
+			lhs.mIndexY == rhs.mIndexY &&
+			lhs.mIndexZ == rhs.mIndexZ;
 	}
 	inline bool operator!=(const CellCoord& lhs, const CellCoord& rhs) { return !operator==(lhs, rhs); }
-	inline bool operator< (const CellCoord& lhs, const CellCoord& rhs) { 
+	inline bool operator< (const CellCoord& lhs, const CellCoord& rhs) {
 		return std::tie(lhs.mIndexX, lhs.mIndexY, lhs.mIndexZ) < std::tie(rhs.mIndexX, rhs.mIndexY, rhs.mIndexZ);
 	}
 	inline bool operator> (const CellCoord& lhs, const CellCoord& rhs) { return  operator< (rhs, lhs); }
 	inline bool operator<=(const CellCoord& lhs, const CellCoord& rhs) { return !operator> (lhs, rhs); }
 	inline bool operator>=(const CellCoord& lhs, const CellCoord& rhs) { return !operator< (lhs, rhs); }
 
-	inline CellCoord operator-(const CellCoord& lhs, const CellCoord& rhs) { 
+	inline CellCoord operator-(const CellCoord& lhs, const CellCoord& rhs) {
 		return CellCoord(
-			lhs.mIndexX - rhs.mIndexX, 
-			lhs.mIndexY - rhs.mIndexY, 
-			lhs.mIndexZ - rhs.mIndexZ); 
+			lhs.mIndexX - rhs.mIndexX,
+			lhs.mIndexY - rhs.mIndexY,
+			lhs.mIndexZ - rhs.mIndexZ);
 	}
 
 	inline CellCoord operator+(const CellCoord& lhs, const CellCoord& rhs) {
@@ -84,13 +81,30 @@ namespace MyThirdOgre
 			lhs.mIndexY + rhs.mIndexY,
 			lhs.mIndexZ + rhs.mIndexZ);
 	}
+}
+
+namespace std {
+	template <> struct hash<MyThirdOgre::CellCoord>
+	{
+		size_t operator()(const MyThirdOgre::CellCoord& x) const
+		{
+			return ((hash<int>()(x.mIndexX) << 32) + ((hash<int>()(x.mIndexY) << 32)) + (hash<int>()(x.mIndexZ)));
+		}
+	};
+}
+
+namespace MyThirdOgre 
+{
+	class GameEntityManager;
 
 	struct CellState
 	{
 		bool bIsBoundary;
 		Ogre::Vector3 vPos;
 		Ogre::Vector3 vVel;
+		Ogre::Vector3 vVelocityGradient;
 		Ogre::Vector3 vPressureGradient;
+		Ogre::Vector3 vViscosity;
 		Ogre::Quaternion qRot;
 		Ogre::Real rPressure;
 		bool bActive;
@@ -100,17 +114,21 @@ namespace MyThirdOgre
 		CellState(
 			bool b,
 			Ogre::Vector3 vP, 
-			Ogre::Vector3 vV, 
-			Ogre::Vector3 vPG,
-			Ogre::Quaternion qR, 
+			Ogre::Vector3 vV,
+			Ogre::Vector3 vVG,
 			Ogre::Real rP,
+			Ogre::Vector3 vPG,
+			Ogre::Vector3 vVis,
+			Ogre::Quaternion qR, 
 			bool a) {
 			bIsBoundary = b;
 			vPos = vP;
 			vVel = vV;
-			vPressureGradient = vPG;
-			qRot = qR;
+			vVelocityGradient = vVG;
 			rPressure = rP;
+			vPressureGradient = vPG;
+			vViscosity = vVis,
+			qRot = qR;
 			bActive = a;
 		};
 	};
@@ -123,6 +141,7 @@ protected:
 		int mRowCount;
 		int mColumnCount;
 		bool mBoundary;
+		bool mPressureGradientArrowVisible;
 
 		CellState					mState;
 		CellState					mOriginalState;
@@ -157,6 +176,8 @@ protected:
 
 		virtual void createBoundingSphere(void);
 
+		virtual void createBoundingSphereDisplay(void);
+
 		virtual void updatePressureIndicator(void);
 
 	public:
@@ -165,14 +186,19 @@ protected:
 			 int layerIndex,
 			 int columnCount,
 			 int rowCount,
-			float maxPressure,
+			 float maxPressure,
+			 bool pressureGradientArrowVisible,
 			 GameEntityManager* geMgr);
 
 		~Cell();
 
+		GameEntity* getPressureGradientArrowGameEntity(void) { return mPressureGradientArrowEntity; }
+		GameEntity* getVelocityArrowGameEntity(void) { return mVelocityArrowEntity; }
+
 		CellCoord getCellCoords(void) { return mCellCoords; }
 		CellState* getState(void) { return &mState; };
 		Ogre::Vector3 getVelocity(void) { return mState.vVel; };
+		Ogre::Vector3 getPosition(void) { return mState.vPos; };
 		bool getIsBoundary(void) { return mBoundary; };
 		bool getIsActive(void) { return mState.bActive; };
 

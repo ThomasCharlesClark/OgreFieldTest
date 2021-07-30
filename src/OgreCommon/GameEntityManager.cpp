@@ -48,13 +48,15 @@ namespace MyThirdOgre
         mAvailableTransforms.clear();
     }
     //-----------------------------------------------------------------------------------
-    GameEntity* GameEntityManager::addGameEntity( Ogre::SceneMemoryMgrTypes type,
+    GameEntity* GameEntityManager::addGameEntity( const Ogre::String& name, 
+                                                  const Ogre::SceneMemoryMgrTypes type,
                                                   const MovableObjectDefinition *moDefinition,
                                                   const Ogre::Vector3 &initialPos,
                                                   const Ogre::Quaternion &initialRot,
                                                   const Ogre::Vector3 &initialScale,
                                                   const bool useAlpha, 
-                                                  const float alpha )
+                                                  const float alpha,
+                                                  const bool visible )
     {
         GameEntity *gameEntity = new GameEntity( mCurrentId++, moDefinition, type );
         gameEntity->mTransparency = alpha;
@@ -66,6 +68,8 @@ namespace MyThirdOgre
         cge.initialTransform.vScale = initialScale;
         cge.gameEntity->mTransparency = alpha;
         cge.useAlpha = useAlpha;
+        cge.visible = visible;
+        cge.name = name;
 
         size_t slot, bufferIdx;
         aquireTransformSlot( slot, bufferIdx );
@@ -84,7 +88,8 @@ namespace MyThirdOgre
         return gameEntity;
     }
     //-----------------------------------------------------------------------------------
-    GameEntity* GameEntityManager::addGameEntity( Ogre::SceneMemoryMgrTypes type, 
+    GameEntity* GameEntityManager::addGameEntity( const Ogre::String& name, 
+                                                  const Ogre::SceneMemoryMgrTypes type,
                                                   const MovableObjectDefinition* moDefinition, 
                                                   const Ogre::SceneManager::PrefabType prefabType,
                                                   const Ogre::String datablockName,
@@ -92,7 +97,8 @@ namespace MyThirdOgre
                                                   const Ogre::Quaternion& initialRot,
                                                   const Ogre::Vector3& initialScale,
                                                   const bool useAlpha,
-                                                  const float alpha )
+                                                  const float alpha,
+                                                  const bool visible )
     {
         GameEntity* gameEntity = new GameEntity(mCurrentId++, moDefinition, type);
         gameEntity->mManualObjectDatablockName = datablockName;
@@ -105,6 +111,8 @@ namespace MyThirdOgre
         cge.initialTransform.qRot = initialRot;
         cge.initialTransform.vScale = initialScale;
         cge.useAlpha = useAlpha;
+        cge.visible = visible;
+        cge.name = name;
 
         size_t slot, bufferIdx;
         aquireTransformSlot(slot, bufferIdx);
@@ -123,7 +131,8 @@ namespace MyThirdOgre
         return gameEntity;
     }
     //-----------------------------------------------------------------------------------
-	GameEntity* GameEntityManager::addGameEntity( Ogre::SceneMemoryMgrTypes type, 
+	GameEntity* GameEntityManager::addGameEntity( const Ogre::String& name,
+                                                  const Ogre::SceneMemoryMgrTypes type, 
                                                   const MovableObjectDefinition* moDefinition,
                                                   const Ogre::String& datablockName,
                                                   const ManualObjectLineListDefinition& manualObjectLineListDef,
@@ -131,7 +140,8 @@ namespace MyThirdOgre
                                                   const Ogre::Quaternion& initialRot, 
                                                   const Ogre::Vector3& initialScale,
                                                   const bool useAlpha,
-                                                  const float alpha )
+                                                  const float alpha,
+                                                  const bool visible)
 	{
         GameEntity* gameEntity = new GameEntity(mCurrentId++, moDefinition, type);
         gameEntity->mManualObjectDatablockName = datablockName;
@@ -144,6 +154,8 @@ namespace MyThirdOgre
         cge.initialTransform.qRot = initialRot;
         cge.initialTransform.vScale = initialScale;
         cge.useAlpha = useAlpha;
+        cge.visible = visible;
+        cge.name = name;
 
         size_t slot, bufferIdx;
         aquireTransformSlot(slot, bufferIdx);
@@ -285,5 +297,9 @@ namespace MyThirdOgre
     void GameEntityManager::gameEntityAlphaChange(GameEntity* entity, Ogre::Real alpha) {
         mLogicSystem->queueSendMessage(mGraphicsSystem, Mq::GAME_ENTITY_ALPHA_CHANGE,
             GameEntityAlphaChange(entity, alpha));
+    }
+    //-----------------------------------------------------------------------------------
+    void GameEntityManager::toggleGameEntityVisibility(GameEntity* entity, bool visible) {
+        mLogicSystem->queueSendMessage(mGraphicsSystem, Mq::GAME_ENTITY_VISIBILITY_CHANGE, GameEntityVisibilityChange(entity, visible));
     }
 }

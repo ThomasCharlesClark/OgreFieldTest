@@ -9,8 +9,8 @@ namespace MyThirdOgre {
 		return (a*a) - (b*b);
 	}
 
-	// Thanks, Brian! 
-	// https://forum.unity.com/threads/vector-bilinear-interpolation-of-a-square-grid.205644/
+	// Thanks to the Omni calculator for helping me verify that working this through by hand was correct.
+	// https://www.omnicalculator.com/math/bilinear-interpolation#bilinear-interpolation-formula
 
 	static Ogre::Vector3 velocityBiLerp(
 		Ogre::Vector3 a,  // point A (bottom-left)	: x in minima,   z in minima    // POSITION
@@ -25,6 +25,7 @@ namespace MyThirdOgre {
 		float pZ)		  // P.z					: Point we want a velocity average for - Z
 	{
 
+		//             q12         q21
 		//  xMinima,   <-----pX----->  xExtremis,
 		//	zExtremis, b ----------- c zExtremis
 		//			   |             |   
@@ -33,7 +34,7 @@ namespace MyThirdOgre {
 		//			   |  *(pX,pZ)   |    
 		//			   |             |  
 		//	xMinima,   a------------ d xExtremis,
-		//  zMinima					   zMinima			
+		//  zMinima	   q11		   q22 zMinima			
 		
 		Ogre::Real	xMinima			= a.x, 
 					xExtremis		= c.x,
@@ -58,14 +59,196 @@ namespace MyThirdOgre {
 
 		float    x = ((zExtremis - pZ) / (zLength) * fxz1) + ((pZ - zMinima) / (zLength) * fxz2);
 
+
+
+
 		float fzz1 = ((xExtremis - pX) / (xLength) * q11z) + ((pX - xMinima) / (xLength) * q21z);
 		float fzz2 = ((xExtremis - pX) / (xLength) * q12z) + ((pX - xMinima) / (xLength) * q22z);
 
 		float    z = ((zExtremis - pZ) / (zLength) * fzz1) + ((pZ - zMinima) / (zLength) * fzz2);
 
+		if (isnan(x) || isinf(x))
+			x = 0;
+
+		if (isnan(z) || isinf(z))
+			z = 0;
 
 		return Ogre::Vector3(x, 0, z);
 	}
+	
+	static Ogre::Vector3 velocityBiLerpCrossForm(
+		Ogre::Vector3 a,  // point A (bottom-left)	: x in minima,   z in minima    // POSITION
+		Ogre::Vector3 b,  // point B (top-left)		: x in minima,   z in extremis  // POSITION
+		Ogre::Vector3 c,  // point C (top-right)	: x in extremis, z in extremis  // POSITION
+		Ogre::Vector3 d,  // point D (bottom-right) : x in extremis, z in minima    // POSITION
+		Ogre::Vector3 vA, // point A				:								// VELOCITY
+		Ogre::Vector3 vB, // point B				:								// VELOCITY
+		Ogre::Vector3 vC, // point C				:								// VELOCITY
+		Ogre::Vector3 vD, // point D				:								// VELOCITY
+		float pX,		  // P.x					: Point we want a velocity average for - X
+		float pZ)		  // P.z					: Point we want a velocity average for - Z
+	{
+
+		// Okay, but sometimes we don't have a square to deal with.
+		// Sometimes we only have a cross:
+		//         
+		//         _____
+		//        |     |
+		//        |  b  |
+		//   _____|_____|_____
+		//  |     |     |     |
+		//	|  a  |	 p  |  c  |
+		//  |_____|_____|_____|
+		//        |     |
+		//        |  d  |
+		//        |_____|
+		//
+		//  to force this configuration to fit the above algorithm, what do we need to do?
+		//  well, as I know I'm working with unit grid spacing this becomes trivial:
+		//  adjust a.z, b.x, c.z and d.x!
+		
+		a.z += 1.0f; // bringing a back towards us is +ve because we're working with -ve Z axis going INTO the screen
+		b.x -= 1.0f; 
+		c.z -= 1.0f;
+		d.x += 1.0f;
+
+		Ogre::Real	xMinima = a.x,
+					xExtremis = c.x,
+					zMinima = a.z, 
+					zExtremis = c.z;
+
+		Ogre::Real  q11x = vA.x,
+					q12x = vB.x,
+					q21x = vC.x,
+					q22x = vD.x,
+
+					q11z = vA.z,
+					q12z = vB.z,
+					q21z = vC.z,
+					q22z = vD.z;
+
+		Ogre::Real  xLength = xExtremis - xMinima,
+			zLength = zExtremis - zMinima;
+
+		float fxz1 = ((xExtremis - pX) / (xLength)*q11x) + ((pX - xMinima) / (xLength)*q21x);
+		float fxz2 = ((xExtremis - pX) / (xLength)*q12x) + ((pX - xMinima) / (xLength)*q22x);
+
+		float    x = ((zExtremis - pZ) / (zLength)*fxz1) + ((pZ - zMinima) / (zLength)*fxz2);
+
+		float fzz1 = ((xExtremis - pX) / (xLength)*q11z) + ((pX - xMinima) / (xLength)*q21z);
+		float fzz2 = ((xExtremis - pX) / (xLength)*q12z) + ((pX - xMinima) / (xLength)*q22z);
+
+		float    z = ((zExtremis - pZ) / (zLength)*fzz1) + ((pZ - zMinima) / (zLength)*fzz2);
+
+		if (isnan(x) || isinf(x))
+			x = 0;
+
+		if (isnan(z) || isinf(z))
+			z = 0;
+
+		return Ogre::Vector3(x, 0, z);
+	}
+
+	static Ogre::Real pressureBiLerp(
+		Ogre::Vector3 a,  // point A (bottom-left)	: x in minima,   z in minima    // POSITION
+		Ogre::Vector3 b,  // point B (top-left)		: x in minima,   z in extremis  // POSITION
+		Ogre::Vector3 c,  // point C (top-right)	: x in extremis, z in extremis  // POSITION
+		Ogre::Vector3 d,  // point D (bottom-right) : x in extremis, z in minima    // POSITION
+		Ogre::Real rA,    // point A				:								// PRESSURE
+		Ogre::Real rB,    // point B				:								// PRESSURE
+		Ogre::Real rC,	  // point C				:								// PRESSURE
+		Ogre::Real rD, // point D				:								// PRESSURE
+		float pX,		  // P.x					: Point we want a velocity average for - X
+		float pZ)		  // P.z					: Point we want a velocity average for - Z
+	{
+
+		//  xMinima,   <-----pX----->  xExtremis,
+		//	zExtremis, b ----------- c zExtremis
+		//			   |             |   
+		//			   |             |    
+		//			   |             |    
+		//			   |  *(pX,pZ)   |    
+		//			   |             |  
+		//	xMinima,   a------------ d xExtremis,
+		//  zMinima					   zMinima			
+
+		Ogre::Real	xMinima = a.x,
+			xExtremis = c.x,
+			zMinima = a.z,
+			zExtremis = c.z;
+
+		Ogre::Real  q11 = rA,
+					q12 = rB,
+					q21 = rC,
+					q22 = rD;
+
+		Ogre::Real  xLength = xExtremis - xMinima,
+			zLength = zExtremis - zMinima;
+
+		float fxz1 = ((xExtremis - pX) / (xLength)*q11) + ((pX - xMinima) / (xLength)*q21);
+		float fxz2 = ((xExtremis - pX) / (xLength)*q12) + ((pX - xMinima) / (xLength)*q22);
+
+		float    r = ((zExtremis - pZ) / (zLength)*fxz1) + ((pZ - zMinima) / (zLength)*fxz2);
+
+		if (isnan(r) || isinf(r))
+			r = 0;
+
+		return r;
+	}
+
+	// See the above VelocityCrossForm 
+	static Ogre::Real pressureBiLerpCrossForm(
+		Ogre::Vector3 a,  // point A (bottom-left)	: x in minima,   z in minima    // POSITION
+		Ogre::Vector3 b,  // point B (top-left)		: x in minima,   z in extremis  // POSITION
+		Ogre::Vector3 c,  // point C (top-right)	: x in extremis, z in extremis  // POSITION
+		Ogre::Vector3 d,  // point D (bottom-right) : x in extremis, z in minima    // POSITION
+		Ogre::Real rA,    // point A				:								// PRESSURE
+		Ogre::Real rB,    // point B				:								// PRESSURE
+		Ogre::Real rC,	  // point C				:								// PRESSURE
+		Ogre::Real rD, // point D				:								// PRESSURE
+		float pX,		  // P.x					: Point we want a velocity average for - X
+		float pZ)		  // P.z					: Point we want a velocity average for - Z
+	{
+
+		//  xMinima,   <-----pX----->  xExtremis,
+		//	zExtremis, b ----------- c zExtremis
+		//			   |             |   
+		//			   |             |    
+		//			   |             |    
+		//			   |  *(pX,pZ)   |    
+		//			   |             |  
+		//	xMinima,   a------------ d xExtremis,
+		//  zMinima					   zMinima			
+
+		a.z += 1.0f; // bringing a back towards us is +ve because we're working with -ve Z axis going INTO the screen
+		b.x -= 1.0f;
+		c.z -= 1.0f;
+		d.x += 1.0f;
+
+		Ogre::Real	xMinima = a.x,
+			xExtremis = c.x,
+			zMinima = a.z,
+			zExtremis = c.z;
+
+		Ogre::Real  q11 = rA,
+			q12 = rB,
+			q21 = rC,
+			q22 = rD;
+
+		Ogre::Real  xLength = xExtremis - xMinima,
+			zLength = zExtremis - zMinima;
+
+		float fxz1 = ((xExtremis - pX) / (xLength)*q11) + ((pX - xMinima) / (xLength)*q21);
+		float fxz2 = ((xExtremis - pX) / (xLength)*q12) + ((pX - xMinima) / (xLength)*q22);
+
+		float    r = ((zExtremis - pZ) / (zLength)*fxz1) + ((pZ - zMinima) / (zLength)*fxz2);
+
+		if (isnan(r) || isinf(r))
+			r = 0;
+
+		return r;
+	}
+
 
 	// Thanks, random StackOverflow dude!
 	// https://gamedev.stackexchange.com/questions/15070/orienting-a-model-to-face-a-target#answer-15078
@@ -77,7 +260,9 @@ namespace MyThirdOgre {
 		{
 			// vector a and b point exactly in the opposite direction, 
 			// so it is a 180 degrees turn around the up-axis
-			return Ogre::Quaternion(Ogre::Radian(Ogre::Math::DegreesToRadians(180.0f)), up);
+			auto result = Ogre::Quaternion(Ogre::Radian(Ogre::Math::DegreesToRadians(180.0f)), up);
+			result.normalise();
+			return result;
 		}
 		if (abs(dot - (1.0f)) < 0.000001f)
 		{

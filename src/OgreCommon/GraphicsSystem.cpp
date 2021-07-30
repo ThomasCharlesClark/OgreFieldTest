@@ -483,6 +483,9 @@ namespace MyThirdOgre
         case Mq::GAME_ENTITY_ALPHA_CHANGE:
             this->changeGameEntityAlpha(reinterpret_cast<const GameEntityManager::GameEntityAlphaChange*>(data));
             break;
+        case Mq::GAME_ENTITY_VISIBILITY_CHANGE:
+            this->changeGameEntityVisibility(reinterpret_cast<const GameEntityManager::GameEntityVisibilityChange*>(data));
+            break;
         default:
             break;
         }
@@ -913,6 +916,8 @@ namespace MyThirdOgre
                                       cge->initialTransform.vPos,
                                       cge->initialTransform.qRot );
 
+        sceneNode->setName(cge->name);
+
         sceneNode->setScale( cge->initialTransform.vScale );
 
         cge->gameEntity->mSceneNode = sceneNode;
@@ -1006,7 +1011,7 @@ namespace MyThirdOgre
             break;
             case MoTypePrefabPlane:
             {
-                Ogre::v1::Entity* pft = mSceneManager->createEntity(Ogre::SceneManager::PrefabType::PT_PLANE, Ogre::SCENE_STATIC);
+                Ogre::v1::Entity* pft = mSceneManager->createEntity(Ogre::SceneManager::PrefabType::PT_PLANE, Ogre::SCENE_DYNAMIC);
 
                 pft->setDatablock(cge->gameEntity->mManualObjectDatablockName);
 
@@ -1062,6 +1067,8 @@ namespace MyThirdOgre
 
         //if (!cge->gameEntity->mMovableObject->isAttached())
         sceneNode->attachObject( cge->gameEntity->mMovableObject );
+
+        sceneNode->setVisible( cge->visible );
 
         //Keep them sorted on how Ogre's internal memory manager assigned them memory,
         //to avoid false cache sharing when we update the nodes concurrently.
@@ -1160,6 +1167,15 @@ namespace MyThirdOgre
                 if (datablock) {
                     datablock->setTransparency(change->alpha, Ogre::HlmsPbsDatablock::Transparent, true);
                 }
+            }
+        }
+    }
+    //-----------------------------------------------------------------------------------
+    void GraphicsSystem::changeGameEntityVisibility(const GameEntityManager::GameEntityVisibilityChange* change) 
+    {
+        if (change->gameEntity) {
+            if (change->gameEntity->mSceneNode) {
+                change->gameEntity->mSceneNode->setVisible(change->visible);
             }
         }
     }

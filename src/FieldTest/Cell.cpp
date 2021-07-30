@@ -28,6 +28,7 @@ namespace MyThirdOgre
         int rowCount,
         int columnCount,
         float maxPressure,
+        bool pressureGradientArrowVisible,
         GameEntityManager* geMgr
     ) :
         mCellCoords(rowIndex, layerIndex, columnIndex),
@@ -38,6 +39,7 @@ namespace MyThirdOgre
         mVelocityArrowMoDef(0),
         mPressureGradientArrowEntity(0),
         mPressureGradientArrowMoDef(0),
+        mPressureGradientArrowVisible(pressureGradientArrowVisible),
         mPlaneEntity(0),
         mPlaneMoDef(0),
         mSphereEntity(0),
@@ -54,29 +56,27 @@ namespace MyThirdOgre
         {
             mState.bIsBoundary = mBoundary,
             mState.vPos = Ogre::Vector3(mCellCoords.mIndexX, 0, -mCellCoords.mIndexZ),
-            mState.vVel = mBoundary ? Ogre::Vector3::ZERO :
-                                      Ogre::Vector3::ZERO,
-
-                                        //Ogre::Vector3(Ogre::Math::RangeRandom(-1.5f, 1.5f), 0.0, Ogre::Math::RangeRandom(-1.5f, 1.5f)),
- 
-                                        //Ogre::Vector3(mCellCoords.mIndexX, 0, -mCellCoords.mIndexZ),
-
+            mState.vVel =Ogre::Vector3::ZERO,
+            mState.vVelocityGradient = Ogre::Vector3::ZERO,
+            //mState.rPressure = 0,// (mCellCoords.mIndexX / 2) / (mCellCoords.mIndexZ | -1), // now that's pretty     4x^2 + y - 6
+            mState.rPressure = 0.5 * mCellCoords.mIndexX + mCellCoords.mIndexZ - 3,//  4x^2 + y - 6
             mState.vPressureGradient = Ogre::Vector3::ZERO,
+            mState.vViscosity = Ogre::Vector3::ZERO,
             mState.qRot = Ogre::Quaternion::IDENTITY,
-            mState.rPressure = 0.0f,// Ogre::Math::RangeRandom(0.001f, 1.005f),
             mState.bActive = false
         };
 
         mOriginalState = CellState(mState);
 
-        //createVelocityArrow();
+        createVelocityArrow();
 
         if (!mBoundary)
             createPressureGradientArrow();
 
         createPressureIndicator();
 
-        //createBoundingSphere(geMgr);
+        createBoundingSphere();
+        //createBoundingSphereDisplay();
 
         // Quaternion Cheatsheet:
         // Take the degrees you want to rotate e.g. 135°
@@ -173,13 +173,23 @@ namespace MyThirdOgre
             }
         }
 
-        mVelocityArrowEntity = mGameEntityManager->addGameEntity(Ogre::SceneMemoryMgrTypes::SCENE_DYNAMIC,
+        Ogre::String name = "vA_";
+
+        name += Ogre::StringConverter::toString(mCellCoords.mIndexX);
+        name += "_";
+        name += Ogre::StringConverter::toString(mCellCoords.mIndexY);
+        name += "_";
+        name += Ogre::StringConverter::toString(mCellCoords.mIndexZ);
+
+        mVelocityArrowEntity = mGameEntityManager->addGameEntity(
+            name,
+            Ogre::SceneMemoryMgrTypes::SCENE_DYNAMIC,
             mVelocityArrowMoDef,
             mBoundary ? "UnlitRed" : "UnlitWhite",
             arrowLineList,
             Ogre::Vector3(mState.vPos.x, 0.01f, mState.vPos.z),
             mState.qRot,
-            mState.rPressure == 0 ? Ogre::Vector3::ZERO : Ogre::Vector3::UNIT_SCALE
+            Ogre::Vector3::UNIT_SCALE
         );
     }
 
@@ -208,13 +218,26 @@ namespace MyThirdOgre
             { 1, 4 }
         };
 
-        mPressureGradientArrowEntity = mGameEntityManager->addGameEntity(Ogre::SceneMemoryMgrTypes::SCENE_DYNAMIC,
+        Ogre::String name = "pGA_";
+
+        name += Ogre::StringConverter::toString(mCellCoords.mIndexX);
+        name += "_";
+        name += Ogre::StringConverter::toString(mCellCoords.mIndexY);
+        name += "_";
+        name += Ogre::StringConverter::toString(mCellCoords.mIndexZ);
+
+        mPressureGradientArrowEntity = mGameEntityManager->addGameEntity(
+            name,
+            Ogre::SceneMemoryMgrTypes::SCENE_DYNAMIC,
             mPressureGradientArrowMoDef,
             "UnlitGreen",
             arrowLineList,
             Ogre::Vector3(mState.vPos.x, 0.02f, mState.vPos.z),
             Ogre::Quaternion(1, 0, 0, 0),
-            Ogre::Vector3(0.5f, 0.0f, 0.5f)
+            Ogre::Vector3(0.5f, 0.0f, 0.5f),
+            false,
+            1.0f,
+            mPressureGradientArrowVisible
         );
     }
 
@@ -229,7 +252,17 @@ namespace MyThirdOgre
 
         pRot.FromAngleAxis(Ogre::Radian(Ogre::Degree(-90)), Ogre::Vector3::UNIT_X);
 
-        mPlaneEntity = mGameEntityManager->addGameEntity(Ogre::SceneMemoryMgrTypes::SCENE_STATIC,
+        Ogre::String name = "pIP_";
+
+        name += Ogre::StringConverter::toString(mCellCoords.mIndexX);
+        name += "_";
+        name += Ogre::StringConverter::toString(mCellCoords.mIndexY);
+        name += "_";
+        name += Ogre::StringConverter::toString(mCellCoords.mIndexZ);
+
+        mPlaneEntity = mGameEntityManager->addGameEntity(
+            name,
+            Ogre::SceneMemoryMgrTypes::SCENE_DYNAMIC,
             mPlaneMoDef,
             Ogre::SceneManager::PrefabType::PT_PLANE,
             mBoundary ? "Red" : "Blue",
@@ -237,19 +270,33 @@ namespace MyThirdOgre
             pRot,
             Ogre::Vector3(0.005f, 0.005f, 0.005f),
             true,
-            mBoundary ? 0.4f : mState.rPressure);
+            mBoundary ? 0.4f : mState.rPressure, 
+            true);
     }
 
     void Cell::createBoundingSphere(void)
     {
         mSphere = new Ogre::Sphere(mState.vPos, 1.0f);
+    }
 
+    void Cell::createBoundingSphereDisplay(void)
+    {
         mSphereMoDef = new MovableObjectDefinition();
         mSphereMoDef->meshName = "Sphere1000.mesh";
         mSphereMoDef->resourceGroup = Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME;
         mSphereMoDef->moType = MoTypeItem;
 
-        mSphereEntity = mGameEntityManager->addGameEntity(Ogre::SceneMemoryMgrTypes::SCENE_DYNAMIC,
+        Ogre::String name = "sph_";
+
+        name += Ogre::StringConverter::toString(mCellCoords.mIndexX);
+        name += "_";
+        name += Ogre::StringConverter::toString(mCellCoords.mIndexY);
+        name += "_";
+        name += Ogre::StringConverter::toString(mCellCoords.mIndexZ);
+
+        mSphereEntity = mGameEntityManager->addGameEntity(
+            name,
+            Ogre::SceneMemoryMgrTypes::SCENE_DYNAMIC,
             mSphereMoDef,
             mState.vPos,
             mState.qRot,
@@ -262,17 +309,15 @@ namespace MyThirdOgre
     {
         mState.vVel = v;
 
-		//if (!mState.bActive) {
-		//	mState.rPressure = abs(v.squaredLength());
-		//	if (mState.rPressure > mMaxPressure)
-		//		mState.rPressure = mMaxPressure;
-		//	else if (mState.rPressure < 0)
-		//		mState.rPressure = 0;
-		//}
+        //// this is bullshit
+       /* if (mState.vVel.squaredLength() < 0.002f)
+            mState.vVel = Ogre::Vector3::ZERO;
 
-        //if (mState.vVel == Ogre::Vector3::ZERO)
-        //    mState.vVel = Ogre::Vector3(Ogre::Math::RangeRandom(-0.2f, 0.2f), 0.0f, Ogre::Math::RangeRandom(-0.2f, 0.2f));
+        // so is this
+       /* if (mState.vVel == Ogre::Vector3::ZERO)
+            mState.vVel = Ogre::Vector3(Ogre::Math::RangeRandom(-0.02f, 0.02f), 0.0f, Ogre::Math::RangeRandom(-0.02f, 0.02f));*/
 
+        // but without ANY velocity it becomes impossible to INCREASE velocity because I'm constantly getting advected back to ZERO!
     }
 
     void Cell::setPressureGradient(Ogre::Vector3 v)
@@ -284,6 +329,7 @@ namespace MyThirdOgre
     void Cell::updateTransforms(float timeSinceLastFrame, Ogre::uint32 currIdx, Ogre::uint32 prevIdx)
     {
         if (mVelocityArrowEntity) {
+
             auto qNew = mVelocityArrowEntity->mTransform[prevIdx]->qRot;
 
             auto q = GetRotation(Ogre::Vector3(0, 0, 1), mState.vVel.normalisedCopy(), Ogre::Vector3::UNIT_Y);
@@ -294,6 +340,13 @@ namespace MyThirdOgre
             mVelocityArrowEntity->mTransform[currIdx]->vScale.y = 0;
             mVelocityArrowEntity->mTransform[currIdx]->vScale.z = vVelLen;
 
+            mPlaneEntity->mTransform[currIdx]->vPos.y = vVelLen;
+
+            q.normalise();
+
+            if (isnan(q.w) && isnan(q.x) && isnan(q.y) && isnan(q.z))
+                q = Ogre::Quaternion::IDENTITY;
+
             mVelocityArrowEntity->mTransform[currIdx]->qRot = q;
         }
 
@@ -301,13 +354,18 @@ namespace MyThirdOgre
 
             auto qNew = mPressureGradientArrowEntity->mTransform[prevIdx]->qRot;
 
-            auto q = GetRotation(Ogre::Vector3(0, 0, -1), mState.vPressureGradient.normalisedCopy(), Ogre::Vector3::UNIT_Y);
+            auto q = GetRotation(Ogre::Vector3(0, 0, -1), mState.vPressureGradient, Ogre::Vector3::UNIT_Y);
 
             auto vPressureGradientLen = mState.vPressureGradient.length();
 
             mPressureGradientArrowEntity->mTransform[currIdx]->vScale.x = vPressureGradientLen;
             mPressureGradientArrowEntity->mTransform[currIdx]->vScale.y = 0;
             mPressureGradientArrowEntity->mTransform[currIdx]->vScale.z = vPressureGradientLen;
+
+            q.normalise();
+
+            if (isnan(q.w) && isnan(q.x) && isnan(q.y) && isnan(q.z))
+                q = Ogre::Quaternion::IDENTITY;
 
             mPressureGradientArrowEntity->mTransform[currIdx]->qRot = q;
         }
@@ -332,6 +390,13 @@ namespace MyThirdOgre
     void Cell::setPressure(Ogre::Real p)
     {
         mState.rPressure = p;
+
+        //if (mState.rPressure == 0) {
+        //    mGameEntityManager->toggleGameEntityVisibility(mVelocityArrowEntity, false);
+        //}
+        //else {
+        //    mGameEntityManager->toggleGameEntityVisibility(mVelocityArrowEntity, true);
+        //}
     }
 
     void Cell::setActive() 

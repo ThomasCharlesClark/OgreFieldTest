@@ -49,7 +49,7 @@ namespace MyThirdOgre
     //-----------------------------------------------------------------------------------
     void TutorialGameState::createScene01(void)
     {
-        createDebugTextOverlay();
+        //createDebugTextOverlay();
 
         Ogre::Light* light = mGraphicsSystem->getSceneManager()->createLight();
         Ogre::SceneNode* lightNode = mGraphicsSystem->getSceneManager()->getRootSceneNode()->createChildSceneNode();
@@ -120,8 +120,8 @@ namespace MyThirdOgre
 
         outText.swap( finalText );
 
-        mDebugText->setCaption( finalText );
-        mDebugTextShadow->setCaption( finalText );
+        mDebugText->setCaption(finalText);
+        mDebugTextShadow->setCaption(finalText);
     }
     //-----------------------------------------------------------------------------------
     void TutorialGameState::update( float timeSinceLast )
@@ -129,10 +129,12 @@ namespace MyThirdOgre
         if( mDisplayHelpMode != 0 )
         {
             //Show FPS
-            Ogre::String finalText;
-            generateDebugText( timeSinceLast, finalText );
-            mDebugText->setCaption( finalText );
-            mDebugTextShadow->setCaption( finalText );
+            if (mDebugText) {
+                Ogre::String finalText;
+                generateDebugText(timeSinceLast, finalText);
+                mDebugText->setCaption(finalText);
+                mDebugTextShadow->setCaption(finalText);
+            }
         }
 
         if( mCameraController )
@@ -155,11 +157,12 @@ namespace MyThirdOgre
         if( arg.keysym.scancode == SDL_SCANCODE_F1 && (arg.keysym.mod & ~(KMOD_NUM|KMOD_CAPS)) == 0 )
         {
             mDisplayHelpMode = (mDisplayHelpMode + 1) % mNumDisplayHelpModes;
-
-            Ogre::String finalText;
-            generateDebugText( 0, finalText );
-            mDebugText->setCaption( finalText );
-            mDebugTextShadow->setCaption( finalText );
+            if (mDebugText) {
+                Ogre::String finalText;
+                generateDebugText(0, finalText);
+                mDebugText->setCaption(finalText);
+                mDebugTextShadow->setCaption(finalText);
+            }
         }
         else if( arg.keysym.scancode == SDL_SCANCODE_F1 && (arg.keysym.mod & (KMOD_LCTRL|KMOD_RCTRL)) )
         {
