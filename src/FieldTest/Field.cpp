@@ -49,6 +49,10 @@ namespace MyThirdOgre
 		createGrid();
 
 		createCells();
+
+		mActiveCell = mCells[{ (mColumnCount - 1) / 2, 0, (mRowCount - 1) / 2 }];
+
+		mActiveCell->setActive();
 	}
 
 	Field::~Field() {

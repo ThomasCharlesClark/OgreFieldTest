@@ -133,7 +133,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\OgreMain\include;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\build\include;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Common\include;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Unlit\include;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Pbs\include;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Overlay\include;C:\Program Files (x86)\SDL2\include\SDL2;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\.\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\OgreMain\include;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\build\include;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Common\include;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Unlit\include;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Pbs\include;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Overlay\include;C:\Program Files (x86)\SDL2\include\SDL2;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\.\include;$(LEAP_SDK)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <ExceptionHandling>Sync</ExceptionHandling>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
@@ -162,8 +162,8 @@
       <ProxyFileName>%(Filename)_p.c</ProxyFileName>
     </Midl>
     <Link>
-      <AdditionalDependencies>OgreMain.lib;OgreOverlay.lib;OgreHlmsUnlit.lib;OgreHlmsPbs.lib;C:\Program Files (x86)\SDL2\lib\SDL2d.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:/Users/Thoams/source/repos/ThomasCharlesClark/Ogre/my-third-ogre/Dependencies/Ogre/build/lib/$(ConfigurationName);C:/Users/Thoams/source/repos/ThomasCharlesClark/Ogre/my-third-ogre/Dependencies/Ogre/build/lib/$(ConfigurationName)/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>OgreMain.lib;OgreOverlay.lib;OgreHlmsUnlit.lib;OgreHlmsPbs.lib;C:\Program Files (x86)\SDL2\lib\SDL2d.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;LeapC.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:/Users/Thoams/source/repos/ThomasCharlesClark/Ogre/my-third-ogre/Dependencies/Ogre/build/lib/$(ConfigurationName);C:/Users/Thoams/source/repos/ThomasCharlesClark/Ogre/my-third-ogre/Dependencies/Ogre/build/lib/$(ConfigurationName)/$(Configuration);$(LEAP_SDK)\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>

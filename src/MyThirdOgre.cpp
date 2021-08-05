@@ -23,8 +23,10 @@ using namespace MyThirdOgre;
 
 extern const double cFrametime;
 const double cFrametime = 1.0 / 25.0;
+extern const double cLogicFrametime;
+const double cLogicFrametime = 1.0 / 25.0;
 extern const double cLeapFrametime;
-const double cLeapFrametime = 1.0 / 60.0;
+const double cLeapFrametime = 1.0 / 240.0;
 
 extern bool gFakeFrameskip;
 bool gFakeFrameskip = false;
@@ -258,7 +260,7 @@ unsigned long logicThread(Ogre::ThreadHandle* threadHandle)
         SDL_GetRelativeMouseState(logicSystem->getMouseX(), logicSystem->getMouseY());
         //SDL_GetMouseState(logicSystem->getMouseX(), logicSystem->getMouseY());
 
-        logicSystem->update(static_cast<float>(cFrametime));
+        logicSystem->update(static_cast<float>(cLogicFrametime));
 
         logicSystem->finishFrameParallel();
 
@@ -274,7 +276,7 @@ unsigned long logicThread(Ogre::ThreadHandle* threadHandle)
         }
 
         //YieldTimer will wait until the current time is greater than startTime + cFrametime
-        startTime = yieldTimer.yield(cFrametime, startTime);
+        startTime = yieldTimer.yield(cLogicFrametime, startTime);
     }
 
     barrier->sync();

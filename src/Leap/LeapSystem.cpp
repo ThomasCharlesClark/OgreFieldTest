@@ -68,7 +68,7 @@ namespace MyThirdOgre
             eLeapRS result;
             LEAP_CONNECTION_MESSAGE msg;
 
-            result = LeapPollConnection(mConnectionHandle, timeSinceLast, &msg);
+            result = LeapPollConnection(mConnectionHandle, 0, &msg);
             //Handle message
 
             switch (msg.type) {
@@ -84,11 +84,15 @@ namespace MyThirdOgre
 
                     Ogre::Vector3 vVel = Ogre::Vector3(msg.tracking_event->pHands[0].palm.velocity.v);
 
-                    //Ogre::Vector3 vPos = Ogre::Vector3(msg.tracking_event->pHands[0].palm.position.v);
+                    Ogre::Vector3 vPos = Ogre::Vector3(msg.tracking_event->pHands[0].palm.position.v);
 
-                    //if (mPreviousTrackingMessage.pointer != NULL)
-                    //    if (msg.tracking_event->pHands[0].palm.position.v != mPreviousTrackingMessage.tracking_event->pHands[0].palm.position.v)
-                    //        vPos = Ogre::Vector3(msg.tracking_event->pHands[0].palm.position.v - mPreviousTrackingMessage.tracking_event->pHands[0].palm.position.v);
+                    if (mPreviousTrackingMessage.pointer != NULL)
+                        if (msg.tracking_event->pHands[0].palm.position.v != mPreviousTrackingMessage.tracking_event->pHands[0].palm.position.v)
+                            vPos = Ogre::Vector3(msg.tracking_event->pHands[0].palm.position.v - mPreviousTrackingMessage.tracking_event->pHands[0].palm.position.v);
+                    
+                    vPos = 1 / vPos.normalise();
+
+                    vPos *= mVelocityScalingFactor;
 
                     vVel.normalise();
 
@@ -102,7 +106,9 @@ namespace MyThirdOgre
 
                     Leap_VelocityMessage vMsg = Leap_VelocityMessage(timeSinceLast, vVel);
 
-                    this->queueSendMessage(mLogicSystem, Mq::LEAPFRAME_VELOCITY, vMsg);
+                    //this->queueSendMessage(mLogicSystem, Mq::LEAPFRAME_VELOCITY, vMsg);
+
+                    mLogicSystem->receiveMessageImmediately(Mq::LEAPFRAME_VELOCITY, vMsg);
 
                     mPreviousTrackingMessage = msg;
                 }
