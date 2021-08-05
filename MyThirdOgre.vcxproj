@@ -86,7 +86,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\OgreMain\include;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\build\include;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Common\include;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Unlit\include;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Pbs\include;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Overlay\include;C:\Program Files (x86)\SDL2\include\SDL2;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\.\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\OgreMain\include;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\build\include;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Common\include;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Unlit\include;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Pbs\include;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Overlay\include;C:\Program Files (x86)\SDL2\include\SDL2;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon;C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\.\include;$(LEAP_SDK)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -115,8 +115,8 @@
       <ProxyFileName>%(Filename)_p.c</ProxyFileName>
     </Midl>
     <Link>
-      <AdditionalDependencies>OgreMain_d.lib;OgreOverlay_d.lib;OgreHlmsUnlit_d.lib;OgreHlmsPbs_d.lib;C:\Program Files (x86)\SDL2\lib\SDL2d.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:/Users/Thoams/source/repos/ThomasCharlesClark/Ogre/my-third-ogre/Dependencies/Ogre/build/lib/$(ConfigurationName);C:/Users/Thoams/source/repos/ThomasCharlesClark/Ogre/my-third-ogre/Dependencies/Ogre/build/lib/$(ConfigurationName)/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>OgreMain_d.lib;OgreOverlay_d.lib;OgreHlmsUnlit_d.lib;OgreHlmsPbs_d.lib;C:\Program Files (x86)\SDL2\lib\SDL2d.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;LeapC.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:/Users/Thoams/source/repos/ThomasCharlesClark/Ogre/my-third-ogre/Dependencies/Ogre/build/lib/$(ConfigurationName);C:/Users/Thoams/source/repos/ThomasCharlesClark/Ogre/my-third-ogre/Dependencies/Ogre/build/lib/$(ConfigurationName)/$(Configuration);$(LEAP_SDK)\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -127,6 +127,9 @@
     <ProjectReference>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
     </ProjectReference>
+    <PostBuildEvent>
+      <Command>xcopy /yr "$(LEAP_SDK)\lib\x64\LeapC.dll" "$(TargetDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -332,6 +335,8 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClCompile Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\Utils\ScreenSpaceReflections.cpp" />
     <ClCompile Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\Utils\SmaaUtils.cpp" />
     <ClCompile Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\Utils\TestUtils.cpp" />
+    <ClCompile Include="src\Leap\LeapSystemState.cpp" />
+    <ClCompile Include="src\Leap\LeapSystem.cpp" />
     <ClCompile Include="src\OgreCommon\CameraControllerMultiThreading.cpp" />
     <ClCompile Include="src\FieldTest\Cell.cpp" />
     <ClCompile Include="src\FieldTest\Field.cpp" />
@@ -369,6 +374,8 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="include\OgreCommon\CameraControllerMultiThreading.h" />
     <ClInclude Include="include\GraphicsGameState.h" />
     <ClInclude Include="include\LogicGameState.h" />
+    <ClInclude Include="include\Leap\LeapSystem.h" />
+    <ClInclude Include="include\Leap\LeapSystemState.h" />
     <ClInclude Include="src\FieldTest\Headers\MyMath.h" />
     <ClInclude Include="src\FieldTest\Headers\Cell.h" />
     <ClInclude Include="src\FieldTest\Headers\Field.h" />

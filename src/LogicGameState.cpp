@@ -11,9 +11,9 @@ using namespace MyThirdOgre;
 namespace MyThirdOgre
 {
     LogicGameState::LogicGameState() :
-        mFieldScale( 1 ),
-        mFieldColumnCount ( 22 ),
-        mFieldRowCount ( 22 ),
+        mFieldScale( 1 ),                                                                                                                                          
+        mFieldColumnCount ( 23 ),
+        mFieldRowCount ( 23 ),
         mField( 0 ), 
         mLogicSystem( 0 ), 
         mCameraController( 0 ),
@@ -52,7 +52,7 @@ namespace MyThirdOgre
             "mainCamera",
             Ogre::SCENE_DYNAMIC, 
             mCameraMoDef,
-            Ogre::Vector3(mFieldColumnCount / 2, 10, 15),
+            Ogre::Vector3(mFieldColumnCount / 2, 15, 25),
             Ogre::Quaternion(0.983195186, -0.182557389, 0.0f, 0.0f),
             Ogre::Vector3::UNIT_SCALE);
 
@@ -90,7 +90,7 @@ namespace MyThirdOgre
             mField->traverseActiveCellZPositive();
 
         if (mInputKeys[8])
-            mField->increasePressure(timeSinceLast);
+            mField->addImpulse(timeSinceLast);
         if (mInputKeys[9])
             mField->decreasePressure(timeSinceLast);
 

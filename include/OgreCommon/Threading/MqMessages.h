@@ -24,6 +24,10 @@ namespace Mq
         GAME_ENTITY_ALPHA_CHANGE,
 
         GAME_ENTITY_VISIBILITY_CHANGE,
+        
+        //...Leap -> Logic?
+        LEAPFRAME_FINISHED,
+        LEAPFRAME_VELOCITY,
 
         NUM_MESSAGE_IDS,
     };

@@ -18,6 +18,7 @@ namespace MyThirdOgre
 	Field::Field(GameEntityManager* geMgr, int scale, int columnCount, int rowCount) :
 		mGameEntityManager(geMgr),
 		mScale(scale),
+		mHalfScale((float)mScale/2),
 		mColumnCount(columnCount),
 		mRowCount(rowCount),
 		mGridLineMoDef(0),
@@ -25,23 +26,25 @@ namespace MyThirdOgre
 		mLayerCount(1),
 		mCells(std::unordered_map<CellCoord, Cell*> { }),
 		mActiveCell(0),
-		mBaseManualVelocityAdjustmentSpeed(2.0f),
-		mBoostedManualVelocityAdjustmentSpeed(10.0f),
-		mBaseManualPressureAdjustmentSpeed(10.0f),
-		mBoostedManualPressureAdjustmentSpeed(50.0f),
+		mBaseManualVelocityAdjustmentSpeed(0.5f),
+		mBoostedManualVelocityAdjustmentSpeed(1.5f),
+		mBaseManualPressureAdjustmentSpeed(0.01f),
+		mBoostedManualPressureAdjustmentSpeed(0.05f),
 		mManualAdjustmentSpeedModifier(false),
 		mMinCellPressure(0.0f),		// 0 atmosphere...?
-		mMaxCellPressure(5.0f),		// 5 atmosphere...?
-		mViscosity(1.40f), // total guess
-		mFluidDensity(0.9970f),		// water density = 997kg/m^3
+		mMaxCellPressure(1.0f),		// 5 atmosphere...?
+		mMaxCellVelocitySquared(1000.0f),		// total guess
+		mViscosity(0.05f),				// total guess
+		mFluidDensity(99.7f),		// water density = 997kg/m^3
 		mKinematicViscosity(mViscosity / mFluidDensity),
-		mDiffusionConstant(0.991f),
+		mDissipationConstant(1.0f),//.9991f),
 		mIsRunning(true),
 		mPressureSpreadHalfWidth(2),
 		mVelocitySpreadHalfWidth(2),
 		mPressureGradientVisible(true),
-		mJacobiIterationsPressure(10),
-		mJacobiIterationsDiffusion(20)
+		mJacobiIterationsPressure(20),
+		mJacobiIterationsDiffusion(20),
+		mImpulses(std::vector<std::pair<CellCoord, Ogre::Vector3>> { })
 	{
 		createGrid();
 
@@ -106,7 +109,7 @@ namespace MyThirdOgre
 		for (int i = 0; i < mColumnCount; i++) {
 			for (int j = 0; j < mRowCount; j++) {
 				for (int k = 0; k < mLayerCount; k++) {
-					auto c = new Cell(i, j, k, mColumnCount, mRowCount, mMaxCellPressure, mPressureGradientVisible, mGameEntityManager);
+					auto c = new Cell(i, j, k, mColumnCount, mRowCount, mMaxCellPressure, mMaxCellVelocitySquared, mPressureGradientVisible, mGameEntityManager);
 					mCells.insert({
 						c->getCellCoords(),
 						c
@@ -118,13 +121,7 @@ namespace MyThirdOgre
 
 	Cell* Field::getCell(CellCoord coords)
 	{
-		auto iter = mCells.find(coords);
-
-		if (iter != mCells.end())
-			return iter->second;
-		else {
-			return 0;
-		}
+		return mCells[coords];
 	}
 
 	void Field::toggleIsRunning(void) 
@@ -138,136 +135,45 @@ namespace MyThirdOgre
 
 			std::unordered_map<CellCoord, CellState> state;
 
-			for (auto& c : mCells) {
+			for (const auto& c : mCells) {
 				//if (!c.second->getIsBoundary()) {
-					state.insert({ c.second->getCellCoords() , *c.second->getState() });
+					state.insert({ c.second->getCellCoords() , c.second->getState() });
 				//}
 			}
 
 			advect(timeSinceLast, state);
 
-			//jacobiPressure(state);
+			addImpulses(timeSinceLast, state);
 
-			jacobiDiffusion(timeSinceLast, state);
+			assert(state.size() == mCells.size());
 
-			//addForces(timeSinceLast, state);
+			if (mViscosity > 0)
+				jacobiDiffusion(timeSinceLast, state);
 
-			//computeVelocityGradient(timeSinceLast, state); 
+			divergence(timeSinceLast, state);
 
-			computePressureGradient(timeSinceLast, state);
+			jacobiPressure(timeSinceLast, state);
 
-			for (auto& c : state) {
-				if (!mCells.at(c.first)->getIsBoundary()) {
+			boundaryConditions(timeSinceLast, state);
 
-					auto cell = mCells.at(c.first);
+			subtractPressureGradient(timeSinceLast, state);
 
-					auto vNew = c.second.vVel; // nope, velocity is still zero because it began at zero.
-
-					auto pressureGradientTerm = -(1 / mFluidDensity) * c.second.vPressureGradient;
-
-					//vNew += c.second.vPressureGradient;// pressureGradientTerm;
-					vNew -= pressureGradientTerm;
-
-					if (vNew != Ogre::Vector3::ZERO)
-						cell->setVelocity(vNew);
-					if (c.second.rPressure != 0)
-						cell->setPressure(c.second.rPressure); // pressure is being advected properly
-					cell->setPressureGradient(c.second.vPressureGradient); // the pressure gradient is being calculated properly
-				}
+			for (const auto& c : state) {
+				auto cell = mCells[c.first];
+				cell->setVelocity(c.second.vVel);
+				cell->setPressure(c.second.rPressure);
+				cell->setPressureGradient(c.second.vPressureGradient);
 			}
-		}
 
-		for (auto& cell : mCells) {
-			if (cell.second->getIsBoundary()) {
-
-			//	//// equal and opposite reaction: the walls of a container push back against the contents.
-			//	//// outer edges:
-			//	//if (cell.first.mIndexX == 0) { // x == 0 edge
-			//	//	cell.second->setVelocity(-mCells.at(cell.first + CellCoord(1, 0, 0))->getVelocity());
-			//	//}
-			//	//else if (cell.first.mIndexX == mRowCount - 1) { // opposite x edge
-			//	//	cell.second->setVelocity(-mCells.at(cell.first + CellCoord(-1, 0, 0))->getVelocity());
-			//	//}
-			//	//else if (cell.first.mIndexZ == 0) {
-			//	//	cell.second->setVelocity(-mCells.at(cell.first + CellCoord(0, 0, 1))->getVelocity());
-			//	//}
-			//	//else if (cell.first.mIndexZ == mColumnCount - 1) { // opposite z edge
-			//	//	cell.second->setVelocity(-mCells.at(cell.first + CellCoord(0, 0, -1))->getVelocity());
-			//	//}
-
-			//	//// corners:  // x == 0, z == 0
-			//	//if (cell.first.mIndexX == 0 && cell.first.mIndexZ == 0) {
-			//	//	mState.qRot = Ogre::Quaternion(0.3827, 0.0, 0.9239, 0.0);
-			//	//}           // x == max, z == 0
-			//	//else if (cell.first.mIndexX == mRowCount - 1 && cell.first.mIndexZ == 0) {
-			//	//	mState.qRot = Ogre::Quaternion(-0.3827, 0.0, 0.9239, 0.0);
-			//	//}           // x == 0, z == max
-			//	//else if (cell.first.mIndexX == 0 && cell.first.mIndexZ == mColumnCount - 1) {
-			//	//	mState.qRot = Ogre::Quaternion(-0.9239, 0.0, -0.3827, 0.0);
-			//	//}           // x == max, z == max
-			//	//else if (cell.first.mIndexX == mRowCount - 1 && cell.first.mIndexZ == mColumnCount - 1) {
-			//	//	mState.qRot = Ogre::Quaternion(0.9239, 0.0, -0.3827, 0.0);
-			//	//}
-			}
-			else
+			for (const auto& cell : mCells) {
 				cell.second->updateTransforms(timeSinceLast, currentTransformIndex, previousTransformIndex);
-		}
-	}
-	
-	void Field::jacobiPressure(float timeSinceLast, std::unordered_map<CellCoord, CellState>& state)
-	{
-		for (auto& cell : state) {
-			if (!cell.second.bIsBoundary) {
-				for (auto i = 0; i < mJacobiIterationsPressure; i++) {
-
-					auto aCoord = cell.first + CellCoord(-1, 0, 0);
-					auto bCoord = cell.first + CellCoord(0, 0, 1);
-					auto cCoord = cell.first + CellCoord(1, 0, 0);
-					auto dCoord = cell.first + CellCoord(0, 0, -1);
-
-					float alpha = -1;
-					auto beta = cell.second.vVelocityGradient;
-
-					auto a = state.at(aCoord);
-					auto b = state.at(bCoord);
-					auto c = state.at(cCoord);
-					auto d = state.at(dCoord);
-
-					cell.second.vPressureGradient = (a.rPressure + b.rPressure + c.rPressure + d.rPressure + (alpha * beta)) / 4;
-				}
-			}
-		}
-	}
-
-	void Field::jacobiDiffusion(float timeSinceLast, std::unordered_map<CellCoord, CellState>& state)
-	{
-		for (auto& cell : state) {
-			if (!cell.second.bIsBoundary) {
-				for (auto i = 0; i < mJacobiIterationsDiffusion; i++) {
-
-					auto aCoord = cell.first + CellCoord(-1, 0, 0);
-					auto bCoord = cell.first + CellCoord(0, 0, 1);
-					auto cCoord = cell.first + CellCoord(1, 0, 0);
-					auto dCoord = cell.first + CellCoord(0, 0, -1);
-
-					float alpha = (1 / mViscosity * timeSinceLast);
-					float rBeta = (1 / (4 + 1 / mViscosity * timeSinceLast));
-					auto beta = cell.second.vVelocityGradient;
-
-					auto a = state.at(aCoord);
-					auto b = state.at(bCoord);
-					auto c = state.at(cCoord);
-					auto d = state.at(dCoord);
-
-					cell.second.vVel = (a.vVel + b.vVel + c.vVel + d.vVel + alpha * cell.second.vVel) * rBeta;
-				}
 			}
 		}
 	}
 
 	void Field::advect(float timeSinceLast, std::unordered_map<CellCoord, CellState>& state)
 	{
-		for (auto& cell : state) {
+		for (auto cell : state) {
 
 			if (!cell.second.bIsBoundary) {
 
@@ -275,17 +181,100 @@ namespace MyThirdOgre
 
 				auto vPos = cell.second.vPos - (cVel * timeSinceLast);
 
-				if (true) { //cVel == Ogre::Vector3::ZERO) {
+				//if (false) {
 
-					auto aCoord = cell.first + CellCoord(-1, 0, 0);
-					auto bCoord = cell.first + CellCoord(0, 0, 1);
-					auto cCoord = cell.first + CellCoord(1, 0, 0);
-					auto dCoord = cell.first + CellCoord(0, 0, -1);
+				//	auto aCoord = cell.first + CellCoord(-1, 0, 0);
+				//	auto bCoord = cell.first + CellCoord(0, 0, 1);
+				//	auto cCoord = cell.first + CellCoord(1, 0, 0);
+				//	auto dCoord = cell.first + CellCoord(0, 0, -1);
 
-					auto a = state.at(aCoord);
-					auto b = state.at(bCoord);
-					auto c = state.at(cCoord);
-					auto d = state.at(dCoord);
+				//	// this type of indexing performs an insert if not found.
+				//	auto a = state[aCoord];
+				//	auto b = state[bCoord];
+				//	auto c = state[cCoord];
+				//	auto d = state[dCoord];
+
+				//	Ogre::Vector3 vNewVel = velocityBiLerpCrossForm(
+
+				//		a.vPos,
+				//		b.vPos,
+				//		c.vPos,
+				//		d.vPos,
+
+				//		a.vVel,
+				//		b.vVel,
+				//		c.vVel,
+				//		d.vVel,
+
+				//		vPos.x,
+				//		vPos.z
+				//	);
+
+				//	if (vNewVel != Ogre::Vector3::ZERO)
+				//		int f = 0;
+
+				//	cell.second.vVel = mDissipationConstant * vNewVel;
+				//}
+				//else {
+
+					int ax, az,
+						bx, bz,
+						cx, cz,
+						dx, dz;
+
+					ax = floor(vPos.x);
+					az = ceil(vPos.z);
+
+					bx = floor(vPos.x);
+					bz = floor(vPos.z);
+
+					cx = ceil(vPos.x);
+					cz = floor(vPos.z);
+
+					dx = ceil(vPos.x);
+					dz = ceil(vPos.z);
+
+					if (ax > mColumnCount - 1)
+						ax = mColumnCount - 1;
+					if (ax < 0)
+						ax = 0;
+					if (az > mRowCount - 1)
+						az = mRowCount - 1;
+					if (az < 0)
+						az = 0;
+
+					if (bx > mColumnCount - 1)
+						bx = mColumnCount - 1;
+					if (bx < 0)
+						bx = 0;
+					if (bz > mRowCount - 1)
+						bz = mRowCount - 1;
+					if (bz < 0)
+						bz = 0;
+
+					if (cx > mColumnCount - 1)
+						cx = mColumnCount - 1;
+					if (cx < 0)
+						cx = 0;
+					if (cz > mRowCount - 1)
+						cz = mRowCount - 1;
+					if (cz < 0)
+						cz = 0;
+
+					if (dx > mColumnCount - 1)
+						dx = mColumnCount - 1;
+					if (dx < 0)
+						dx = 0;
+					if (dz > mRowCount - 1)
+						dz = mRowCount - 1;
+					if (dz < 0)
+						dz = 0;
+
+					// this type of indexing performs an insert if not found.
+					auto a = state[{ ax, 0, abs(az) }];
+					auto b = state[{ bx, 0, abs(bz) }];
+					auto c = state[{ cx, 0, abs(cz) }];
+					auto d = state[{ dx, 0, abs(dz) }];
 
 					Ogre::Vector3 vNewVel = velocityBiLerpCrossForm(
 
@@ -303,196 +292,197 @@ namespace MyThirdOgre
 						vPos.z
 					);
 
-					Ogre::Real rNewPressure = pressureBiLerpCrossForm(
-						a.vPos,
-						b.vPos,
-						c.vPos,
-						d.vPos,
-						a.rPressure,
-						b.rPressure,
-						c.rPressure,
-						d.rPressure,
-						vPos.x,
-						vPos.z
-					);
+					if (vNewVel != Ogre::Vector3::ZERO)
+						int f = 0;
 
-					cell.second.rPressure = rNewPressure;
-					cell.second.vVel = vNewVel;
-					//cell.second.vViscosity = (a.vVel + b.vVel + c.vVel + d.vVel) - (4 * cell.second.vVel);
-				}
-
-				else {
-
-					int ax = 0, az = 0,
-						bx = 0, bz = 0,
-						cx = 0, cz = 0,
-						dx = 0, dz = 0;
-
-					ax = floor(vPos.x);
-					az = ceil(vPos.z);
-
-					bx = floor(vPos.x);
-					bz = floor(vPos.z);
-
-					cx = ceil(vPos.x);
-					cz = floor(vPos.z);
-
-					dx = ceil(vPos.x);
-					dz = ceil(vPos.z);
-
-					auto a = state.at({ ax, 0, abs(az) });
-					auto b = state.at({ bx, 0, abs(bz) });
-					auto c = state.at({ cx, 0, abs(cz) });
-					auto d = state.at({ dx, 0, abs(dz) });
-
-					Ogre::Vector3 vNewVel = velocityBiLerp(
-
-						a.vPos,
-						b.vPos,
-						c.vPos,
-						d.vPos,
-
-						a.vVel,
-						b.vVel,
-						c.vVel,
-						d.vVel,
-
-						vPos.x,
-						vPos.z
-					);
-
-					Ogre::Real rNewPressure = pressureBiLerp(
-
-						a.vPos,
-						b.vPos,
-						c.vPos,
-						d.vPos,
-
-						a.rPressure,
-						b.rPressure,
-						c.rPressure,
-						d.rPressure,
-
-						vPos.x,
-						vPos.z
-					);
-
-					cell.second.rPressure = rNewPressure;
-					cell.second.vVel = vNewVel;
-					//cell.second.vViscosity = (a.vVel + b.vVel + c.vVel + d.vVel) - (4 * cell.second.vVel);
-				}
-
-				
-
-				//auto a = state.find({ ax, 0, abs(az) });
-				//auto b = state.find({ bx, 0, abs(bz) });
-				//auto c = state.find({ cx, 0, abs(cz) });
-				//auto d = state.find({ dx, 0, abs(dz) });
-
-				//if (a != state.end() &&
-				//	b != state.end() &&
-				//	c != state.end() &&
-				//	d != state.end())
-				//{
-				//	assert(a != b);
-				//	assert(a != c);
-				//	assert(a != d);
-
-				//	assert(b != c);
-				//	assert(b != d);
-
-				//	assert(c != d);
-
-				//	Ogre::Vector3 vNewVel = velocityBiLerp(
-
-				//		a->second.vPos,
-				//		b->second.vPos,
-				//		c->second.vPos,
-				//		d->second.vPos,
-
-				//		a->second.vVel,
-				//		b->second.vVel,
-				//		c->second.vVel,
-				//		d->second.vVel,
-
-				//		vPos.x,
-				//		vPos.z
-				//	);
-
-				//	cell.second.vVel = vNewVel;
+					cell.second.vVel = mDissipationConstant * vNewVel;
 				//}
 			}
 		}
 	}
 
-	void Field::diffuse(float timeSinceLast, std::unordered_map<CellCoord, CellState>& state)
+	void Field::addImpulses(float timeSinceLast, std::unordered_map<CellCoord, CellState>& state)
 	{
-		//int iterations = 20;
+		auto it = mImpulses.begin();
 
-		//for (auto& cell : state) {
-		//	if (!cell.second.bIsBoundary) {
-		//		// iterate jacobi function over cell rBeta times
-		//		for (int i = 0; i < iterations; i++) {
-		//			Ogre::Vector3 output;
-		//			jacobi(cell.first, output, mKinematicViscosity, 2, state, state);
-		//			cell.second.vVel = output;
-		//		}
-		//	}
-		//}
+		while (it != mImpulses.end()) 
+		{
+			state[it->first].vVel += it->second;
+			it = mImpulses.erase(it);
+		}
 	}
 
-	void Field::addForces(float timeSinceLast, std::unordered_map<CellCoord, CellState>& state)
+	void Field::jacobiDiffusion(float timeSinceLast, std::unordered_map<CellCoord, CellState>& state)
 	{
+		for (const auto& cell : state) {
+			if (!cell.second.bIsBoundary) {
+				for (auto i = 0; i < mJacobiIterationsDiffusion; i++) {
 
-	}
+					auto aCoord = cell.first + CellCoord(-1, 0, 0); // left
+					auto bCoord = cell.first + CellCoord(1, 0, 0); // right
+					auto cCoord = cell.first + CellCoord(0, 0, 1); // top
+					auto dCoord = cell.first + CellCoord(0, 0, -1); // bottom
 
-	void Field::computeVelocityGradient(float timeSinceLast, std::unordered_map<CellCoord, CellState>& state)
-	{
-		for (auto& c : state) {
-			if (!c.second.bIsBoundary) {
+					float alpha = mScale * mScale / (mViscosity * timeSinceLast);
+					float rBeta = 1 / (4 + alpha);
+					auto beta = cell.second.vVel;
 
-				auto left = c.first + CellCoord(-1, 0, 0);
-				auto right = c.first + CellCoord(1, 0, 0);
-				auto top = c.first + CellCoord(0, 0, 1);
-				auto bottom = c.first + CellCoord(0, 0, -1);
+					auto a = state[aCoord];
+					auto b = state[bCoord];
+					auto c = state[cCoord];
+					auto d = state[dCoord];
 
-				auto l = state.at(left);
-				auto r = state.at(right);
-				auto t = state.at(top);
-				auto b = state.at(bottom);
+					const_cast<CellState&>(cell.second).vVel = (a.vVel + b.vVel + c.vVel + d.vVel + alpha * beta) * rBeta; 
 
-				Ogre::Vector3 gradient = Ogre::Vector3(
-					((l.vVel - r.vVel) / 2).length(),
-					0.0f,
-					((t.vVel - b.vVel) / 2).length());
-
-				c.second.vVelocityGradient = gradient;
+					if (cell.second.vVel != Ogre::Vector3::ZERO)
+						int f = 0;
+				}
 			}
 		}
 	}
 
-	void Field::computePressureGradient(float timeSinceLast, std::unordered_map<CellCoord, CellState>& state)
+	void Field::divergence(float timeSinceLast, std::unordered_map<CellCoord, CellState>& state)
 	{
-		for (auto& c : state) {
-			if (!c.second.bIsBoundary) {
+		for (const auto& cell : state) {
+			if (!cell.second.bIsBoundary) {
+				auto aCoord = cell.first + CellCoord(-1, 0, 0); // left
+				auto bCoord = cell.first + CellCoord(1, 0, 0); // right
+				auto cCoord = cell.first + CellCoord(0, 0, 1); // top
+				auto dCoord = cell.first + CellCoord(0, 0, -1); // bottom
 
-				auto left = c.first + CellCoord(-1, 0, 0);
-				auto right = c.first + CellCoord(1, 0, 0);
-				auto top = c.first + CellCoord(0, 0, 1);
-				auto bottom = c.first + CellCoord(0, 0, -1);
+				auto a = state[aCoord];
+				auto b = state[bCoord];
+				auto c = state[cCoord];
+				auto d = state[dCoord];
 
-				auto l = state.at(left);
-				auto r = state.at(right);
-				auto t = state.at(top);
-				auto b = state.at(bottom);
+				//if (isinf(a.vVel.x))
+				//	a.vVel.x = 0;
+				//if (isinf(b.vVel.x))
+				//	b.vVel.x = 0;
+				//if (isinf(c.vVel.z))
+				//	c.vVel.z = 0;
+				//if (isinf(d.vVel.z))
+				//	d.vVel.z = 0;
+
+				const_cast<CellState&>(cell.second).rDivergence = ((a.vVel.x - b.vVel.x) + (c.vVel.z - d.vVel.z)) * mHalfScale;
+
+				if (cell.second.rDivergence != 0)
+					int f = 0;
+			}
+		}
+	}
+
+	void Field::jacobiPressure(float timeSinceLast, std::unordered_map<CellCoord, CellState>& state)
+	{
+		for (const auto& cell : state) {
+			if (!cell.second.bIsBoundary) {
+
+				if (cell.second.rPressure != 0)
+					int f = 0;
+
+				const_cast<CellState&>(cell.second).rPressure = 0;
+
+				for (auto i = 0; i < mJacobiIterationsPressure; i++) {
+
+					auto aCoord = cell.first + CellCoord(-1, 0, 0); // left
+					auto bCoord = cell.first + CellCoord(1, 0, 0); // right
+					auto cCoord = cell.first + CellCoord(0, 0, 1); // top
+					auto dCoord = cell.first + CellCoord(0, 0, -1); // bottom
+
+					float alpha = -mScale * mScale;
+					float rBeta = 0.25f;
+					auto beta = cell.second.rDivergence;
+
+					if (beta != 0)
+						int f = 0;
+
+					auto a = state[aCoord];
+					auto b = state[bCoord];
+					auto c = state[cCoord];
+					auto d = state[dCoord];
+
+					const_cast<CellState&>(cell.second).rPressure = (a.rPressure + b.rPressure + c.rPressure + d.rPressure + alpha * beta) * rBeta;
+
+					if (cell.second.rPressure != 0)
+						int f = 0;
+				}
+			}
+		}
+	}
+
+	void Field::subtractPressureGradient(float timeSinceLast, std::unordered_map<CellCoord, CellState>& state)
+	{
+		for (const auto& cell : state) {
+			if (!cell.second.bIsBoundary) {
+
+				auto aCoord = cell.first + CellCoord(-1, 0, 0); // left
+				auto bCoord = cell.first + CellCoord(1, 0, 0); // right
+				auto cCoord = cell.first + CellCoord(0, 0, 1); // top
+				auto dCoord = cell.first + CellCoord(0, 0, -1); // bottom
+
+				auto a = state[aCoord];
+				auto b = state[bCoord];
+				auto c = state[cCoord];
+				auto d = state[dCoord];
 
 				Ogre::Vector3 gradient = Ogre::Vector3(
-					(l.rPressure - r.rPressure) / 2, 
-					0.0f, 
-					(t.rPressure - b.rPressure) / 2);
+					(a.rPressure - b.rPressure),
+					0.0f,
+					(c.rPressure - d.rPressure)) * mHalfScale;
 
-				c.second.vPressureGradient = gradient;
+				if (gradient != Ogre::Vector3::ZERO)
+					int f = 0;
+
+				const_cast<CellState&>(cell.second).vVel -= gradient;
+				const_cast<CellState&>(cell.second).vPressureGradient = gradient;
 			}
+		}
+	}
+
+	void Field::boundaryConditions(float timeSinceLast, std::unordered_map<CellCoord, CellState>& state)
+	{
+		for (const auto& cell : state) {
+			if (cell.second.bIsBoundary) {
+
+				// edges
+				CellState neighbourState = CellState();
+
+				if (cell.first.mIndexX == 0) {
+					neighbourState = state[cell.first + CellCoord(1, 0, 0)];
+				}
+				else if (cell.first.mIndexX == mColumnCount - 1) {
+					neighbourState = state[cell.first + CellCoord(-1, 0, 0)];
+				}
+				else if (cell.first.mIndexZ == 0) {
+					neighbourState = state[cell.first + CellCoord(0, 0, 1)];
+				}
+				else if (cell.first.mIndexZ == mRowCount - 1) {
+					neighbourState = state[cell.first + CellCoord(0, 0, -1)];
+				}
+
+				//corners
+				if (cell.first.mIndexX == 0 && cell.first.mIndexZ == 0) {
+					neighbourState = state[cell.first + CellCoord(1, 0, 1)];
+				}
+				else if (cell.first.mIndexX == 0 && cell.first.mIndexZ == mRowCount) {
+					neighbourState = state[cell.first + CellCoord(1, 0, -1)];
+				}
+				else if (cell.first.mIndexX == mColumnCount && cell.first.mIndexZ == 0) {
+					neighbourState = state[cell.first + CellCoord(-1, 0, 1)];
+				} 
+				else if (cell.first.mIndexX == mColumnCount && cell.first.mIndexZ == mRowCount) {
+					neighbourState = state[cell.first + CellCoord(-1, 0, -1)];
+				}
+
+				const_cast<CellState&>(cell.second).vVel = -1 * neighbourState.vVel;
+				const_cast<CellState&>(cell.second).rPressure = neighbourState.rPressure;
+			}
+		}
+	}
+
+	void Field::addImpulse(float timeSinceLast) {
+		if (mActiveCell) {
+			mImpulses.push_back({ mActiveCell->getCellCoords(), Ogre::Vector3(50.0f, 0.0f, 50.0f) });
 		}
 	}
 
@@ -602,41 +592,54 @@ namespace MyThirdOgre
 			if (mActiveCell) {
 				if (!mActiveCell->getIsBoundary()) {
 
-					if (mActiveCell->getVelocity() == Ogre::Vector3::ZERO) {
-						mActiveCell->setVelocity(Ogre::Vector3(0, 0, -0.1f));
-					}
+					auto vImpulse = Ogre::Vector3(2.0f, 0.0f, -2.0f);
 
-					auto vCurr = mActiveCell->getVelocity();
-
-					auto vNew = vCurr * (1 + timeSinceLast
+					auto vNew = vImpulse * (1 + timeSinceLast
 						* mBaseManualVelocityAdjustmentSpeed
 						* (1 + mManualAdjustmentSpeedModifier * mBoostedManualVelocityAdjustmentSpeed));
 
-					for (int i = -2; i < 3; i++) {
-						for (int j = -2; j < 3; j++) {
-							auto cNeighbour = mCells.find(mActiveCell->getCellCoords() + CellCoord(i, 0, j));
-							if (cNeighbour != mCells.end()) {
-								if (!cNeighbour->second->getIsBoundary()) {
-									cNeighbour->second->setVelocity(vNew * (1 / (mActiveCell->getState()->vPos - cNeighbour->second->getState()->vPos).length()));
+					for (int i = -mVelocitySpreadHalfWidth; i < mVelocitySpreadHalfWidth + 1; i++) {
+						for (int j = -mVelocitySpreadHalfWidth; j < mVelocitySpreadHalfWidth + 1; j++) {
+							if (i != 0 && j != 0) { // don't impulse self 
+								auto cNeighbour = mCells.find(mActiveCell->getCellCoords() + CellCoord(i, 0, j));
+								if (cNeighbour != mCells.end()) {
+									auto cNeighbourImpulse = vNew * (1 / (mActiveCell->getState().vPos - cNeighbour->second->getState().vPos).length());
+									if (!cNeighbour->second->getIsBoundary()) {
+										mImpulses.push_back({ cNeighbour->first, cNeighbourImpulse });
+									}
 								}
 							}
 						}
 					}
-
-					mActiveCell->setVelocity(vNew);
 				}
 			}
-			else {
-				for (auto& c : mCells) {
-					if (!c.second->getIsBoundary()) {
+		}
+	}
 
-						auto vCurr = c.second->getVelocity();
+	// This gets called from the parent LogicSystem, when the LeapSystem sends it velocity messages
+	void Field::increaseVelocity(float timeSinceLast, Ogre::Vector3 vVel) {
+		if (mIsRunning) {
+			if (mActiveCell) {
+				if (!mActiveCell->getIsBoundary()) {
 
-						auto vNew = vCurr * (1 + timeSinceLast
-							* mBaseManualVelocityAdjustmentSpeed
-							* (1 + mManualAdjustmentSpeedModifier * mBoostedManualVelocityAdjustmentSpeed));
+					auto vImpulse = vVel;
 
-						c.second->setVelocity(vNew);
+					auto vNew = vImpulse * (1 + timeSinceLast
+						* mBaseManualVelocityAdjustmentSpeed
+						* (1 + mManualAdjustmentSpeedModifier * mBoostedManualVelocityAdjustmentSpeed));
+
+					for (int i = -mVelocitySpreadHalfWidth; i < mVelocitySpreadHalfWidth + 1; i++) {
+						for (int j = -mVelocitySpreadHalfWidth; j < mVelocitySpreadHalfWidth + 1; j++) {
+							if (i != 0 && j != 0) { // don't impulse self 
+								auto cNeighbour = mCells.find(mActiveCell->getCellCoords() + CellCoord(i, 0, j));
+								if (cNeighbour != mCells.end()) {
+									auto cNeighbourImpulse = vNew * (1 / (mActiveCell->getState().vPos - cNeighbour->second->getState().vPos).length());
+									if (!cNeighbour->second->getIsBoundary()) {
+										mImpulses.push_back({ cNeighbour->first, cNeighbourImpulse });
+									}
+								}
+							}
+						}
 					}
 				}
 			}
@@ -648,31 +651,28 @@ namespace MyThirdOgre
 			if (mActiveCell) {
 				if (!mActiveCell->getIsBoundary()) {
 
-					if (mActiveCell->getVelocity() == Ogre::Vector3::ZERO) {
-						mActiveCell->setVelocity(Ogre::Vector3(0, 0, 0.1f));
-					}
+					auto vImpulse = Ogre::Vector3(2.0f, 0.0f, 2.0f);
 
-					auto vCurr = mActiveCell->getVelocity();
-
-					auto vNew = vCurr * (1 - timeSinceLast
+					auto vNew = vImpulse * (1 - timeSinceLast
 						* mBaseManualVelocityAdjustmentSpeed
 						* (1 + mManualAdjustmentSpeedModifier * mBoostedManualVelocityAdjustmentSpeed));
 
-					for (int i = -2; i < 3; i++) {
-						for (int j = -2; j < 3; j++) {
-							auto cNeighbour = mCells.find(mActiveCell->getCellCoords() + CellCoord(i, 0, j));
-							if (cNeighbour != mCells.end()) {
-								if (!cNeighbour->second->getIsBoundary()) {
-									cNeighbour->second->setVelocity(vNew * (1 / (mActiveCell->getState()->vPos - cNeighbour->second->getState()->vPos).length()));
+					for (int i = -mVelocitySpreadHalfWidth; i < mVelocitySpreadHalfWidth + 1; i++) {
+						for (int j = -mVelocitySpreadHalfWidth; j < mVelocitySpreadHalfWidth + 1; j++) {
+							if (i != 0 && j != 0) { // don't impulse self 
+								auto cNeighbour = mCells.find(mActiveCell->getCellCoords() + CellCoord(i, 0, j));
+								if (cNeighbour != mCells.end()) {
+									auto cNeighbourImpulse = vNew * (1 / (mActiveCell->getState().vPos - cNeighbour->second->getState().vPos).length());
+									if (!cNeighbour->second->getIsBoundary()) {
+										mImpulses.push_back({ cNeighbour->first, cNeighbourImpulse });
+									}
 								}
 							}
 						}
 					}
-
-					mActiveCell->setVelocity(vNew);
 				}
 			}
-			else {
+			/*else {
 				for (auto& c : mCells) {
 					if (!c.second->getIsBoundary()) {
 
@@ -685,7 +685,7 @@ namespace MyThirdOgre
 						c.second->setVelocity(vNew);
 					}
 				}
-			}
+			}*/
 		}
 	}
 
@@ -695,11 +695,14 @@ namespace MyThirdOgre
 
 				if (mActiveCell->getPressure() < mMaxCellPressure) {
 
-					if (mActiveCell->getPressure() == 0) {
-						mActiveCell->setPressure(0.001f);
-					}
+					//if (mActiveCell->getPressure() == 0) {
+					//	mActiveCell->setPressure(0.001f);
+					//}
 
 					auto rCurrentPressure = mActiveCell->getPressure();
+
+					if (rCurrentPressure == 0.0f)
+						rCurrentPressure = 0.01f;
 
 					auto rNewPressure = rCurrentPressure * (1 + timeSinceLast
 						* mBaseManualPressureAdjustmentSpeed
@@ -713,7 +716,7 @@ namespace MyThirdOgre
 							auto cNeighbour = mCells.find(mActiveCell->getCellCoords() + CellCoord(i, 0, j));
 							if (cNeighbour != mCells.end()) {
 								if (!cNeighbour->second->getIsBoundary()) {
-									cNeighbour->second->setPressure(rNewPressure * (1 / (mActiveCell->getState()->vPos - cNeighbour->second->getState()->vPos).length()));
+									cNeighbour->second->setPressure(rNewPressure * (1 / (mActiveCell->getState().vPos - cNeighbour->second->getState().vPos).length()));
 								}
 							}
 						}
@@ -746,7 +749,7 @@ namespace MyThirdOgre
 						auto cNeighbour = mCells.find(mActiveCell->getCellCoords() + CellCoord(i, 0, j));
 						if (cNeighbour != mCells.end()) {
 							if (!cNeighbour->second->getIsBoundary()) {
-								cNeighbour->second->setPressure(rNewPressure * (1 / (mActiveCell->getState()->vPos - cNeighbour->second->getState()->vPos).length()));
+								cNeighbour->second->setPressure(rNewPressure * (1 / (mActiveCell->getState().vPos - cNeighbour->second->getState().vPos).length()));
 							}
 						}
 					}
@@ -766,7 +769,7 @@ namespace MyThirdOgre
 
 	void Field::traverseActiveCellZNegative(void) {
 		if (!mActiveCell) {
-			mActiveCell = mCells.find({ 1, 0, 1 })->second;
+			mActiveCell = mCells[{ (mColumnCount - 1) / 2, 0, (mRowCount - 1) / 2 }];
 			mActiveCell->setActive();
 		}
 		else {
@@ -775,14 +778,14 @@ namespace MyThirdOgre
 			coords.mIndexZ += 1;
 			if (coords.mIndexZ > mRowCount - 2)
 				coords.mIndexZ = 1;
-			mActiveCell = mCells.find(coords)->second;
+			mActiveCell = mCells[coords];
 			mActiveCell->setActive();
 		}
 	}
 
 	void Field::traverseActiveCellXPositive(void) {
 		if (!mActiveCell) {
-			mActiveCell = mCells.find({ 1, 0, 1 })->second;
+			mActiveCell = mCells[{ (mColumnCount - 1) / 2, 0, (mRowCount - 1) / 2 }];
 			mActiveCell->setActive();
 		}
 		else {
@@ -791,14 +794,14 @@ namespace MyThirdOgre
 			coords.mIndexX += 1;
 			if (coords.mIndexX > mColumnCount - 2)
 				coords.mIndexX = 1;
-			mActiveCell = mCells.find(coords)->second;
+			mActiveCell = mCells[coords];
 			mActiveCell->setActive();
 		}
 	}
 
 	void Field::traverseActiveCellZPositive(void) {
 		if (!mActiveCell) {
-			mActiveCell = mCells.find({ 1, 0, 1 })->second;
+			mActiveCell = mCells[{ (mColumnCount - 1) / 2, 0, (mRowCount - 1) / 2 }];
 			mActiveCell->setActive();
 		}
 		else {
@@ -807,14 +810,14 @@ namespace MyThirdOgre
 			coords.mIndexZ -= 1;
 			if (coords.mIndexZ < 1)
 				coords.mIndexZ = mRowCount - 2;
-			mActiveCell = mCells.find(coords)->second;
+			mActiveCell = mCells[coords];
 			mActiveCell->setActive();
 		}
 	}
 
 	void Field::traverseActiveCellXNegative(void) {
 		if (!mActiveCell) {
-			mActiveCell = mCells.find({ 1, 0, 1 })->second;
+			mActiveCell = mCells[{ (mColumnCount - 1) / 2, 0, (mRowCount - 1) / 2 }];
 			mActiveCell->setActive();
 		}
 		else {
@@ -823,16 +826,14 @@ namespace MyThirdOgre
 			coords.mIndexX -= 1;
 			if (coords.mIndexX < 1)
 				coords.mIndexX = mColumnCount - 2;
-			mActiveCell = mCells.find(coords)->second;
+			mActiveCell = mCells[coords];
 			mActiveCell->setActive();
 		}
 	}
 
 	void Field::resetState(void) {
-		for (auto& c : mCells) {
-			if (!c.second->getIsBoundary())
-				c.second->resetState();
-		}
+		for (const auto& c : mCells)
+			c.second->resetState();
 	}
 
 	void Field::togglePressureGradientIndicators(void) {

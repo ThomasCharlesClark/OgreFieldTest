@@ -49,6 +49,8 @@ namespace MyThirdOgre
 
         void _notifyLogicSystem(LogicSystem* logicSystem) { mLogicSystem = logicSystem; }
 
+        Field* getField(void) { return mField; };
+
         virtual void createScene01(void);
         virtual void update(float timeSinceLast);
 

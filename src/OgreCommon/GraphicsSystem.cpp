@@ -486,6 +486,9 @@ namespace MyThirdOgre
         case Mq::GAME_ENTITY_VISIBILITY_CHANGE:
             this->changeGameEntityVisibility(reinterpret_cast<const GameEntityManager::GameEntityVisibilityChange*>(data));
             break;
+        case Mq::LEAPFRAME_FINISHED:
+            // noop
+            break;
         default:
             break;
         }

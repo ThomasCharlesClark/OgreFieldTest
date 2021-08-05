@@ -8,12 +8,14 @@
 #include "GameEntityManager.h"
 
 #include <map>
+#include <vector>
 
 namespace MyThirdOgre 
 {
 	class Field
 	{
 		int mScale;
+		float mHalfScale;
 		int mCellCount;
 		int mRowCount;
 		int mColumnCount;
@@ -26,10 +28,11 @@ namespace MyThirdOgre
 
 		float mMinCellPressure;
 		float mMaxCellPressure;
+		float mMaxCellVelocitySquared;
 		float mViscosity;
 		float mFluidDensity;
 		float mKinematicViscosity;
-		float mDiffusionConstant;
+		float mDissipationConstant;
 
 		int mJacobiIterationsPressure;
 		int mJacobiIterationsDiffusion;
@@ -39,6 +42,7 @@ namespace MyThirdOgre
 		GameEntity* mGridEntity;
 		MovableObjectDefinition* mGridLineMoDef;
 		std::unordered_map<CellCoord, Cell*> mCells;
+		std::vector<std::pair<CellCoord, Ogre::Vector3>> mImpulses;
 
 		Cell* mActiveCell;
 
@@ -70,20 +74,21 @@ namespace MyThirdOgre
 		virtual void toggleIsRunning(void);
 
 		virtual void advect(float timeSinceLast, std::unordered_map<CellCoord, CellState>& state);
-		virtual void diffuse(float timeSinceLast, std::unordered_map<CellCoord, CellState>& state);
-		virtual void addForces(float timeSinceLast, std::unordered_map<CellCoord, CellState>& state);
-		virtual void computeVelocityGradient(float timeSinceLast, std::unordered_map<CellCoord, CellState>& state);
-		virtual void computePressureGradient(float timeSinceLast, std::unordered_map<CellCoord, CellState>& state);
-
-		virtual void jacobiPressure(float timeSinceLast, std::unordered_map<CellCoord, CellState>& state);
+		virtual void addImpulses(float timeSinceLast, std::unordered_map<CellCoord, CellState>& state);
 		virtual void jacobiDiffusion(float timeSinceLaste, std::unordered_map<CellCoord, CellState>& state);
-
+		virtual void divergence(float timeSinceLast, std::unordered_map<CellCoord, CellState>& state);
+		virtual void jacobiPressure(float timeSinceLast, std::unordered_map<CellCoord, CellState>& state);
+		virtual void subtractPressureGradient(float timeSinceLast, std::unordered_map<CellCoord, CellState>& state);
+		virtual void boundaryConditions(float timeSinceLast, std::unordered_map<CellCoord, CellState>& state);
 
 		virtual void increaseVelocity(float timeSinceLast);
+		virtual void increaseVelocity(float timeSinceLast, Ogre::Vector3 vVel);
 		virtual void decreaseVelocity(float timeSinceLast);
 
 		virtual void increasePressure(float timeSinceLast);
 		virtual void decreasePressure(float timeSinceLast);
+
+		virtual void addImpulse(float timeSinceLast);
 
 		virtual void notifyShiftKey(bool shift);
 

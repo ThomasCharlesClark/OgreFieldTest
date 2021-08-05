@@ -102,32 +102,37 @@ namespace MyThirdOgre
 		bool bIsBoundary;
 		Ogre::Vector3 vPos;
 		Ogre::Vector3 vVel;
-		Ogre::Vector3 vVelocityGradient;
 		Ogre::Vector3 vPressureGradient;
-		Ogre::Vector3 vViscosity;
+		Ogre::Real rDivergence;
 		Ogre::Quaternion qRot;
 		Ogre::Real rPressure;
 		bool bActive;
 
-		CellState() {};
+		CellState() : 
+			bIsBoundary(false),
+			vPos(Ogre::Vector3::ZERO),
+			vVel(Ogre::Vector3::ZERO),
+			vPressureGradient(Ogre::Vector3::ZERO),
+			rDivergence(0.0f),
+			qRot(Ogre::Quaternion::IDENTITY),
+			rPressure(0.0f),
+			bActive(false) { };
 
 		CellState(
 			bool b,
 			Ogre::Vector3 vP, 
 			Ogre::Vector3 vV,
-			Ogre::Vector3 vVG,
 			Ogre::Real rP,
 			Ogre::Vector3 vPG,
-			Ogre::Vector3 vVis,
+			Ogre::Real rDiv,
 			Ogre::Quaternion qR, 
 			bool a) {
 			bIsBoundary = b;
 			vPos = vP;
 			vVel = vV;
-			vVelocityGradient = vVG;
 			rPressure = rP;
 			vPressureGradient = vPG;
-			vViscosity = vVis,
+			rDivergence = rDiv,
 			qRot = qR;
 			bActive = a;
 		};
@@ -167,6 +172,7 @@ protected:
 		Ogre::HlmsPbsDatablock* personalDatablock;
 
 		float mMaxPressure;
+		float mMaxVelocitySquared;
 
 		virtual void createVelocityArrow(void);
 
@@ -187,6 +193,7 @@ protected:
 			 int columnCount,
 			 int rowCount,
 			 float maxPressure,
+			 float maxVelocitySquared,
 			 bool pressureGradientArrowVisible,
 			 GameEntityManager* geMgr);
 
@@ -196,7 +203,7 @@ protected:
 		GameEntity* getVelocityArrowGameEntity(void) { return mVelocityArrowEntity; }
 
 		CellCoord getCellCoords(void) { return mCellCoords; }
-		CellState* getState(void) { return &mState; };
+		CellState getState(void) { return mState; };
 		Ogre::Vector3 getVelocity(void) { return mState.vVel; };
 		Ogre::Vector3 getPosition(void) { return mState.vPos; };
 		bool getIsBoundary(void) { return mBoundary; };

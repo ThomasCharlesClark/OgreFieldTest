@@ -19,6 +19,9 @@
 
 #include "OgreOverlaySystem.h"
 
+#include "Leap\LeapSystem.h"
+#include "LogicGameState.h"
+
 #if OGRE_USE_SDL2
     #include <SDL_syswm.h>
 #endif
@@ -135,6 +138,12 @@ namespace MyThirdOgre
                     default: 
                         break;
                 }
+            }
+            break;
+        case Mq::LEAPFRAME_VELOCITY: 
+            {
+                auto leapVelFrame = reinterpret_cast<const Leap_VelocityMessage*>(data);
+                dynamic_cast<LogicGameState*>(mCurrentGameState)->getField()->increaseVelocity(leapVelFrame->timeSinceLast, leapVelFrame->velocity);
             }
             break;
         default:

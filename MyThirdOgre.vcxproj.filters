@@ -67,6 +67,8 @@
     <ClCompile Include="src\OgreCommon\CameraControllerMultiThreading.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Leap\LeapSystem.cpp" />
+    <ClCompile Include="src\Leap\LeapSystemState.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\LogicGameState.h">
@@ -171,6 +173,8 @@
     <ClInclude Include="src\FieldTest\Headers\MyMath.h">
       <Filter>Header Files\Util</Filter>
     </ClInclude>
+    <ClInclude Include="include\Leap\LeapSystem.h" />
+    <ClInclude Include="include\Leap\LeapSystemState.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\CMakeLists.txt" />

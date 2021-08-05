@@ -28,6 +28,7 @@ namespace MyThirdOgre
         int rowCount,
         int columnCount,
         float maxPressure,
+        float maxVelocitySquared,
         bool pressureGradientArrowVisible,
         GameEntityManager* geMgr
     ) :
@@ -45,6 +46,7 @@ namespace MyThirdOgre
         mSphereEntity(0),
         mSphereMoDef(0),
         mSphere(0),
+        mMaxVelocitySquared(maxVelocitySquared),
         mMaxPressure(maxPressure),
         mGameEntityManager(geMgr)
         // interesting pressure - based surfaces:
@@ -56,12 +58,11 @@ namespace MyThirdOgre
         {
             mState.bIsBoundary = mBoundary,
             mState.vPos = Ogre::Vector3(mCellCoords.mIndexX, 0, -mCellCoords.mIndexZ),
-            mState.vVel =Ogre::Vector3::ZERO,
-            mState.vVelocityGradient = Ogre::Vector3::ZERO,
+            mState.vVel = Ogre::Vector3::ZERO,
             //mState.rPressure = 0,// (mCellCoords.mIndexX / 2) / (mCellCoords.mIndexZ | -1), // now that's pretty     4x^2 + y - 6
-            mState.rPressure = 0.5 * mCellCoords.mIndexX + mCellCoords.mIndexZ - 3,//  4x^2 + y - 6
+            mState.rPressure = 0,//0.5 * (mCellCoords.mIndexX + mCellCoords.mIndexZ),//  4x^2 + y - 6
             mState.vPressureGradient = Ogre::Vector3::ZERO,
-            mState.vViscosity = Ogre::Vector3::ZERO,
+            mState.rDivergence = 0,
             mState.qRot = Ogre::Quaternion::IDENTITY,
             mState.bActive = false
         };
@@ -336,12 +337,15 @@ namespace MyThirdOgre
 
             auto vVelLen = mState.vVel.length();
 
+            if (isnan(vVelLen) || isinf(vVelLen))
+                vVelLen = 0;
+
             mVelocityArrowEntity->mTransform[currIdx]->vScale.x = vVelLen;
             mVelocityArrowEntity->mTransform[currIdx]->vScale.y = 0;
             mVelocityArrowEntity->mTransform[currIdx]->vScale.z = vVelLen;
 
-            mPlaneEntity->mTransform[currIdx]->vPos.y = vVelLen;
-
+            mPlaneEntity->mTransform[currIdx]->vPos.y = mState.rPressure;
+            
             q.normalise();
 
             if (isnan(q.w) && isnan(q.x) && isnan(q.y) && isnan(q.z))
@@ -357,6 +361,9 @@ namespace MyThirdOgre
             auto q = GetRotation(Ogre::Vector3(0, 0, -1), mState.vPressureGradient, Ogre::Vector3::UNIT_Y);
 
             auto vPressureGradientLen = mState.vPressureGradient.length();
+
+            if (isnan(vPressureGradientLen) || isinf(vPressureGradientLen))
+                vPressureGradientLen = 0;
 
             mPressureGradientArrowEntity->mTransform[currIdx]->vScale.x = vPressureGradientLen;
             mPressureGradientArrowEntity->mTransform[currIdx]->vScale.y = 0;

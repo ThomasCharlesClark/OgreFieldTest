@@ -14,12 +14,17 @@
 #include "Threading/OgreThreads.h"
 #include "Threading/OgreBarrier.h"
 
+#include "Leap/LeapSystem.h"
+#include "Leap/LeapSystemState.h"
+
 #include <iostream>
 
 using namespace MyThirdOgre;
 
 extern const double cFrametime;
 const double cFrametime = 1.0 / 25.0;
+extern const double cLeapFrametime;
+const double cLeapFrametime = 1.0 / 60.0;
 
 extern bool gFakeFrameskip;
 bool gFakeFrameskip = false;
@@ -29,13 +34,16 @@ bool gFakeSlowmo = false;
 
 unsigned long renderThread(Ogre::ThreadHandle* threadHandle);
 unsigned long logicThread(Ogre::ThreadHandle* threadHandle);
+unsigned long leapThread(Ogre::ThreadHandle* threadHandle);
 THREAD_DECLARE(renderThread);
 THREAD_DECLARE(logicThread);
+THREAD_DECLARE(leapThread);
 
 struct ThreadData
 {
     GraphicsSystem* graphicsSystem;
     LogicSystem* logicSystem;
+    LeapSystem* leapSystem;
     Ogre::Barrier* barrier;
 };
 
@@ -78,8 +86,10 @@ int main()
     GraphicsSystem graphicsSystem(&graphicsGameState);
     LogicGameState logicGameState;
     LogicSystem logicSystem(&logicGameState);
+    LeapSystemState leapSystemState;
+    LeapSystem leapSystem(&leapSystemState);
 
-    Ogre::Barrier barrier(2);
+    Ogre::Barrier barrier(3);
 
     graphicsGameState._notifyGraphicsSystem(&graphicsSystem);
     logicGameState._notifyLogicSystem(&logicSystem);
@@ -87,22 +97,26 @@ int main()
     graphicsSystem._notifyLogicSystem(&logicSystem);
     logicSystem._notifyGraphicsSystem(&graphicsSystem);
 
+    leapSystem._notifyGraphicsSystem(&graphicsSystem);
+    leapSystem._notifyLogicSystem(&logicSystem);
+
     GameEntityManager gameEntityManager(&graphicsSystem, &logicSystem);
 
     ThreadData threadData;
     threadData.graphicsSystem = &graphicsSystem;
     threadData.logicSystem = &logicSystem;
+    threadData.leapSystem = &leapSystem;
     threadData.barrier = &barrier;
 
-    Ogre::ThreadHandlePtr threadHandles[2];
+    Ogre::ThreadHandlePtr threadHandles[3];
     threadHandles[0] = Ogre::Threads::CreateThread(THREAD_GET(renderThread), 0, &threadData);
     threadHandles[1] = Ogre::Threads::CreateThread(THREAD_GET(logicThread), 1, &threadData);
+    threadHandles[2] = Ogre::Threads::CreateThread(THREAD_GET(leapThread), 2, &threadData);
 
-    Ogre::Threads::WaitForThreads(2, threadHandles);
+    Ogre::Threads::WaitForThreads(3, threadHandles);
 
     return 0;
 }
-
 
 //---------------------------------------------------------------------
 unsigned long renderThreadApp(Ogre::ThreadHandle* threadHandle)
@@ -110,6 +124,7 @@ unsigned long renderThreadApp(Ogre::ThreadHandle* threadHandle)
     ThreadData* threadData = reinterpret_cast<ThreadData*>(threadHandle->getUserParam());
     GraphicsSystem* graphicsSystem = threadData->graphicsSystem;
     LogicSystem* logicSystem = threadData->logicSystem;
+    LeapSystem* leapSystem = threadData->leapSystem;
     Ogre::Barrier* barrier = threadData->barrier;
 
     graphicsSystem->initialize("Tutorial 06: Multithreading");
@@ -203,6 +218,7 @@ unsigned long logicThread(Ogre::ThreadHandle* threadHandle)
     ThreadData* threadData = reinterpret_cast<ThreadData*>(threadHandle->getUserParam());
     GraphicsSystem* graphicsSystem = threadData->graphicsSystem;
     LogicSystem* logicSystem = threadData->logicSystem;
+    LeapSystem* leapSystem = threadData->leapSystem;
     Ogre::Barrier* barrier = threadData->barrier;
 
     logicSystem->initialize();
@@ -243,6 +259,7 @@ unsigned long logicThread(Ogre::ThreadHandle* threadHandle)
         //SDL_GetMouseState(logicSystem->getMouseX(), logicSystem->getMouseY());
 
         logicSystem->update(static_cast<float>(cFrametime));
+
         logicSystem->finishFrameParallel();
 
         logicSystem->finishFrame();
@@ -266,6 +283,71 @@ unsigned long logicThread(Ogre::ThreadHandle* threadHandle)
     barrier->sync();
 
     logicSystem->deinitialize();
+    barrier->sync();
+
+    return 0;
+}
+
+
+
+//---------------------------------------------------------------------
+unsigned long leapThread(Ogre::ThreadHandle* threadHandle)
+{
+    ThreadData* threadData = reinterpret_cast<ThreadData*>(threadHandle->getUserParam());
+    GraphicsSystem* graphicsSystem = threadData->graphicsSystem;
+    LogicSystem* logicSystem = threadData->logicSystem;
+    LeapSystem* leapSystem = threadData->leapSystem;
+    Ogre::Barrier* barrier = threadData->barrier;
+
+    leapSystem->initialize();
+
+    barrier->sync();
+
+    if (graphicsSystem->getQuit())
+    {
+        leapSystem->deinitialize();
+        return 0; //Render thread cancelled early
+    }
+
+    Ogre::Window* renderWindow = graphicsSystem->getRenderWindow();
+
+    Ogre::Timer timer;
+    YieldTimer yieldTimer(&timer);
+
+    Ogre::uint64 startTime = timer.getMicroseconds();
+
+    barrier->sync();
+
+    barrier->sync();
+
+    while (!graphicsSystem->getQuit())
+    {
+        leapSystem->beginFrameParallel();
+
+        leapSystem->pollConnection(static_cast<float>(cLeapFrametime));
+
+        leapSystem->finishFrameParallel();
+
+        leapSystem->finishFrame();
+        
+        if (gFakeSlowmo)
+            Ogre::Threads::Sleep(120);
+
+        if (!renderWindow->isVisible())
+        {
+            //Don't burn CPU cycles unnecessary when we're minimized.
+            Ogre::Threads::Sleep(500);
+        }
+
+        //YieldTimer will wait until the current time is greater than startTime + cLeapFrametime
+        startTime = yieldTimer.yield(cLeapFrametime, startTime);
+    }
+
+    barrier->sync();
+
+    leapSystem->deinitialize();
+    barrier->sync();
+
     barrier->sync();
 
     return 0;
