@@ -22,7 +22,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{5D37D374-74CC-3591-8A00-6CBDE9EE4E5D}</ProjectGuid>
+    <ProjectGuid>{C667AF7B-8138-3FC6-ABBE-5D4DC246D5A3}</ProjectGuid>
     <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
     <Keyword>Win32Proj</Keyword>
     <Platform>x64</Platform>
@@ -39,6 +39,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
     <PlatformToolset>v142</PlatformToolset>
+    <UseDebugLibraries>false</UseDebugLibraries>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -86,7 +87,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\OgreMain\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\build\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Common\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Unlit\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Pbs\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Overlay\include;C:\Program Files (x86)\SDL2\include\SDL2;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\.\include;$(LEAP_SDK)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\OgreMain\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\build\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Common\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Unlit\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Pbs\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Overlay\include;C:\Program Files (x86)\SDL2\include\SDL2;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include;$(LEAP_SDK)\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\Leap;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\Headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -104,10 +105,10 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;DEBUG;UNICODE;_UNICODE;CMAKE_INTDIR=\"Debug\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\OgreMain\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\build\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Common\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Unlit\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Pbs\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Overlay\include;C:\Program Files (x86)\SDL2\include\SDL2;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\.\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\OgreMain\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\build\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Common\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Unlit\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Pbs\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Overlay\include;C:\Program Files (x86)\SDL2\include\SDL2;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\.\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\OgreMain\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\build\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Common\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Unlit\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Pbs\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Overlay\include;C:\Program Files (x86)\SDL2\include\SDL2;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\.\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\OgreMain\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\build\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Common\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Unlit\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Pbs\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Overlay\include;C:\Program Files (x86)\SDL2\include\SDL2;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\.\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -116,7 +117,7 @@
     </Midl>
     <Link>
       <AdditionalDependencies>OgreMain_d.lib;OgreOverlay_d.lib;OgreHlmsUnlit_d.lib;OgreHlmsPbs_d.lib;C:\Program Files (x86)\SDL2\lib\SDL2d.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;LeapC.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>D:/source/repos/ThomasCharlesClark/Ogre/my-third-ogre/Dependencies/Ogre/build/lib/$(ConfigurationName);D:/source/repos/ThomasCharlesClark/Ogre/my-third-ogre/Dependencies/Ogre/build/lib/$(ConfigurationName)/$(Configuration);$(LEAP_SDK)\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>D:\source\repos\ThomasCharlesClark\Ogre\ogre-next\build\lib\$(ConfigurationName);$(LEAP_SDK)\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -127,13 +128,10 @@
     <ProjectReference>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
     </ProjectReference>
-    <PostBuildEvent>
-      <Command>xcopy /yr "$(LEAP_SDK)\lib\x64\LeapC.dll" "$(TargetDir)"</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\OgreMain\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\build\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Common\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Unlit\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Pbs\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Overlay\include;C:\Program Files (x86)\SDL2\include\SDL2;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\.\include;$(LEAP_SDK)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\OgreMain\include;D:\source\repos\ThomasCharlesClark\Ogre\ogre-next\build\sdk\include\OGRE;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Common\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Unlit\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Pbs\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Overlay\include;C:\Program Files (x86)\SDL2\include\SDL2;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include;$(LEAP_SDK)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <ExceptionHandling>Sync</ExceptionHandling>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
@@ -151,10 +149,10 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;UNICODE;_UNICODE;CMAKE_INTDIR=\"Release\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\OgreMain\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\build\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Common\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Unlit\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Pbs\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Overlay\include;C:\Program Files (x86)\SDL2\include\SDL2;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\.\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\OgreMain\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\build\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Common\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Unlit\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Pbs\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Overlay\include;C:\Program Files (x86)\SDL2\include\SDL2;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\.\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\OgreMain\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\build\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Common\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Unlit\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Pbs\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Overlay\include;C:\Program Files (x86)\SDL2\include\SDL2;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\.\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\OgreMain\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\build\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Common\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Unlit\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Pbs\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Overlay\include;C:\Program Files (x86)\SDL2\include\SDL2;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\.\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -162,10 +160,10 @@
       <ProxyFileName>%(Filename)_p.c</ProxyFileName>
     </Midl>
     <Link>
-      <AdditionalDependencies>OgreMain.lib;OgreOverlay.lib;OgreHlmsUnlit.lib;OgreHlmsPbs.lib;C:\Program Files (x86)\SDL2\lib\SDL2d.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;LeapC.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>D:/source/repos/ThomasCharlesClark/Ogre/my-third-ogre/Dependencies/Ogre/build/lib/$(ConfigurationName);D:/source/repos/ThomasCharlesClark/Ogre/my-third-ogre/Dependencies/Ogre/build/lib/$(ConfigurationName)/$(Configuration);$(LEAP_SDK)\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>OgreOverlay.lib;OgreHlmsUnlit.lib;OgreHlmsPbs.lib;C:\Program Files (x86)\SDL2\lib\SDL2d.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;LeapC.lib;OgreMain.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\source\repos\ThomasCharlesClark\Ogre\ogre-next\build\lib\$(ConfigurationName);$(LEAP_SDK)\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <ImportLibrary>D:/source/repos/ThomasCharlesClark/Ogre/my-third-ogre/bin/Release/MyThirdOgre.lib</ImportLibrary>
       <ProgramDataBaseFile>D:/source/repos/ThomasCharlesClark/Ogre/my-third-ogre/bin/Release/MyThirdOgre.pdb</ProgramDataBaseFile>
@@ -177,7 +175,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\OgreMain\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\build\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Common\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Unlit\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Pbs\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Overlay\include;C:\Program Files (x86)\SDL2\include\SDL2;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\.\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\OgreMain\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\build\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Common\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Unlit\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Pbs\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Overlay\include;C:\Program Files (x86)\SDL2\include\SDL2;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\.\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <ExceptionHandling>Sync</ExceptionHandling>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
@@ -195,10 +193,10 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;UNICODE;_UNICODE;CMAKE_INTDIR=\"MinSizeRel\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\OgreMain\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\build\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Common\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Unlit\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Pbs\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Overlay\include;C:\Program Files (x86)\SDL2\include\SDL2;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\.\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\OgreMain\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\build\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Common\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Unlit\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Pbs\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Overlay\include;C:\Program Files (x86)\SDL2\include\SDL2;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\.\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\OgreMain\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\build\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Common\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Unlit\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Pbs\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Overlay\include;C:\Program Files (x86)\SDL2\include\SDL2;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\.\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\OgreMain\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\build\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Common\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Unlit\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Pbs\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Overlay\include;C:\Program Files (x86)\SDL2\include\SDL2;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\.\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -207,7 +205,7 @@
     </Midl>
     <Link>
       <AdditionalDependencies>OgreMain.lib;OgreOverlay.lib;OgreHlmsUnlit.lib;OgreHlmsPbs.lib;C:\Program Files (x86)\SDL2\lib\SDL2d.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>D:/source/repos/ThomasCharlesClark/Ogre/my-third-ogre/Dependencies/Ogre/build/lib/$(ConfigurationName);D:/source/repos/ThomasCharlesClark/Ogre/my-third-ogre/Dependencies/Ogre/build/lib/$(ConfigurationName)/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>d:/source/repos/ThomasCharlesClark/Ogre/my-third-ogre/Dependencies/Ogre/build/lib/$(ConfigurationName);d:/source/repos/ThomasCharlesClark/Ogre/my-third-ogre/Dependencies/Ogre/build/lib/$(ConfigurationName)/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -221,7 +219,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\OgreMain\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\build\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Common\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Unlit\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Pbs\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Overlay\include;C:\Program Files (x86)\SDL2\include\SDL2;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\.\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\OgreMain\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\build\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Common\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Unlit\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Pbs\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Overlay\include;C:\Program Files (x86)\SDL2\include\SDL2;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\.\include;$(LEAP_SDK)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -238,10 +236,10 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;UNICODE;_UNICODE;CMAKE_INTDIR=\"RelWithDebInfo\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\OgreMain\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\build\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Common\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Unlit\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Pbs\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Overlay\include;C:\Program Files (x86)\SDL2\include\SDL2;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\.\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\OgreMain\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\build\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Common\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Unlit\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Pbs\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Overlay\include;C:\Program Files (x86)\SDL2\include\SDL2;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\.\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\OgreMain\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\build\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Common\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Unlit\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Pbs\include;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Overlay\include;C:\Program Files (x86)\SDL2\include\SDL2;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\.\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\OgreMain\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\build\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Common\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Unlit\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Hlms\Pbs\include;d:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\Dependencies\Ogre\Components\Overlay\include;C:\Program Files (x86)\SDL2\include\SDL2;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon;D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\.\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -249,8 +247,8 @@
       <ProxyFileName>%(Filename)_p.c</ProxyFileName>
     </Midl>
     <Link>
-      <AdditionalDependencies>OgreMain.lib;OgreOverlay.lib;OgreHlmsUnlit.lib;OgreHlmsPbs.lib;C:\Program Files (x86)\SDL2\lib\SDL2d.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>D:/source/repos/ThomasCharlesClark/Ogre/my-third-ogre/Dependencies/Ogre/build/lib/$(ConfigurationName);D:/source/repos/ThomasCharlesClark/Ogre/my-third-ogre/Dependencies/Ogre/build/lib/$(ConfigurationName)/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>OgreMain.lib;OgreOverlay.lib;OgreHlmsUnlit.lib;OgreHlmsPbs.lib;C:\Program Files (x86)\SDL2\lib\SDL2d.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;LeapC.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>d:/source/repos/ThomasCharlesClark/Ogre/my-third-ogre/Dependencies/Ogre/build/lib/release;$(LEAP_SDK)/lib/x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -319,12 +317,26 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\FieldTest\Cell.cpp" />
+    <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\FieldTest\Field.cpp" />
+    <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\FieldTest\Hand.cpp" />
+    <ClInclude Include="include\OgreCommon\Cell.h" />
+    <ClInclude Include="include\OgreCommon\Field.h" />
+    <ClInclude Include="include\OgreCommon\Hand.h" />
+    <ClInclude Include="include\OgreCommon\MyMath.h" />
+    <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\GraphicsGameState.cpp" />
+    <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\Leap\LeapSystem.cpp" />
+    <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\Leap\LeapSystemState.cpp" />
+    <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\LogicGameState.cpp" />
+    <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\MyThirdOgre.cpp" />
     <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\BaseSystem.cpp" />
     <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\CameraController.cpp" />
+    <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\CameraControllerMultiThreading.cpp" />
     <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\GameEntityManager.cpp" />
     <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\GraphicsSystem.cpp" />
     <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\LogicSystem.cpp" />
     <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\SdlInputHandler.cpp" />
+    <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\System\Android\AndroidSystems.cpp" />
     <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\System\MainEntryPoints.cpp" />
     <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\System\StaticPluginLoader.cpp" />
     <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\Threading\MessageQueueSystem.cpp" />
@@ -335,18 +347,13 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\Utils\ScreenSpaceReflections.cpp" />
     <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\Utils\SmaaUtils.cpp" />
     <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\Utils\TestUtils.cpp" />
-    <ClCompile Include="src\FieldTest\Hand.cpp" />
-    <ClCompile Include="src\Leap\LeapSystemState.cpp" />
-    <ClCompile Include="src\Leap\LeapSystem.cpp" />
-    <ClCompile Include="src\OgreCommon\CameraControllerMultiThreading.cpp" />
-    <ClCompile Include="src\FieldTest\Cell.cpp" />
-    <ClCompile Include="src\FieldTest\Field.cpp" />
-    <ClCompile Include="src\GraphicsGameState.cpp" />
-    <ClCompile Include="src\LogicGameState.cpp" />
-    <ClCompile Include="src\MyThirdOgre.cpp" />
-    <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\EmptyProject.h" />
+    <ClInclude Include="include\OgreCommon\GraphicsGameState.h" />
+    <ClInclude Include="include\OgreCommon\LeapSystem.h" />
+    <ClInclude Include="include\OgreCommon\LeapSystemState.h" />
+    <ClInclude Include="include\OgreCommon\LogicGameState.h" />
     <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\BaseSystem.h" />
     <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\CameraController.h" />
+    <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\CameraControllerMultiThreading.h" />
     <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\GameEntity.h" />
     <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\GameEntityManager.h" />
     <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\GameState.h" />
@@ -356,6 +363,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\MainEntryPointHelper.h" />
     <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\SdlEmulationLayer.h" />
     <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\SdlInputHandler.h" />
+    <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\System\Android\AndroidSystems.h" />
     <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\System\MainEntryPoints.h" />
     <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\System\OSX\OSXUtils.h" />
     <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\System\StaticPluginLoader.h" />
@@ -372,15 +380,14 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\Utils\ScreenSpaceReflections.h" />
     <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\Utils\SmaaUtils.h" />
     <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\Utils\TestUtils.h" />
-    <ClInclude Include="src\FieldTest\Headers\Hand.h" />
-    <ClInclude Include="include\OgreCommon\CameraControllerMultiThreading.h" />
-    <ClInclude Include="include\GraphicsGameState.h" />
-    <ClInclude Include="include\LogicGameState.h" />
-    <ClInclude Include="include\Leap\LeapSystem.h" />
-    <ClInclude Include="include\Leap\LeapSystemState.h" />
-    <ClInclude Include="src\FieldTest\Headers\MyMath.h" />
-    <ClInclude Include="src\FieldTest\Headers\Cell.h" />
-    <ClInclude Include="src\FieldTest\Headers\Field.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="CMakeCache.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include=".gitattributes" />
+    <None Include=".gitignore" />
+    <None Include="cmake_install.cmake" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

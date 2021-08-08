@@ -1,4 +1,4 @@
-#include "Headers/Hand.h"
+#include "Hand.h"
 #include "GameEntityManager.h"
 
 namespace MyThirdOgre 
@@ -15,10 +15,11 @@ namespace MyThirdOgre
         mState =
         {
             mState.bIsVisible = true,
-            mState.vPos = Ogre::Vector3(0, 0.5f, 0),
+            mState.vPos = Ogre::Vector3(0, 0.0f, 0),
             mState.vVel = Ogre::Vector3::ZERO,
             mState.qRot = Ogre::Quaternion::IDENTITY,
-            mState.bActive = true
+            mState.bActive = true,
+            mState.bAddingInk = false
         };
 
         mOriginalState = HandState(mState);
@@ -49,12 +50,12 @@ namespace MyThirdOgre
             mHandMoDef,
             mState.vPos,
             mState.qRot,
-            Ogre::Vector3::UNIT_SCALE * 2,
+            Ogre::Vector3::UNIT_SCALE,
             true,
             0.4f);
 
 
-        mSphere = new Ogre::Sphere(mState.vPos, 3.0f);
+        mSphere = new Ogre::Sphere(mState.vPos, 1.5f);
     }
 
     void Hand::update(float timeSinceLast, Ogre::uint32 currIdx, Ogre::uint32 prevIdx) 
@@ -73,5 +74,10 @@ namespace MyThirdOgre
     void Hand::setVelocity(float timeSinceLast, Ogre::Vector3 velocity) 
     {
         mState.vVel = velocity;
+    }
+
+    void Hand::setInk(float timeSinceLast, bool addingInk)
+    {
+        mState.bAddingInk = addingInk;
     }
 }

@@ -825,7 +825,7 @@ namespace MyThirdOgre
         const size_t numThreads = 1;
 #else
         //getNumLogicalCores() may return 0 if couldn't detect
-        const size_t numThreads = std::max<size_t>( 1, Ogre::PlatformInformation::getNumLogicalCores() );
+        const size_t numThreads = std::max<size_t>(1, 8);// Ogre::PlatformInformation::getNumLogicalCores() );
 #endif
         // Create the SceneManager, in this case a generic one
         mSceneManager = mRoot->createSceneManager( Ogre::ST_GENERIC,

@@ -84,13 +84,13 @@ namespace MyThirdOgre
 
                         vPos /= mPositionScalingFactor;
 
-                        vPos.y -= 25;
+                        vPos.y -= 35;
 
                         vVel.normalise();
 
                         vVel *= mVelocityScalingFactor;
 
-                        Leap_MotionMessage vMsg = Leap_MotionMessage(timeSinceLast, vVel, vPos);
+                        Leap_MotionMessage vMsg = Leap_MotionMessage(timeSinceLast, vVel, vPos, msg.tracking_event->pHands[0].index.is_extended);
 
                         this->queueSendMessage(mLogicSystem, Mq::LEAPFRAME_MOTION, vMsg);
 

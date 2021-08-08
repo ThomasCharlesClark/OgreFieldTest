@@ -1,6 +1,6 @@
 ﻿#include <sstream>
 
-#include "Headers/Cell.h"
+#include "Cell.h"
 
 #include "OgreSceneManager.h"
 #include "OgreManualObject2.h"
@@ -15,13 +15,14 @@
 
 #include "OgreMaterial.h"
 #include "OgrePass.h"
-#include "Headers/MyMath.h"
+#include "MyMath.h"
 
 #include "OgreEntity.h"
 
 namespace MyThirdOgre 
 {
     Cell::Cell(
+        float scale,
         int rowIndex,
         int columnIndex,
         int layerIndex,
@@ -33,6 +34,7 @@ namespace MyThirdOgre
         bool pressureGradientArrowVisible,
         GameEntityManager* geMgr
     ) :
+        mScale(scale),
         mRowCount(rowCount),
         mColumnCount(columnCount),
         mBoundary(rowIndex == 0 || columnIndex == 0 || rowIndex == rowCount - 1 || columnIndex == columnCount - 1),
@@ -63,7 +65,7 @@ namespace MyThirdOgre
         mState =
         {
             mState.bIsBoundary = mBoundary,
-            mState.vPos = Ogre::Vector3(mCellCoords.mIndexX, 0, mCellCoords.mIndexZ),
+            mState.vPos = Ogre::Vector3(mCellCoords.mIndexX, 0, mCellCoords.mIndexZ) * mScale,
             mState.vVel = Ogre::Vector3::ZERO,
             mState.rPressure = 0,//0.5 * (mCellCoords.mIndexX + mCellCoords.mIndexZ),//  4x^2 + y - 6
             mState.vPressureGradient = Ogre::Vector3::ZERO,
@@ -205,7 +207,7 @@ namespace MyThirdOgre
             arrowLineList,
             Ogre::Vector3(mState.vPos.x, 0.01f, mState.vPos.z),
             mState.qRot,
-            Ogre::Vector3::UNIT_SCALE,
+            Ogre::Vector3::UNIT_SCALE * mScale,
             false,
             1.0f, 
             mVelocityArrowVisible
@@ -253,7 +255,7 @@ namespace MyThirdOgre
             arrowLineList,
             Ogre::Vector3(mState.vPos.x, 0.02f, mState.vPos.z),
             Ogre::Quaternion(1, 0, 0, 0),
-            Ogre::Vector3(0.5f, 0.0f, 0.5f),
+            Ogre::Vector3(0.5f, 0.0f, 0.5f) * mScale,
             false,
             1.0f,
             mPressureGradientArrowVisible
@@ -287,7 +289,7 @@ namespace MyThirdOgre
             mBoundary ? "Red" : "White",
             mState.vPos,
             pRot,
-            Ogre::Vector3(0.005f, 0.005f, 0.005f),
+            Ogre::Vector3(0.005f, 0.005f, 0.005f) * mScale,
             true,
             //mBoundary ? 0.4 : mState.rInk,
             mBoundary ? 0.4 : (float)1 - mState.rInk,
@@ -392,6 +394,8 @@ namespace MyThirdOgre
             mPressureGradientArrowEntity->mTransform[currIdx]->qRot = q;
         }
 
+
+
         updatePlaneEntity();
     }
 
@@ -402,11 +406,10 @@ namespace MyThirdOgre
             }
             else {
                 if (mState.bActive) {
-                    //mGameEntityManager->gameEntityAlphaChange(mPlaneEntity, 0.4f);
+                    //mGameEntityManager->gameEntityColourChange(mPlaneEntity, mState.vInkColour);
                 }
                 else {
                     mGameEntityManager->gameEntityAlphaChange(mPlaneEntity, mState.rInk);
-                    //mGameEntityManager->gameEntityColourChange(mPlaneEntity, mState.vInkColour);
                 }
             }
         }
@@ -437,12 +440,14 @@ namespace MyThirdOgre
     {
         mState.bActive = true;
         //mState.rPressure = 0.4f;
+        mGameEntityManager->gameEntityAlphaChange(mPlaneEntity, 0.4f);
         mGameEntityManager->gameEntityColourChange(mPlaneEntity, Ogre::Vector3(50.0f, 50.0f, 0.0f));
     }
 
     void Cell::unsetActive() {
         mState.bActive = false;
         //mState.rPressure = abs(mState.vVel.squaredLength());
-        mGameEntityManager->gameEntityColourChange(mPlaneEntity, Ogre::Vector3(1, 1, 1));
+        //mGameEntityManager->gameEntityColourChange(mPlaneEntity, Ogre::Vector3(1, 1, 1));
+        mGameEntityManager->gameEntityColourChange(mPlaneEntity, mState.vInkColour);
     }
 }

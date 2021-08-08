@@ -14,6 +14,7 @@
 namespace MyThirdOgre 
 {
 	class Hand;
+	struct HandInfluence;
 
 	class Field
 	{
@@ -47,7 +48,7 @@ namespace MyThirdOgre
 		GameEntity* mGridEntity;
 		MovableObjectDefinition* mGridLineMoDef;
 		std::unordered_map<CellCoord, Cell*> mCells;
-		std::vector<std::pair<CellCoord, Ogre::Vector3>> mImpulses;
+		std::vector<std::pair<CellCoord, HandInfluence>> mImpulses;
 
 		Cell* mActiveCell;
 		Hand* mHand;

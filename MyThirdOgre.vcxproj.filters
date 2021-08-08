@@ -1,197 +1,200 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="src\FieldTest\Field.cpp">
-      <Filter>Source Files\Field</Filter>
-    </ClCompile>
-    <ClCompile Include="src\FieldTest\Cell.cpp">
+    <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\FieldTest\Cell.cpp">
       <Filter>Source Files\Cell</Filter>
     </ClCompile>
-    <ClCompile Include="src\LogicGameState.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\FieldTest\Field.cpp">
+      <Filter>Source Files\Field</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\TutorialGameState.cpp">
-      <Filter>Source Files\Other</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\BaseSystem.cpp">
-      <Filter>Source Files\Other</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\CameraController.cpp">
-      <Filter>Source Files\Other</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\GameEntityManager.cpp">
-      <Filter>Source Files\Other</Filter>
-    </ClCompile>
-    <ClCompile Include="src\GraphicsGameState.cpp">
-      <Filter>Source Files\Other</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\Utils\HdrUtils.cpp">
-      <Filter>Source Files\Other</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\LogicSystem.cpp">
-      <Filter>Source Files\Other</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\System\MainEntryPoints.cpp">
-      <Filter>Source Files\Other</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\Utils\MeshUtils.cpp">
-      <Filter>Source Files\Other</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\Threading\MessageQueueSystem.cpp">
-      <Filter>Source Files\Other</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\Utils\MiscUtils.cpp">
-      <Filter>Source Files\Other</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\Utils\ScreenSpaceReflections.cpp">
-      <Filter>Source Files\Other</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\SdlInputHandler.cpp">
-      <Filter>Source Files\Other</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\Utils\SmaaUtils.cpp">
-      <Filter>Source Files\Other</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\System\StaticPluginLoader.cpp">
-      <Filter>Source Files\Other</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\Utils\TestUtils.cpp">
-      <Filter>Source Files\Other</Filter>
-    </ClCompile>
-    <ClCompile Include="src\MyThirdOgre.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\GraphicsSystem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\OgreCommon\CameraControllerMultiThreading.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Leap\LeapSystem.cpp">
-      <Filter>Source Files\Leap</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Leap\LeapSystemState.cpp">
-      <Filter>Source Files\Leap</Filter>
-    </ClCompile>
-    <ClCompile Include="src\FieldTest\Hand.cpp">
+    <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\FieldTest\Hand.cpp">
       <Filter>Source Files\Hand</Filter>
     </ClCompile>
+    <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\Leap\LeapSystem.cpp">
+      <Filter>Source Files\Leap</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\Leap\LeapSystemState.cpp">
+      <Filter>Source Files\Leap</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\LogicGameState.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\MyThirdOgre.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\GraphicsGameState.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\TutorialGameState.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\GameEntityManager.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\GraphicsSystem.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\LogicSystem.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\CameraControllerMultiThreading.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\System\MainEntryPoints.cpp">
+      <Filter>Source Files\Other</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\System\Android\AndroidSystems.cpp">
+      <Filter>Source Files\Other</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\CameraController.cpp">
+      <Filter>Source Files\Other</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\Utils\HdrUtils.cpp">
+      <Filter>Source Files\Other</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\Utils\MeshUtils.cpp">
+      <Filter>Source Files\Other</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\Threading\MessageQueueSystem.cpp">
+      <Filter>Source Files\Other</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\Utils\MiscUtils.cpp">
+      <Filter>Source Files\Other</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\Utils\ScreenSpaceReflections.cpp">
+      <Filter>Source Files\Other</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\SdlInputHandler.cpp">
+      <Filter>Source Files\Other</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\Utils\SmaaUtils.cpp">
+      <Filter>Source Files\Other</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\System\StaticPluginLoader.cpp">
+      <Filter>Source Files\Other</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\Utils\TestUtils.cpp">
+      <Filter>Source Files\Other</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\BaseSystem.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\LogicGameState.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\Threading\YieldTimer.h">
-      <Filter>Header Files\Other</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\System\iOS\AppDelegate.h">
-      <Filter>Header Files\Other</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\BaseSystem.h">
-      <Filter>Header Files\Other</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\CameraController.h">
-      <Filter>Header Files\Other</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\EmptyProject.h">
-      <Filter>Header Files\Other</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\GameEntity.h">
-      <Filter>Header Files\Other</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\GameEntityManager.h">
-      <Filter>Header Files\Other</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\GameState.h">
-      <Filter>Header Files\Other</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\System\iOS\GameViewController.h">
-      <Filter>Header Files\Other</Filter>
-    </ClInclude>
-    <ClInclude Include="include\GraphicsGameState.h">
-      <Filter>Header Files\Other</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\GraphicsSystem.h">
-      <Filter>Header Files\Other</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\Utils\HdrUtils.h">
-      <Filter>Header Files\Other</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\InputListeners.h">
-      <Filter>Header Files\Other</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\System\iOS\iOSUtils.h">
-      <Filter>Header Files\Other</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\LogicSystem.h">
-      <Filter>Header Files\Other</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\MainEntryPointHelper.h">
-      <Filter>Header Files\Other</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\System\MainEntryPoints.h">
-      <Filter>Header Files\Other</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\Utils\MeshUtils.h">
-      <Filter>Header Files\Other</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\Threading\MessageQueueSystem.h">
-      <Filter>Header Files\Other</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\Utils\MiscUtils.h">
-      <Filter>Header Files\Other</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\Threading\MqMessages.h">
-      <Filter>Header Files\Other</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\System\OSX\OSXUtils.h">
-      <Filter>Header Files\Other</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\Utils\ScreenSpaceReflections.h">
-      <Filter>Header Files\Other</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\SdlEmulationLayer.h">
-      <Filter>Header Files\Other</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\SdlInputHandler.h">
-      <Filter>Header Files\Other</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\Utils\SmaaUtils.h">
-      <Filter>Header Files\Other</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\System\StaticPluginLoader.h">
-      <Filter>Header Files\Other</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\Utils\TestUtils.h">
-      <Filter>Header Files\Other</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\TutorialGameState.h">
-      <Filter>Header Files\Other</Filter>
-    </ClInclude>
-    <ClInclude Include="include\OgreCommon\CameraControllerMultiThreading.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\FieldTest\Headers\Cell.h">
+    <ClInclude Include="include\OgreCommon\Cell.h">
       <Filter>Header Files\Cell</Filter>
     </ClInclude>
-    <ClInclude Include="src\FieldTest\Headers\Field.h">
+    <ClInclude Include="include\OgreCommon\Field.h">
       <Filter>Header Files\Field</Filter>
     </ClInclude>
-    <ClInclude Include="src\FieldTest\Headers\MyMath.h">
+    <ClInclude Include="include\OgreCommon\Hand.h">
+      <Filter>Header Files\Hand</Filter>
+    </ClInclude>
+    <ClInclude Include="include\OgreCommon\LeapSystem.h">
+      <Filter>Header Files\Leap</Filter>
+    </ClInclude>
+    <ClInclude Include="include\OgreCommon\LeapSystemState.h">
+      <Filter>Header Files\Leap</Filter>
+    </ClInclude>
+    <ClInclude Include="include\OgreCommon\MyMath.h">
       <Filter>Header Files\Util</Filter>
     </ClInclude>
-    <ClInclude Include="include\Leap\LeapSystem.h">
-      <Filter>Header Files\Leap</Filter>
+    <ClInclude Include="include\OgreCommon\GraphicsGameState.h">
+      <Filter>Header Files\Core</Filter>
     </ClInclude>
-    <ClInclude Include="include\Leap\LeapSystemState.h">
-      <Filter>Header Files\Leap</Filter>
+    <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\TutorialGameState.h">
+      <Filter>Header Files\Core</Filter>
     </ClInclude>
-    <ClInclude Include="src\FieldTest\Headers\Hand.h">
-      <Filter>Header Files\Hand</Filter>
+    <ClInclude Include="include\OgreCommon\LogicGameState.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\GameEntityManager.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\LogicSystem.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\GraphicsSystem.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\CameraControllerMultiThreading.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\GameEntity.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\Threading\MqMessages.h">
+      <Filter>Header Files\Other</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\System\Android\AndroidSystems.h">
+      <Filter>Header Files\Other</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\System\iOS\AppDelegate.h">
+      <Filter>Header Files\Other</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\BaseSystem.h">
+      <Filter>Header Files\Other</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\CameraController.h">
+      <Filter>Header Files\Other</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\GameState.h">
+      <Filter>Header Files\Other</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\System\iOS\GameViewController.h">
+      <Filter>Header Files\Other</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\Utils\HdrUtils.h">
+      <Filter>Header Files\Other</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\InputListeners.h">
+      <Filter>Header Files\Other</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\System\iOS\iOSUtils.h">
+      <Filter>Header Files\Other</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\MainEntryPointHelper.h">
+      <Filter>Header Files\Other</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\System\MainEntryPoints.h">
+      <Filter>Header Files\Other</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\Utils\MeshUtils.h">
+      <Filter>Header Files\Other</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\Threading\MessageQueueSystem.h">
+      <Filter>Header Files\Other</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\Utils\MiscUtils.h">
+      <Filter>Header Files\Other</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\System\OSX\OSXUtils.h">
+      <Filter>Header Files\Other</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\Utils\ScreenSpaceReflections.h">
+      <Filter>Header Files\Other</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\SdlEmulationLayer.h">
+      <Filter>Header Files\Other</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\SdlInputHandler.h">
+      <Filter>Header Files\Other</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\Utils\SmaaUtils.h">
+      <Filter>Header Files\Other</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\System\StaticPluginLoader.h">
+      <Filter>Header Files\Other</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\Utils\TestUtils.h">
+      <Filter>Header Files\Other</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\Threading\YieldTimer.h">
+      <Filter>Header Files\Other</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\CMakeLists.txt" />
+    <CustomBuild Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">
@@ -233,5 +236,19 @@
     <Filter Include="Header Files\Hand">
       <UniqueIdentifier>{42b99dce-ceb0-4c0e-ae2d-b4420787d408}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Core">
+      <UniqueIdentifier>{902795e1-a00c-4b52-8370-6afda68122fa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Core">
+      <UniqueIdentifier>{23218f15-3f05-40af-aa40-c33918a226ff}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="CMakeCache.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="cmake_install.cmake" />
+    <None Include=".gitignore" />
+    <None Include=".gitattributes" />
   </ItemGroup>
 </Project>

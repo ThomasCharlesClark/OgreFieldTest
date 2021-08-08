@@ -11,9 +11,14 @@ using namespace MyThirdOgre;
 namespace MyThirdOgre
 {
     LogicGameState::LogicGameState() :
-        mFieldScale( 1.0f ),                                                                                                                                          
+        mFieldScale( 1.0f ),
+#if OGRE_DEBUG_MODE
         mFieldColumnCount ( 23 ),
         mFieldRowCount ( 23 ),
+#else
+        mFieldColumnCount(43),
+        mFieldRowCount(43),
+#endif
         mField( 0 ), 
         mHand( 0 ),
         mLogicSystem( 0 ), 
@@ -60,8 +65,13 @@ namespace MyThirdOgre
             "mainCamera",
             Ogre::SCENE_DYNAMIC, 
             mCameraMoDef,
+#if OGRE_DEBUG_MODE
+            Ogre::Vector3(0, 15, 35),
+            Ogre::Quaternion(0.983195186, -0.182557389, 0.0f, 0.0f),
+#else
             Ogre::Vector3(0, 35, 65),
             Ogre::Quaternion(0.983195186, -0.182557389, 0.0f, 0.0f),
+#endif
             Ogre::Vector3::UNIT_SCALE);
 
         float width = mLogicSystem->getWindowWidth(),
@@ -71,7 +81,11 @@ namespace MyThirdOgre
 
         mField = new Field(geMgr, mFieldScale, mFieldColumnCount, mFieldRowCount);
 
+#if OGRE_DEBUG_MODE
+        mHand = new Hand(mFieldColumnCount, mFieldRowCount, geMgr); //0; //noop
+#else
         mHand = new Hand(mFieldColumnCount, mFieldRowCount, geMgr);
+#endif
 
         if (mHand)
             mField->_notifyHand(mHand);

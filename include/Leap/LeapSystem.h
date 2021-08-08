@@ -14,11 +14,13 @@ namespace MyThirdOgre
 		float timeSinceLast;
 		Ogre::Vector3 position;
 		Ogre::Vector3 velocity;
+		bool addInk;
 
-		Leap_MotionMessage(float t, Ogre::Vector3 v, Ogre::Vector3 p)
+		Leap_MotionMessage(float t, Ogre::Vector3 v, Ogre::Vector3 p, bool add)
 			:	timeSinceLast(t),
 				velocity(v),
-				position(p)
+				position(p),
+				addInk(add)
 		{
 
 		}
