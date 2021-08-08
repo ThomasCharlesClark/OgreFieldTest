@@ -98,7 +98,8 @@ namespace MyThirdOgre
                                                   const Ogre::Vector3& initialScale,
                                                   const bool useAlpha,
                                                   const float alpha,
-                                                  const bool visible )
+                                                  const bool visible,
+                                                  Ogre::Vector3 vColour)
     {
         GameEntity* gameEntity = new GameEntity(mCurrentId++, moDefinition, type);
         gameEntity->mManualObjectDatablockName = datablockName;
@@ -113,6 +114,7 @@ namespace MyThirdOgre
         cge.useAlpha = useAlpha;
         cge.visible = visible;
         cge.name = name;
+        cge.vColour = vColour;
 
         size_t slot, bufferIdx;
         aquireTransformSlot(slot, bufferIdx);

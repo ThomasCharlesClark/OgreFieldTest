@@ -2,6 +2,7 @@
 #include <vector>
 
 #include "Cell.h"
+#include "Hand.h"
 #include "OgreSceneNode.h"
 #include "OgreManualObject2.h"
 #include "GameEntity.h"
@@ -12,18 +13,21 @@
 
 namespace MyThirdOgre 
 {
+	class Hand;
+
 	class Field
 	{
-		int mScale;
-		float mHalfScale;
-		int mCellCount;
-		int mRowCount;
-		int mColumnCount;
-		int mLayerCount;
-		float mBaseManualVelocityAdjustmentSpeed;
-		float mBoostedManualVelocityAdjustmentSpeed;
-		float mBaseManualPressureAdjustmentSpeed;
-		float mBoostedManualPressureAdjustmentSpeed;
+		int		mScale;
+		float	mHalfScale;
+		float	mRdx; // radix?
+		int		mCellCount;
+		int		mRowCount;
+		int		mColumnCount;
+		int		mLayerCount;
+		float	mBaseManualVelocityAdjustmentSpeed;
+		float	mBoostedManualVelocityAdjustmentSpeed;
+		float	mBaseManualPressureAdjustmentSpeed;
+		float	mBoostedManualPressureAdjustmentSpeed;
 
 
 		float mMinCellPressure;
@@ -32,7 +36,8 @@ namespace MyThirdOgre
 		float mViscosity;
 		float mFluidDensity;
 		float mKinematicViscosity;
-		float mDissipationConstant;
+		float mVelocityDissipationConstant;
+		float mInkDissipationConstant;
 
 		int mJacobiIterationsPressure;
 		int mJacobiIterationsDiffusion;
@@ -45,13 +50,18 @@ namespace MyThirdOgre
 		std::vector<std::pair<CellCoord, Ogre::Vector3>> mImpulses;
 
 		Cell* mActiveCell;
+		Hand* mHand;
 
 		bool mIsRunning;
 
 		int mPressureSpreadHalfWidth;
 		int mVelocitySpreadHalfWidth;
 
+		bool mGridVisible;
+		bool mVelocityVisible;
 		bool mPressureGradientVisible;
+
+		float mVorticityConfinementScale;
 
 	protected:
 		virtual void createGrid(void);
@@ -61,6 +71,8 @@ namespace MyThirdOgre
 	public:
 		Field(GameEntityManager* geMgr, int scale, int columnCount, int rowCount);
 		~Field();
+
+		virtual void _notifyHand(Hand* hand) { mHand = hand; };
 
 		Cell* getCell(CellCoord coords);
 
@@ -79,6 +91,8 @@ namespace MyThirdOgre
 		virtual void divergence(float timeSinceLast, std::unordered_map<CellCoord, CellState>& state);
 		virtual void jacobiPressure(float timeSinceLast, std::unordered_map<CellCoord, CellState>& state);
 		virtual void subtractPressureGradient(float timeSinceLast, std::unordered_map<CellCoord, CellState>& state);
+		virtual void vorticityComputation(float timeSinceLast, std::unordered_map<CellCoord, CellState>& state);
+		virtual void vorticityConfinement(float timeSinceLast, std::unordered_map<CellCoord, CellState>& state);
 		virtual void boundaryConditions(float timeSinceLast, std::unordered_map<CellCoord, CellState>& state);
 
 		virtual void increaseVelocity(float timeSinceLast);

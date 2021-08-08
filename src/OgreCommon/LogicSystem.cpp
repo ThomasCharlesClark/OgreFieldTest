@@ -140,10 +140,15 @@ namespace MyThirdOgre
                 }
             }
             break;
-        case Mq::LEAPFRAME_VELOCITY: 
+        case Mq::LEAPFRAME_MOTION:
             {
-                auto leapVelFrame = reinterpret_cast<const Leap_VelocityMessage*>(data);
-                dynamic_cast<LogicGameState*>(mCurrentGameState)->getField()->increaseVelocity(leapVelFrame->timeSinceLast, leapVelFrame->velocity);
+                auto hand = dynamic_cast<LogicGameState*>(mCurrentGameState)->getHand();
+                if (hand) {
+                    auto leapMotionFrame = reinterpret_cast<const Leap_MotionMessage*>(data);
+                    hand->setPosition(leapMotionFrame->timeSinceLast, leapMotionFrame->position);
+                    hand->setVelocity(leapMotionFrame->timeSinceLast, leapMotionFrame->velocity);
+                }
+                //dynamic_cast<LogicGameState*>(mCurrentGameState)->getField()->increaseVelocity(leapMotionFrame->timeSinceLast, leapMotionFrame->velocity);
             }
             break;
         default:

@@ -21,7 +21,8 @@ namespace MyThirdOgre
         mConnectionHandle(0),
         mPreviousTrackingMessage(LEAP_CONNECTION_MESSAGE()),
         mRunning(false),
-        mVelocityScalingFactor(2.0f)
+        mVelocityScalingFactor(5.0f),
+        mPositionScalingFactor(5.0f)
     {
 
     }
@@ -72,47 +73,30 @@ namespace MyThirdOgre
             //Handle message
 
             switch (msg.type) {
-            case eLeapEventType_Tracking:
+            case eLeapEventType_Tracking: 
+                {
+                    if (msg.tracking_event->nHands >= 1)
+                    {
 
-                //wchar_t mHandCount[256];
+                        Ogre::Vector3 vVel = Ogre::Vector3(msg.tracking_event->pHands[0].palm.velocity.v);
 
-                //swprintf_s(mHandCount, L"%d", msg.tracking_event->nHands);
+                        Ogre::Vector3 vPos = Ogre::Vector3(msg.tracking_event->pHands[0].palm.position.v);
 
-                //DBOut(mHandCount);
+                        vPos /= mPositionScalingFactor;
 
-                if (msg.tracking_event->nHands >= 1) {
+                        vPos.y -= 25;
 
-                    Ogre::Vector3 vVel = Ogre::Vector3(msg.tracking_event->pHands[0].palm.velocity.v);
+                        vVel.normalise();
 
-                    Ogre::Vector3 vPos = Ogre::Vector3(msg.tracking_event->pHands[0].palm.position.v);
+                        vVel *= mVelocityScalingFactor;
 
-                    if (mPreviousTrackingMessage.pointer != NULL)
-                        if (msg.tracking_event->pHands[0].palm.position.v != mPreviousTrackingMessage.tracking_event->pHands[0].palm.position.v)
-                            vPos = Ogre::Vector3(msg.tracking_event->pHands[0].palm.position.v - mPreviousTrackingMessage.tracking_event->pHands[0].palm.position.v);
-                    
-                    vPos = 1 / vPos.normalise();
+                        Leap_MotionMessage vMsg = Leap_MotionMessage(timeSinceLast, vVel, vPos);
 
-                    vPos *= mVelocityScalingFactor;
+                        this->queueSendMessage(mLogicSystem, Mq::LEAPFRAME_MOTION, vMsg);
 
-                    vVel.normalise();
-
-                    vVel *= mVelocityScalingFactor;
-
-					//auto y = vVel.y;
-					//auto z = vVel.z;
-
-					//vVel.z = y;
-					//vVel.y = z;
-
-                    Leap_VelocityMessage vMsg = Leap_VelocityMessage(timeSinceLast, vVel);
-
-                    //this->queueSendMessage(mLogicSystem, Mq::LEAPFRAME_VELOCITY, vMsg);
-
-                    mLogicSystem->receiveMessageImmediately(Mq::LEAPFRAME_VELOCITY, vMsg);
-
-                    mPreviousTrackingMessage = msg;
+                        mPreviousTrackingMessage = msg;
+                    }
                 }
-                
                 break;
             }
 

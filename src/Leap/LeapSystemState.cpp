@@ -1,4 +1,6 @@
 #include "Leap\LeapSystemState.h"
+#include "LogicSystem.h"
+#include "LogicGameState.h"
 
 namespace MyThirdOgre {
 
@@ -12,11 +14,6 @@ namespace MyThirdOgre {
 
     }
 
-    ////-----------------------------------------------------------------------------------
-    //void LeapSystemState::createScene01(void)
-    //{
-
-    //}
     ////-----------------------------------------------------------------------------------
     //void LeapSystemState::update(float timeSinceLast)
     //{

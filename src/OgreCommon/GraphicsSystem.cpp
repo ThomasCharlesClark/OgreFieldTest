@@ -1029,8 +1029,12 @@ namespace MyThirdOgre
                 diffuseBlock.mV = Ogre::TAM_WRAP;
                 diffuseBlock.mW = Ogre::TAM_WRAP;
                 personalDatablock->setSamplerblock(Ogre::PBSM_DIFFUSE, diffuseBlock);
-                //personalDatablock->setDiffuse(Ogre::Vector3(cge->gameEntity->mTransparency, cge->gameEntity->mTransparency, cge->gameEntity->mTransparency));
-                personalDatablock->setTransparency(cge->gameEntity->mTransparency, Ogre::HlmsPbsDatablock::Transparent, true);
+
+                if (cge->useAlpha)
+                    personalDatablock->setTransparency(cge->gameEntity->mTransparency, Ogre::HlmsPbsDatablock::Transparent, true);
+
+                if (cge->vColour != Ogre::Vector3::ZERO)
+                    personalDatablock->setDiffuse(cge->vColour);
 
                 pft->getSubEntity(0)->setDatablock(personalDatablock);
 

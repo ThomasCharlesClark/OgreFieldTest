@@ -9,12 +9,16 @@
 
 namespace MyThirdOgre
 {
-	struct Leap_VelocityMessage
+	struct Leap_MotionMessage
 	{
 		float timeSinceLast;
+		Ogre::Vector3 position;
 		Ogre::Vector3 velocity;
 
-		Leap_VelocityMessage(float t, Ogre::Vector3 v) : timeSinceLast(t), velocity(v)
+		Leap_MotionMessage(float t, Ogre::Vector3 v, Ogre::Vector3 p)
+			:	timeSinceLast(t),
+				velocity(v),
+				position(p)
 		{
 
 		}
@@ -22,16 +26,17 @@ namespace MyThirdOgre
 
 	class LeapSystem : public BaseSystem
 	{
-		LEAP_CONNECTION mConnectionHandle;
+		LEAP_CONNECTION					mConnectionHandle;
 
-		LEAP_CONNECTION_MESSAGE mPreviousTrackingMessage;
+		LEAP_CONNECTION_MESSAGE			mPreviousTrackingMessage;
 
-		bool mRunning;
-		float mVelocityScalingFactor;
+		bool							mRunning;
+		float							mVelocityScalingFactor;
+		float							mPositionScalingFactor;
 
 	protected:
-		BaseSystem* mLogicSystem;
-		BaseSystem* mGraphicsSystem;
+		BaseSystem						*mLogicSystem;
+		BaseSystem						*mGraphicsSystem;
 
 		virtual void createLeapConnection(void);
 		virtual void destroyLeapConnection(void);

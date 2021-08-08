@@ -29,10 +29,10 @@ namespace MyThirdOgre
         int columnCount,
         float maxPressure,
         float maxVelocitySquared,
+        bool velocityArrowVisible,
         bool pressureGradientArrowVisible,
         GameEntityManager* geMgr
     ) :
-        mCellCoords(rowIndex, layerIndex, columnIndex),
         mRowCount(rowCount),
         mColumnCount(columnCount),
         mBoundary(rowIndex == 0 || columnIndex == 0 || rowIndex == rowCount - 1 || columnIndex == columnCount - 1),
@@ -40,6 +40,7 @@ namespace MyThirdOgre
         mVelocityArrowMoDef(0),
         mPressureGradientArrowEntity(0),
         mPressureGradientArrowMoDef(0),
+        mVelocityArrowVisible(velocityArrowVisible),
         mPressureGradientArrowVisible(pressureGradientArrowVisible),
         mPlaneEntity(0),
         mPlaneMoDef(0),
@@ -53,18 +54,26 @@ namespace MyThirdOgre
         // (0.2 * ((rowIndex * rowIndex) - (2 * (rowIndex * columnIndex))) + 3)
         //pow(2.71828, -((rowIndex*rowIndex) + (columnIndex * columnIndex)))
     {
+        float adjustmentX = -(mColumnCount / 2);
+        float adjustmentZ = -(mRowCount / 2);
+
+        mCellCoords = CellCoord(adjustmentX + columnIndex, layerIndex, adjustmentZ + rowIndex);
+
         // Set state. Can no longer do this in the default parameter constructor list, because of dependence on mCellCoord
         mState =
         {
             mState.bIsBoundary = mBoundary,
-            mState.vPos = Ogre::Vector3(mCellCoords.mIndexX, 0, -mCellCoords.mIndexZ),
+            mState.vPos = Ogre::Vector3(mCellCoords.mIndexX, 0, mCellCoords.mIndexZ),
             mState.vVel = Ogre::Vector3::ZERO,
-            //mState.rPressure = 0,// (mCellCoords.mIndexX / 2) / (mCellCoords.mIndexZ | -1), // now that's pretty     4x^2 + y - 6
             mState.rPressure = 0,//0.5 * (mCellCoords.mIndexX + mCellCoords.mIndexZ),//  4x^2 + y - 6
             mState.vPressureGradient = Ogre::Vector3::ZERO,
             mState.rDivergence = 0,
             mState.qRot = Ogre::Quaternion::IDENTITY,
-            mState.bActive = false
+            mState.bActive = false,
+            mState.rVorticity = 0,
+            mState.rInk = 0, // mCellCoords.mIndexX < (adjustmentX + 3) ? 1 : 0,// (float)1 / (float)(mCellCoords.mIndexX - 10),
+            mState.vInkColour = Ogre::Vector3(0.968, 0.529, 0.094)
+            //mState.vInkColour = Ogre::Vector3(1.0f, 0.0f, 0.0f)
         };
 
         mOriginalState = CellState(mState);
@@ -113,6 +122,11 @@ namespace MyThirdOgre
             delete mSphereMoDef;
             mSphereMoDef = 0;
         }
+
+        if (mSphere) {
+            delete mSphere;
+            mSphere = 0;
+        }
     }
     
     void Cell::resetState(void) {
@@ -120,6 +134,7 @@ namespace MyThirdOgre
         mState.vVel = mOriginalState.vVel;
         mState.qRot = mOriginalState.qRot;
         mState.rPressure = mOriginalState.rPressure;
+        mState.rInk = mOriginalState.rInk;
     }
 
     void Cell::createVelocityArrow(void) 
@@ -190,7 +205,10 @@ namespace MyThirdOgre
             arrowLineList,
             Ogre::Vector3(mState.vPos.x, 0.01f, mState.vPos.z),
             mState.qRot,
-            Ogre::Vector3::UNIT_SCALE
+            Ogre::Vector3::UNIT_SCALE,
+            false,
+            1.0f, 
+            mVelocityArrowVisible
         );
     }
 
@@ -266,13 +284,15 @@ namespace MyThirdOgre
             Ogre::SceneMemoryMgrTypes::SCENE_DYNAMIC,
             mPlaneMoDef,
             Ogre::SceneManager::PrefabType::PT_PLANE,
-            mBoundary ? "Red" : "Blue",
+            mBoundary ? "Red" : "White",
             mState.vPos,
             pRot,
             Ogre::Vector3(0.005f, 0.005f, 0.005f),
             true,
-            mBoundary ? 0.4f : mState.rPressure, 
-            true);
+            //mBoundary ? 0.4 : mState.rInk,
+            mBoundary ? 0.4 : (float)1 - mState.rInk,
+            true,
+            mBoundary ? Ogre::Vector3::ZERO : mState.vInkColour);
     }
 
     void Cell::createBoundingSphere(void)
@@ -309,16 +329,11 @@ namespace MyThirdOgre
     void Cell::setVelocity(Ogre::Vector3 v)
     {
         mState.vVel = v;
+    }
 
-        //// this is bullshit
-       /* if (mState.vVel.squaredLength() < 0.002f)
-            mState.vVel = Ogre::Vector3::ZERO;
-
-        // so is this
-       /* if (mState.vVel == Ogre::Vector3::ZERO)
-            mState.vVel = Ogre::Vector3(Ogre::Math::RangeRandom(-0.02f, 0.02f), 0.0f, Ogre::Math::RangeRandom(-0.02f, 0.02f));*/
-
-        // but without ANY velocity it becomes impossible to INCREASE velocity because I'm constantly getting advected back to ZERO!
+    void Cell::setInk(Ogre::Vector3 v)
+    {
+        mState.vInkColour = v;
     }
 
     void Cell::setPressureGradient(Ogre::Vector3 v)
@@ -344,7 +359,7 @@ namespace MyThirdOgre
             mVelocityArrowEntity->mTransform[currIdx]->vScale.y = 0;
             mVelocityArrowEntity->mTransform[currIdx]->vScale.z = vVelLen;
 
-            mPlaneEntity->mTransform[currIdx]->vPos.y = mState.rPressure;
+            mPlaneEntity->mTransform[currIdx]->vPos.y = mState.rInk;
             
             q.normalise();
 
@@ -377,16 +392,28 @@ namespace MyThirdOgre
             mPressureGradientArrowEntity->mTransform[currIdx]->qRot = q;
         }
 
-        updatePressureIndicator();
+        updatePlaneEntity();
     }
 
-    void Cell::updatePressureIndicator(void) {
+    void Cell::updatePlaneEntity(void) {
         if (mPlaneMoDef) {
-            if (mState.bActive)
-                mGameEntityManager->gameEntityAlphaChange(mPlaneEntity, 0.4f);
-            else
-                mGameEntityManager->gameEntityAlphaChange(mPlaneEntity, mState.rPressure / mMaxPressure);
+            if (mState.bIsBoundary) {
+                //mGameEntityManager->gameEntityAlphaChange(mPlaneEntity, mState.rPressure / mMaxPressure);
+            }
+            else {
+                if (mState.bActive) {
+                    //mGameEntityManager->gameEntityAlphaChange(mPlaneEntity, 0.4f);
+                }
+                else {
+                    mGameEntityManager->gameEntityAlphaChange(mPlaneEntity, mState.rInk);
+                    //mGameEntityManager->gameEntityColourChange(mPlaneEntity, mState.vInkColour);
+                }
+            }
         }
+        //if (mPlaneMoDef) {
+        //    //mGameEntityManager->gameEntityAlphaChange(mPlaneEntity, mState.rInk);
+        //    //mGameEntityManager->gameEntityColourChange(mPlaneEntity, mState.vInkColour);
+        //}
     }
 
     Ogre::Real Cell::getPressure()

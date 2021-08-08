@@ -67,8 +67,15 @@
     <ClCompile Include="src\OgreCommon\CameraControllerMultiThreading.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Leap\LeapSystem.cpp" />
-    <ClCompile Include="src\Leap\LeapSystemState.cpp" />
+    <ClCompile Include="src\Leap\LeapSystem.cpp">
+      <Filter>Source Files\Leap</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Leap\LeapSystemState.cpp">
+      <Filter>Source Files\Leap</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FieldTest\Hand.cpp">
+      <Filter>Source Files\Hand</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\LogicGameState.h">
@@ -173,8 +180,15 @@
     <ClInclude Include="src\FieldTest\Headers\MyMath.h">
       <Filter>Header Files\Util</Filter>
     </ClInclude>
-    <ClInclude Include="include\Leap\LeapSystem.h" />
-    <ClInclude Include="include\Leap\LeapSystemState.h" />
+    <ClInclude Include="include\Leap\LeapSystem.h">
+      <Filter>Header Files\Leap</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Leap\LeapSystemState.h">
+      <Filter>Header Files\Leap</Filter>
+    </ClInclude>
+    <ClInclude Include="src\FieldTest\Headers\Hand.h">
+      <Filter>Header Files\Hand</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="C:\Users\Thoams\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\CMakeLists.txt" />
@@ -206,6 +220,18 @@
     </Filter>
     <Filter Include="Header Files\Util">
       <UniqueIdentifier>{d8545dd4-0e6a-4f89-8a26-4efc320a47c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Leap">
+      <UniqueIdentifier>{9203ee94-eafe-4d64-bccf-f39c654471ec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Leap">
+      <UniqueIdentifier>{34f191fe-0232-49e9-86bf-519436cd1875}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Hand">
+      <UniqueIdentifier>{f2ce3bfe-c411-4299-9bb7-2b3e42116f40}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Hand">
+      <UniqueIdentifier>{42b99dce-ceb0-4c0e-ae2d-b4420787d408}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

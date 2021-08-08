@@ -99,6 +99,7 @@ int main()
     graphicsSystem._notifyLogicSystem(&logicSystem);
     logicSystem._notifyGraphicsSystem(&graphicsSystem);
 
+    leapSystemState._notifyLogicSystem(&logicSystem);
     leapSystem._notifyGraphicsSystem(&graphicsSystem);
     leapSystem._notifyLogicSystem(&logicSystem);
 
@@ -131,11 +132,6 @@ unsigned long renderThreadApp(Ogre::ThreadHandle* threadHandle)
 
     graphicsSystem->initialize("Tutorial 06: Multithreading");
 
-    // can only notify inputHandler after it actually exists - new is called in graphicsSystem::initialise
-    // it is quite possible to notify the input handler about the logic system in here, but for neatness I have 
-    // left that up to the logic thread.
-    graphicsSystem->getInputHandler()->_notifyGraphicsSystem(threadData->graphicsSystem);
-    
     barrier->sync();
 
     if (graphicsSystem->getQuit())
@@ -143,6 +139,12 @@ unsigned long renderThreadApp(Ogre::ThreadHandle* threadHandle)
         graphicsSystem->deinitialize();
         return 0; //User cancelled config
     }
+
+    // can only notify inputHandler after it actually exists - new is called in graphicsSystem::initialise
+    // it is quite possible to notify the input handler about the logic system in here, but for neatness I have 
+    // left that up to the logic thread.
+    graphicsSystem->getInputHandler()->_notifyGraphicsSystem(threadData->graphicsSystem);
+    barrier->sync();
 
     graphicsSystem->createScene01();
     barrier->sync();
@@ -226,13 +228,14 @@ unsigned long logicThread(Ogre::ThreadHandle* threadHandle)
     logicSystem->initialize();
     barrier->sync();
 
-    graphicsSystem->getInputHandler()->_notifyLogicSystem(threadData->logicSystem);
-
     if (graphicsSystem->getQuit())
     {
         logicSystem->deinitialize();
         return 0; //Render thread cancelled early
     }
+
+    graphicsSystem->getInputHandler()->_notifyLogicSystem(threadData->logicSystem);
+    barrier->sync();
 
     float width = graphicsSystem->getRenderWindow()->getWidth(), 
          height = graphicsSystem->getRenderWindow()->getHeight();
@@ -311,6 +314,8 @@ unsigned long leapThread(Ogre::ThreadHandle* threadHandle)
         return 0; //Render thread cancelled early
     }
 
+    barrier->sync();
+
     Ogre::Window* renderWindow = graphicsSystem->getRenderWindow();
 
     Ogre::Timer timer;
@@ -320,6 +325,7 @@ unsigned long leapThread(Ogre::ThreadHandle* threadHandle)
 
     barrier->sync();
 
+    leapSystem->createScene01();
     barrier->sync();
 
     while (!graphicsSystem->getQuit())

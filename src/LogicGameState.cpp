@@ -11,10 +11,11 @@ using namespace MyThirdOgre;
 namespace MyThirdOgre
 {
     LogicGameState::LogicGameState() :
-        mFieldScale( 1 ),                                                                                                                                          
+        mFieldScale( 1.0f ),                                                                                                                                          
         mFieldColumnCount ( 23 ),
         mFieldRowCount ( 23 ),
         mField( 0 ), 
+        mHand( 0 ),
         mLogicSystem( 0 ), 
         mCameraController( 0 ),
         mCameraMoDef ( 0 ),
@@ -35,8 +36,15 @@ namespace MyThirdOgre
             mCameraController = 0;
         }
 
-        delete mField;
-        mField = 0;
+        if (mField) {
+            delete mField;
+            mField = 0;
+        }
+
+        if (mHand) {
+            delete mHand;
+            mHand = 0;
+        }
     }
     //-----------------------------------------------------------------------------------
     void LogicGameState::createScene01(void)
@@ -52,7 +60,7 @@ namespace MyThirdOgre
             "mainCamera",
             Ogre::SCENE_DYNAMIC, 
             mCameraMoDef,
-            Ogre::Vector3(mFieldColumnCount / 2, 15, 25),
+            Ogre::Vector3(0, 35, 65),
             Ogre::Quaternion(0.983195186, -0.182557389, 0.0f, 0.0f),
             Ogre::Vector3::UNIT_SCALE);
 
@@ -62,6 +70,11 @@ namespace MyThirdOgre
         mCameraController = new CameraControllerMultiThreading(mCameraEntity, width, height);
 
         mField = new Field(geMgr, mFieldScale, mFieldColumnCount, mFieldRowCount);
+
+        mHand = new Hand(mFieldColumnCount, mFieldRowCount, geMgr);
+
+        if (mHand)
+            mField->_notifyHand(mHand);
     }
     //-----------------------------------------------------------------------------------
     void LogicGameState::update(float timeSinceLast)
@@ -107,6 +120,9 @@ namespace MyThirdOgre
 
         if (mCameraController)
             mCameraController->update(timeSinceLast, currIdx, prevIdx, mLogicSystem->getMouseX(), mLogicSystem->getMouseY());
+
+        if (mHand)
+            mHand->update(timeSinceLast, currIdx, prevIdx);
 
         GameState::update(timeSinceLast);
     }

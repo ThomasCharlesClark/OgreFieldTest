@@ -5,6 +5,7 @@
 #include "OgrePrerequisites.h"
 #include "TutorialGameState.h"
 #include "../src/FieldTest/Headers/Field.h"
+#include "../src/FieldTest/Headers/Hand.h"
 #include "CameraControllerMultiThreading.h"
 
 union SDL_Event;
@@ -31,7 +32,7 @@ namespace MyThirdOgre
         int                                 mFieldColumnCount;
         int                                 mFieldRowCount;
         Field                               *mField;
-
+        Hand                                *mHand;
         LogicSystem                         *mLogicSystem;
 
         CameraControllerMultiThreading      *mCameraController;
@@ -50,6 +51,7 @@ namespace MyThirdOgre
         void _notifyLogicSystem(LogicSystem* logicSystem) { mLogicSystem = logicSystem; }
 
         Field* getField(void) { return mField; };
+        Hand* getHand(void) { return mHand; };
 
         virtual void createScene01(void);
         virtual void update(float timeSinceLast);

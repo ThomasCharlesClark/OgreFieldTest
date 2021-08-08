@@ -107,6 +107,9 @@ namespace MyThirdOgre
 		Ogre::Quaternion qRot;
 		Ogre::Real rPressure;
 		bool bActive;
+		Ogre::Real rVorticity;
+		Ogre::Real rInk;
+		Ogre::Vector3 vInkColour;
 
 		CellState() : 
 			bIsBoundary(false),
@@ -116,7 +119,10 @@ namespace MyThirdOgre
 			rDivergence(0.0f),
 			qRot(Ogre::Quaternion::IDENTITY),
 			rPressure(0.0f),
-			bActive(false) { };
+			bActive(false),
+			rVorticity(0.0f),
+			rInk(0.0f),
+			vInkColour(Ogre::Vector3(0.0f, 0.0f, 0.0f)) { };
 
 		CellState(
 			bool b,
@@ -126,7 +132,10 @@ namespace MyThirdOgre
 			Ogre::Vector3 vPG,
 			Ogre::Real rDiv,
 			Ogre::Quaternion qR, 
-			bool a) {
+			bool a,
+			Ogre::Real rVort,
+			Ogre::Real rI,
+			Ogre::Vector3 vIn) {
 			bIsBoundary = b;
 			vPos = vP;
 			vVel = vV;
@@ -135,6 +144,9 @@ namespace MyThirdOgre
 			rDivergence = rDiv,
 			qRot = qR;
 			bActive = a;
+			rVorticity = rVort;
+			rInk = rI;
+			vInkColour = vIn;
 		};
 	};
 
@@ -146,6 +158,7 @@ protected:
 		int mRowCount;
 		int mColumnCount;
 		bool mBoundary;
+		bool mVelocityArrowVisible;
 		bool mPressureGradientArrowVisible;
 
 		CellState					mState;
@@ -184,7 +197,7 @@ protected:
 
 		virtual void createBoundingSphereDisplay(void);
 
-		virtual void updatePressureIndicator(void);
+		virtual void updatePlaneEntity(void);
 
 	public:
 		Cell(int rowIndex,
@@ -194,7 +207,8 @@ protected:
 			 int rowCount,
 			 float maxPressure,
 			 float maxVelocitySquared,
-			 bool pressureGradientArrowVisible,
+			 bool velocityArrowVisible,
+		  	 bool pressureGradientArrowVisible,
 			 GameEntityManager* geMgr);
 
 		~Cell();
@@ -204,14 +218,17 @@ protected:
 
 		CellCoord getCellCoords(void) { return mCellCoords; }
 		CellState getState(void) { return mState; };
+		void setState(CellState state) { mState = state; };
 		Ogre::Vector3 getVelocity(void) { return mState.vVel; };
 		Ogre::Vector3 getPosition(void) { return mState.vPos; };
 		bool getIsBoundary(void) { return mBoundary; };
 		bool getIsActive(void) { return mState.bActive; };
+		Ogre::Sphere* getBoundingSphere(void) { return mSphere; };
 
 		virtual void resetState(void);
 
 		void setVelocity(Ogre::Vector3 v);
+		void setInk(Ogre::Vector3 v);
 		void setPressureGradient(Ogre::Vector3 v);
 
 		virtual Ogre::Real getPressure();

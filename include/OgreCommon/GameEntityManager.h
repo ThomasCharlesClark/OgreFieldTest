@@ -25,6 +25,7 @@ namespace MyThirdOgre
             bool                useAlpha;
             bool                visible;
             Ogre::String        name;
+            Ogre::Vector3       vColour;
         };
 
         struct GameEntityColourChange 
@@ -139,7 +140,8 @@ namespace MyThirdOgre
                                     const Ogre::Vector3& initialScale,
                                     const bool useAlpha = false,
                                     const float alpha = 1.0f,
-                                    const bool visible = true );
+                                    const bool visible = true,
+                                    const Ogre::Vector3 vColour = Ogre::Vector3::ZERO);
 
         GameEntity* addGameEntity( const Ogre::String& name,
                                    const Ogre::SceneMemoryMgrTypes type,

@@ -28,6 +28,7 @@ namespace Mq
         //...Leap -> Logic?
         LEAPFRAME_FINISHED,
         LEAPFRAME_VELOCITY,
+        LEAPFRAME_MOTION,
 
         NUM_MESSAGE_IDS,
     };

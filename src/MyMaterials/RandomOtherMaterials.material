@@ -41,6 +41,13 @@ hlms UnlitWhite unlit
 	diffuse 	1.0 1.0 1.0 1.0
 }
 
+hlms White pbs
+{	
+	roughness 		0.02
+	fresnel 		1.33
+	diffuse_map		white10x10.png
+}
+
 hlms Red pbs
 {	
 	roughness 		0.02
@@ -68,7 +75,6 @@ hlms Active pbs
 	fresnel 		1.33
 	diffuse_map		green10x10.png
 }
-
 
 hlms Neighbourly pbs
 {	
