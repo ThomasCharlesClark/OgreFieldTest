@@ -17,10 +17,10 @@ namespace MyThirdOgre {
 		Ogre::Vector3 b,  // point B (top-left)		: x in minima,   z in extremis  // POSITION
 		Ogre::Vector3 c,  // point C (top-right)	: x in extremis, z in extremis  // POSITION
 		Ogre::Vector3 d,  // point D (bottom-right) : x in extremis, z in minima    // POSITION
-		Ogre::Vector3 vA, // point A				:								// VELOCITY
-		Ogre::Vector3 vB, // point B				:								// VELOCITY
-		Ogre::Vector3 vC, // point C				:								// VELOCITY
-		Ogre::Vector3 vD, // point D				:								// VELOCITY
+		Ogre::Vector3 vA, // point A				:								// SOME VECTOR
+		Ogre::Vector3 vB, // point B				:								// SOME VECTOR
+		Ogre::Vector3 vC, // point C				:								// SOME VECTOR
+		Ogre::Vector3 vD, // point D				:								// SOME VECTOR
 		float pX,		  // P.x					: Point we want a velocity average for - X
 		float pZ,		  // P.z					: Point we want a velocity average for - Z
 		bool crossFormation = false)	// this is BS	 
@@ -54,6 +54,7 @@ namespace MyThirdOgre {
 		//  to force this configuration to fit the above algorithm, what do we need to do?
 		//  well, as I know I'm working with unit grid spacing this becomes trivial:
 		//  adjust a.z, b.x, c.z and d.x!
+		//  A while later, this 'cross-form' approach seems to me like BS. Not sure.
 		
 		if (crossFormation) 
 		{
@@ -81,13 +82,13 @@ namespace MyThirdOgre {
 		Ogre::Real  xLength = xExtremis - xMinima,
 			zLength = zExtremis - zMinima;
 
-		float fxz1 = ((xExtremis - pX) / (xLength)*q11x) + ((pX - xMinima) / (xLength)*q21x);
-		float fxz2 = ((xExtremis - pX) / (xLength)*q12x) + ((pX - xMinima) / (xLength)*q22x);
+		float fxz1 = (((xExtremis - pX) / (xLength)) * q11x) + (((pX - xMinima) / (xLength)) * q22x);
+		float fxz2 = (((xExtremis - pX) / (xLength)) * q12x) + (((pX - xMinima) / (xLength)) * q21x);
 
 		float    x = ((zExtremis - pZ) / (zLength)*fxz1) + ((pZ - zMinima) / (zLength)*fxz2);
 
-		float fzz1 = ((xExtremis - pX) / (xLength)*q11z) + ((pX - xMinima) / (xLength)*q21z);
-		float fzz2 = ((xExtremis - pX) / (xLength)*q12z) + ((pX - xMinima) / (xLength)*q22z);
+		float fzz1 = ((xExtremis - pX) / (xLength)*q11z) + ((pX - xMinima) / (xLength)*q22z);
+		float fzz2 = ((xExtremis - pX) / (xLength)*q12z) + ((pX - xMinima) / (xLength)*q21z);
 
 		float    z = ((zExtremis - pZ) / (zLength)*fzz1) + ((pZ - zMinima) / (zLength)*fzz2);
 
@@ -105,10 +106,10 @@ namespace MyThirdOgre {
 		Ogre::Vector3 b,  // point B (top-left)		: x in minima,   z in extremis  // POSITION
 		Ogre::Vector3 c,  // point C (top-right)	: x in extremis, z in extremis  // POSITION
 		Ogre::Vector3 d,  // point D (bottom-right) : x in extremis, z in minima    // POSITION
-		Ogre::Real rA,    // point A				:								// SCALAR
-		Ogre::Real rB,    // point B				:								// SCALAR
-		Ogre::Real rC,	  // point C				:								// SCALAR
-		Ogre::Real rD,	  // point D				:								// SCALAR
+		Ogre::Real rA,    // point A				:								// SOME SCALAR
+		Ogre::Real rB,    // point B				:								// SOME SCALAR
+		Ogre::Real rC,	  // point C				:								// SOME SCALAR
+		Ogre::Real rD,	  // point D				:								// SOME SCALAR
 		float pX,		  // P.x					: Point we want a vector average for - X
 		float pZ,	      // P.z					: Point we want a vector average for - Z
 		bool crossFormation)	// this is BS	  
@@ -144,16 +145,47 @@ namespace MyThirdOgre {
 		Ogre::Real  xLength = xExtremis - xMinima,
 			zLength = zExtremis - zMinima;
 
-		float fxz1 = ((xExtremis - pX) / (xLength)*q11) + ((pX - xMinima) / (xLength)*q21);
-		float fxz2 = ((xExtremis - pX) / (xLength)*q12) + ((pX - xMinima) / (xLength)*q22);
+		float fxz1 = (((xExtremis - pX) / (xLength)) * q11) + (((pX - xMinima) / (xLength)) * q22);
+		float fxz2 = (((xExtremis - pX) / (xLength)) * q12) + (((pX - xMinima) / (xLength)) * q21);
 
-		float    r = ((zExtremis - pZ) / (zLength)*fxz1) + ((pZ - zMinima) / (zLength)*fxz2);
+		float    r = (((zExtremis - pZ) / (zLength)) * fxz1) + (((pZ - zMinima) / (zLength)) * fxz2);
 
 		if (isnan(r) || isinf(r))
 			r = 0;
 
 		return r;
 	}
+
+	//// testings
+	//auto vTest = vectorBiLerp(
+	//	Ogre::Vector3(10, 0, 10),
+	//	Ogre::Vector3(10, 0, 16),
+	//	Ogre::Vector3(15, 0, 16),
+	//	Ogre::Vector3(15, 0, 10),
+	//	Ogre::Vector3(4, 0, 4),
+	//	Ogre::Vector3(8, 0, 8),
+	//	Ogre::Vector3(2, 0, 2),
+	//	Ogre::Vector3(9, 0, 9),
+	//	12,
+	//	14,
+	//	false
+	//); == (5.7333, 0, 5.7333)
+
+	//// testings
+	//auto rTest = scalarBiLerp(
+	//	Ogre::Vector3(10, 0, 10),
+	//	Ogre::Vector3(10, 0, 16),
+	//	Ogre::Vector3(15, 0, 16),
+	//	Ogre::Vector3(15, 0, 10),
+	//	4,
+	//	8,
+	//	2,
+	//	9,
+	//	12,
+	//	14,
+	//	false
+	//); == 5.7333
+
 
 	// Thanks, random StackOverflow dude!
 	// https://gamedev.stackexchange.com/questions/15070/orienting-a-model-to-face-a-target#answer-15078

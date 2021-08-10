@@ -18,8 +18,8 @@ namespace MyThirdOgre
 	Field::Field(GameEntityManager* geMgr, float scale, int columnCount, int rowCount) :
 		mGameEntityManager(geMgr),
 		mScale(scale),
-		mHalfGridSpacing(0.5f),
-		mScaleReciprocal((float)1 / scale),
+		mHalfScale(0.5 * scale),
+		mDeltaX(1.0f),
 		mColumnCount(columnCount),
 		mRowCount(rowCount),
 		mGridLineMoDef(0),
@@ -27,39 +27,41 @@ namespace MyThirdOgre
 		mLayerCount(1),
 		mCells(std::unordered_map<CellCoord, Cell*> { }),
 		mActiveCell(0),
-		mBaseManualVelocityAdjustmentSpeed(0.5f),
-		mBoostedManualVelocityAdjustmentSpeed(1.5f),
+		mBaseManualVelocityAdjustmentSpeed(20.0f),
+		mBoostedManualVelocityAdjustmentSpeed(80.0f),
 		mBaseManualPressureAdjustmentSpeed(0.01f),
 		mBoostedManualPressureAdjustmentSpeed(0.05f),
 		mManualAdjustmentSpeedModifier(false),
 		mMinCellPressure(0.0f),		// 0 atmosphere...?
 		mMaxCellPressure(1.0f),		// this is BS
 		mMaxCellVelocitySquared(1000.0f),	// total guess
-		mViscosity(0.01f),					// total guess
-		mFluidDensity(90.0f),				// water density = 997kg/m^3
+		mViscosity(0.05f),					// total guess
+		mFluidDensity(0.2f),				// water density = 997kg/m^3
 		mKinematicViscosity(mViscosity / mFluidDensity),
-		mVelocityDissipationConstant(1.0f),//.9991f),
-		mInkDissipationConstant(0.9996f),
+		mVelocityDissipationConstant(1.0f),
+		mInkDissipationConstant(0.991f),
 		mIsRunning(true),
-		mPressureSpreadHalfWidth(2),
-		mVelocitySpreadHalfWidth(2),
+		mPressureSpreadHalfWidth(4),
+		mVelocitySpreadHalfWidth(7),
 #if OGRE_DEBUG_MODE
 		mGridVisible(true),
 		mVelocityVisible(true),
 		mPressureGradientVisible(true),
-		mJacobiIterationsPressure(80),
-		mJacobiIterationsDiffusion(20),
+		mJacobiIterationsPressure(60),
+		mJacobiIterationsDiffusion(60),
 #else
 		mGridVisible(false),
-		mVelocityVisible(true),
+		mVelocityVisible(false),
 		mPressureGradientVisible(false),
 		mJacobiIterationsPressure(60),
 		mJacobiIterationsDiffusion(60),
 #endif
 		mImpulses(std::vector<std::pair<CellCoord, HandInfluence>> { }),
 		mHand(0),
-		mVorticityConfinementScale(0.01f)
+		mVorticityConfinementScale(0.015f)
 	{
+		mReciprocalDeltaX = (float)1 / mDeltaX;
+		mHalfReciprocalDeltaX = 0.5f / mReciprocalDeltaX;
 
 		if (mGridVisible)
 			createGrid();
@@ -67,6 +69,7 @@ namespace MyThirdOgre
 		createCells();
 
 		mActiveCell = mCells[{0, 0, mRowCount / 2 - 1}];
+		//mActiveCell = mCells[{0, 0, 0}];
 
 		mActiveCell->setActive();
 	}
@@ -172,7 +175,7 @@ namespace MyThirdOgre
 				if (mHand) {
 					if (!c.second->getIsBoundary()) {
 						if (c.second->getBoundingSphere()->intersects(*mHand->getBoundingSphere())) {
-							mImpulses.push_back({ c.first, HandInfluence(mHand->getState().vVel, mHand->getState().bAddingInk) });
+							mImpulses.push_back({ c.first, HandInfluence(mHand->getState().vVel, mHand->getState().rInk) });
 						}
 					}
 				}
@@ -202,14 +205,7 @@ namespace MyThirdOgre
 			for (const auto& c : state) {
 				auto cell = mCells[c.first];
 
-				if (c.second.rInk != 0 && c.second.rInk != 1)
-					int f = 0;
-
 				cell->setState(c.second);
-				/*cell->setVelocity(c.second.vVel);
-				cell->setPressure(c.second.rPressure);
-				cell->setPressureGradient(c.second.vPressureGradient);
-				cell->setInk(c.second.rInk);*/
 			}
 
 			for (const auto& cell : mCells) {
@@ -226,87 +222,169 @@ namespace MyThirdOgre
 
 				auto cVel = cell.second.vVel;
 
-				auto vPos = cell.second.vPos -(cVel * mHalfGridSpacing * mScaleReciprocal * timeSinceLast);
-
-				bool useCrossForm = false;
+				auto vPos = cell.second.vPos -(cVel * mReciprocalDeltaX * timeSinceLast);
 
 				CellState a, b, c, d;
 
-				// if vPos.x and vPos.z are effectively integers
-				// we have no choice but to take a cross-form approach
-				/*if (vPos.x == static_cast<int>(vPos.x) && vPos.z == static_cast<int>(vPos.z))
-					useCrossForm = true;*/
-
 				CellCoord cellCoord = cell.first;
-				CellCoord vPosCoord = CellCoord(vPos.x, 0, vPos.z);
 
-					auto aCoord = cellCoord + CellCoord(-1, 0, 1); // bottom left
-					auto bCoord = cellCoord + CellCoord(-1, 0, -1); // top left
-					auto cCoord = cellCoord + CellCoord(1, 0, -1); // top right
-					auto dCoord = cellCoord + CellCoord(1, 0, 1); // bottom right
+				int ax, az,
+					bx, bz,
+					cx, cz,
+					dx, dz;
+
+				if (vPos.x == static_cast<int>(vPos.x) && vPos.z == static_cast<int>(vPos.z))
+				{
+					// we're bang on a corner: take a linear interpolation approach
+					auto aCoord = cellCoord + CellCoord(-1, 0, 0); // left
+					auto bCoord = cellCoord + CellCoord(0, 0, -1); // top 
+					auto cCoord = cellCoord + CellCoord(1, 0, 0);  // right
+					auto dCoord = cellCoord + CellCoord(0, 0, 1);  // bottom
 
 					a = state[aCoord];
 					b = state[bCoord];
 					c = state[cCoord];
 					d = state[dCoord];
-				/*}
+
+					auto vAC = Ogre::Math::lerp(a.vVel, c.vVel, 0.5f);
+					auto vBD = Ogre::Math::lerp(b.vVel, d.vVel, 0.5f);
+
+					Ogre::Vector3 vNewVel = Ogre::Math::lerp(vAC, vBD, 0.5f);
+
+					const_cast<CellState&>(cell.second).vVel = mVelocityDissipationConstant * vNewVel;
+
+					auto iAC = Ogre::Math::lerp(a.rInk, c.rInk, 0.5f);
+					auto iBD = Ogre::Math::lerp(b.rInk, d.rInk, 0.5f);
+
+					auto rNewInk = Ogre::Math::lerp(iAC, iBD, 0.5f);
+
+					const_cast<CellState&>(cell.second).rInk = mInkDissipationConstant * rNewInk;
+				}
 				else 
 				{
-					int ax, az,
-						bx, bz,
-						cx, cz,
-						dx, dz;
+					ax = floor(vPos.x); // floor moves left along the number line
+					az = ceil(vPos.z);	// ceil  moves right along the number line
 
-					ax = round(vPos.x);
-					az = ceil(vPos.z);
-
-					bx = round(vPos.x);
-					bz = round(vPos.z);
+					bx = floor(vPos.x);
+					bz = floor(vPos.z);
 
 					cx = ceil(vPos.x);
-					cz = round(vPos.z);
+					cz = floor(vPos.z);
 
 					dx = ceil(vPos.x);
 					dz = ceil(vPos.z);
 
-					a = state[{ ax, 0, az }];
-					b = state[{ bx, 0, bz }];
-					c = state[{ cx, 0, cz }];
-					d = state[{ dx, 0, dz }];
-				}*/
+					ax = std::clamp(ax, -mColumnCount / 2 + 1, mColumnCount / 2 - 1);
+					az = std::clamp(az, -mRowCount / 2 + 1, mRowCount / 2 - 1);
 
+					bx = std::clamp(bx, -mColumnCount / 2 + 1, mColumnCount / 2 - 1);
+					bz = std::clamp(bz, -mRowCount / 2 + 1, mRowCount / 2 - 1);
 
-				Ogre::Vector3 vNewVel = vectorBiLerp(
-					a.vPos,
-					b.vPos,
-					c.vPos,
-					d.vPos,
-					a.vVel,
-					b.vVel,
-					c.vVel,
-					d.vVel,
-					vPos.x,
-					vPos.z,
-					useCrossForm
-				);
+					cx = std::clamp(cx, -mColumnCount / 2 + 1, mColumnCount / 2 - 1);
+					cz = std::clamp(cz, -mRowCount / 2 + 1, mRowCount / 2 - 1);
 
-				const_cast<CellState&>(cell.second).vVel = mVelocityDissipationConstant * vNewVel;
+					dx = std::clamp(dx, -mColumnCount / 2 + 1, mColumnCount / 2 - 1);
+					dz = std::clamp(dz, -mRowCount / 2 + 1, mRowCount / 2 - 1);
 
-				Ogre::Real rNewInk = scalarBiLerp(
-					a.vPos,
-					b.vPos,
-					c.vPos,
-					d.vPos,
-					a.rInk,
-					b.rInk,
-					c.rInk,
-					d.rInk,
-					vPos.x,
-					vPos.z,
-					useCrossForm
-				);
+					a = state[{ax, 0, az}];
+					b = state[{bx, 0, bz}];
+					c = state[{cx, 0, cz}];
+					d = state[{dx, 0, dz}];
 
-				const_cast<CellState&>(cell.second).rInk = mInkDissipationConstant * rNewInk;
+					// this... should! have the four corners around our "back-in-time" point.
+
+					Ogre::Vector3 vNewVel = vectorBiLerp(
+						a.vPos,
+						b.vPos,
+						c.vPos,
+						d.vPos,
+						a.vVel,
+						b.vVel,
+						c.vVel,
+						d.vVel,
+						vPos.x,
+						vPos.z,
+						false
+					);
+
+					const_cast<CellState&>(cell.second).vVel = mVelocityDissipationConstant * vNewVel;
+
+					Ogre::Real rNewInk = scalarBiLerp(
+						a.vPos,
+						b.vPos,
+						c.vPos,
+						d.vPos,
+						a.rInk,
+						b.rInk,
+						c.rInk,
+						d.rInk,
+						vPos.x,
+						vPos.z,
+						false
+					);
+
+					const_cast<CellState&>(cell.second).rInk = mInkDissipationConstant * rNewInk;
+				}
+
+				//auto cVel = cell.second.vVel;
+
+				//auto vPos = cell.second.vPos -(cVel * mReciprocalDeltaX * timeSinceLast);
+
+				//bool useCrossForm = false;
+
+				//CellState a, b, c, d;
+
+				//CellCoord cellCoord = cell.first;
+				//CellCoord vPosCoord = CellCoord(vPos.x, 0, vPos.z);
+
+				//auto aCoord = cellCoord + CellCoord(-1, 0, 1); // bottom left
+				//auto bCoord = cellCoord + CellCoord(-1, 0, -1); // top left
+				//auto cCoord = cellCoord + CellCoord(1, 0, -1); // top right
+				//auto dCoord = cellCoord + CellCoord(1, 0, 1); // bottom right
+				//	
+				//if (useCrossForm) {
+				//	aCoord = cellCoord + CellCoord(-1, 0, 0);  // left
+				//	bCoord = cellCoord + CellCoord(0, 0, -1); // top 
+				//	cCoord = cellCoord + CellCoord(1, 0, 0);  // right
+				//	dCoord = cellCoord + CellCoord(0, 0, 1);   // bottom 
+				//}
+
+				//a = state[aCoord];
+				//b = state[bCoord];
+				//c = state[cCoord];
+				//d = state[dCoord];
+
+				//Ogre::Vector3 vNewVel = vectorBiLerp(
+				//	a.vPos,
+				//	b.vPos,
+				//	c.vPos,
+				//	d.vPos,
+				//	a.vVel,
+				//	b.vVel,
+				//	c.vVel,
+				//	d.vVel,
+				//	vPos.x,
+				//	vPos.z,
+				//	useCrossForm
+				//);
+
+				//const_cast<CellState&>(cell.second).vVel = mVelocityDissipationConstant * vNewVel;
+
+				//Ogre::Real rNewInk = scalarBiLerp(
+				//	a.vPos,
+				//	b.vPos,
+				//	c.vPos,
+				//	d.vPos,
+				//	a.rInk,
+				//	b.rInk,
+				//	c.rInk,
+				//	d.rInk,
+				//	vPos.x,
+				//	vPos.z,
+				//	useCrossForm
+				//);
+
+				//const_cast<CellState&>(cell.second).rInk = mInkDissipationConstant * rNewInk;
 			}
 		}
 	}
@@ -318,9 +396,7 @@ namespace MyThirdOgre
 		while (it != mImpulses.end()) 
 		{
 			state[it->first].vVel += it->second.vVelocity;
-			
-			if (it->second.bAddingInk)
-				state[it->first].rInk += 5.0f;
+			state[it->first].rInk += it->second.rInkAmount;
 			
 			it = mImpulses.erase(it);
 		}
@@ -340,7 +416,7 @@ namespace MyThirdOgre
 				auto c = state[cCoord];
 				auto d = state[dCoord];
 
-				const_cast<CellState&>(cell.second).rVorticity = ((a.vVel.z - b.vVel.z) - (c.vVel.x - d.vVel.x)) * mHalfGridSpacing * mScaleReciprocal;
+				const_cast<CellState&>(cell.second).rVorticity = ((a.vVel.z - b.vVel.z) - (c.vVel.x - d.vVel.x)) * mHalfReciprocalDeltaX;
 			}
 		}
 	}
@@ -363,13 +439,13 @@ namespace MyThirdOgre
 					(abs(c.rVorticity) - abs(d.rVorticity),
 					0.0f,
 					abs(b.rVorticity) - abs(a.rVorticity)) 
-					* mHalfGridSpacing * mScaleReciprocal;
+					* mHalfReciprocalDeltaX;
 
 				force.normalise();
 
 				force *= mVorticityConfinementScale * cell.second.rVorticity * Ogre::Vector3(1, 0, -1);
 
-				const_cast<CellState&>(cell.second).vVel += force * mScaleReciprocal * timeSinceLast;
+				const_cast<CellState&>(cell.second).vVel += force * timeSinceLast;
 			}
 		}
 	}
@@ -384,7 +460,7 @@ namespace MyThirdOgre
 					auto cCoord = cell.first + CellCoord(0, 0, 1); // top
 					auto dCoord = cell.first + CellCoord(0, 0, -1); // bottom
 
-					float alpha = mScale * mScale / (mKinematicViscosity * mScaleReciprocal * timeSinceLast);
+					float alpha = mHalfReciprocalDeltaX * mHalfReciprocalDeltaX / (mViscosity * timeSinceLast);
 					float rBeta = 1 / (4 + alpha);
 					auto beta = cell.second.vVel;
 
@@ -416,16 +492,7 @@ namespace MyThirdOgre
 				auto c = state[cCoord];
 				auto d = state[dCoord];
 
-				//if (isinf(a.vVel.x))
-				//	a.vVel.x = 0;
-				//if (isinf(b.vVel.x))
-				//	b.vVel.x = 0;
-				//if (isinf(c.vVel.z))
-				//	c.vVel.z = 0;
-				//if (isinf(d.vVel.z))
-				//	d.vVel.z = 0;
-
-				const_cast<CellState&>(cell.second).rDivergence = ((a.vVel.x - b.vVel.x) + (c.vVel.z - d.vVel.z)) * mHalfGridSpacing * mScaleReciprocal;
+				const_cast<CellState&>(cell.second).rDivergence = ((a.vVel.x - b.vVel.x) + (c.vVel.z - d.vVel.z)) * mHalfReciprocalDeltaX;
 
 				if (cell.second.rDivergence != 0)
 					int f = 0;
@@ -450,7 +517,7 @@ namespace MyThirdOgre
 					auto cCoord = cell.first + CellCoord(0, 0, 1); // top
 					auto dCoord = cell.first + CellCoord(0, 0, -1); // bottom
 
-					float alpha = -mScale * mScale;
+					float alpha = -mHalfReciprocalDeltaX * mHalfReciprocalDeltaX;
 					float rBeta = 0.25f;
 					auto beta = cell.second.rDivergence;
 
@@ -489,13 +556,12 @@ namespace MyThirdOgre
 				Ogre::Vector3 gradient = Ogre::Vector3(
 					(a.rPressure - b.rPressure),
 					0.0f,
-					(c.rPressure - d.rPressure)) * mHalfGridSpacing * mScaleReciprocal;
+					(c.rPressure - d.rPressure)) * mHalfReciprocalDeltaX;
 
 				if (gradient != Ogre::Vector3::ZERO)
 					int f = 0;
 
-				const_cast<CellState&>(cell.second).vVel -= (1 / mFluidDensity) * gradient;
-				//const_cast<CellState&>(cell.second).vVel -= gradient;
+				const_cast<CellState&>(cell.second).vVel -= (1 / mFluidDensity * gradient);
 				const_cast<CellState&>(cell.second).vPressureGradient = gradient;
 			}
 		}
@@ -536,7 +602,7 @@ namespace MyThirdOgre
 					neighbourState = state[cell.first + CellCoord(-1, 0, -1)];
 				}
 
-				const_cast<CellState&>(cell.second).rInk = 0;// neighbourState.rInk;
+				const_cast<CellState&>(cell.second).rInk = neighbourState.rInk;
 				const_cast<CellState&>(cell.second).vVel = -1 * neighbourState.vVel;
 				const_cast<CellState&>(cell.second).rPressure = neighbourState.rPressure;
 			}
@@ -545,7 +611,7 @@ namespace MyThirdOgre
 
 	void Field::addImpulse(float timeSinceLast) {
 		if (mActiveCell) {
-			mImpulses.push_back({ mActiveCell->getCellCoords(), HandInfluence(Ogre::Vector3(0.0f, 0.0f, -15.0f), true) });
+			mImpulses.push_back({ mActiveCell->getCellCoords(), HandInfluence(Ogre::Vector3(0.0f, 0.0f, -15.0f), 1.0f) });
 		}
 	}
 
@@ -650,12 +716,13 @@ namespace MyThirdOgre
 		}
 	}
 
+	// This gets called from the parent LogicSystem as a result of SDL input messages
 	void Field::increaseVelocity(float timeSinceLast) {
 		if (mIsRunning) {
 			if (mActiveCell) {
 				if (!mActiveCell->getIsBoundary()) {
 
-					auto vImpulse = Ogre::Vector3(0.0f, 0.0f, -10.0f);
+					auto vImpulse = Ogre::Vector3(0.0f, 0.0f, -300.0f);
 
 					auto vNew = vImpulse * (1 + timeSinceLast
 						* mBaseManualVelocityAdjustmentSpeed
@@ -663,15 +730,20 @@ namespace MyThirdOgre
 
 					for (int i = -mVelocitySpreadHalfWidth; i < mVelocitySpreadHalfWidth + 1; i++) {
 						for (int j = -mVelocitySpreadHalfWidth; j < mVelocitySpreadHalfWidth + 1; j++) {
-							if (i != 0 && j != 0) { // don't impulse self 
+							//if (i != 0 && j != 0) { // don't impulse self... but... why not?
 								auto cNeighbour = mCells.find(mActiveCell->getCellCoords() + CellCoord(i, 0, j));
 								if (cNeighbour != mCells.end()) {
-									auto cNeighbourImpulse = vNew * (1 / (mActiveCell->getState().vPos - cNeighbour->second->getState().vPos).length());
-									if (!cNeighbour->second->getIsBoundary()) {
-										mImpulses.push_back({ cNeighbour->first, HandInfluence(cNeighbourImpulse, true) });
+									if (i == 0 && j == 0) {
+										mImpulses.push_back({ cNeighbour->first, HandInfluence(vNew, 1.0f) });
+									}
+									else {
+										auto cNeighbourImpulse = vNew * (1 / (mActiveCell->getState().vPos - cNeighbour->second->getState().vPos).length());
+										if (!cNeighbour->second->getIsBoundary()) {
+											mImpulses.push_back({ cNeighbour->first, HandInfluence(cNeighbourImpulse, (mActiveCell->getState().vPos - cNeighbour->second->getState().vPos).length()) });
+										}
 									}
 								}
-							}
+							//}
 						}
 					}
 				}
@@ -693,15 +765,18 @@ namespace MyThirdOgre
 
 					for (int i = -mVelocitySpreadHalfWidth; i < mVelocitySpreadHalfWidth + 1; i++) {
 						for (int j = -mVelocitySpreadHalfWidth; j < mVelocitySpreadHalfWidth + 1; j++) {
-							//if (i != 0 && j != 0) { // don't impulse self 
-								auto cNeighbour = mCells.find(mActiveCell->getCellCoords() + CellCoord(i, 0, j));
-								if (cNeighbour != mCells.end()) {
+							auto cNeighbour = mCells.find(mActiveCell->getCellCoords() + CellCoord(i, 0, j));
+							if (cNeighbour != mCells.end()) {
+								if (i == 0 && j == 0) {
+									mImpulses.push_back({ cNeighbour->first, HandInfluence(vNew, 1.0f) });
+								}
+								else {
 									auto cNeighbourImpulse = vNew * (1 / (mActiveCell->getState().vPos - cNeighbour->second->getState().vPos).length());
 									if (!cNeighbour->second->getIsBoundary()) {
-										mImpulses.push_back({ cNeighbour->first, HandInfluence(cNeighbourImpulse, true) });
+										mImpulses.push_back({ cNeighbour->first, HandInfluence(cNeighbourImpulse, (mActiveCell->getState().vPos - cNeighbour->second->getState().vPos).length()) });
 									}
 								}
-							//}
+							}
 						}
 					}
 				}

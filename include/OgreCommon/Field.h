@@ -19,8 +19,10 @@ namespace MyThirdOgre
 	class Field
 	{
 		float	mScale;
-		float	mHalfGridSpacing;
-		float	mScaleReciprocal; // radix?
+		float	mHalfScale;
+		float	mDeltaX;
+		float	mHalfReciprocalDeltaX;
+		float	mReciprocalDeltaX; // radix?
 		int		mCellCount;
 		int		mRowCount;
 		int		mColumnCount;

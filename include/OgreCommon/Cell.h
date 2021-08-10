@@ -230,7 +230,7 @@ protected:
 		virtual void resetState(void);
 
 		void setVelocity(Ogre::Vector3 v);
-		void setInk(Ogre::Vector3 v);
+		void setInkColour(Ogre::Vector3 v);
 		void setPressureGradient(Ogre::Vector3 v);
 
 		virtual Ogre::Real getPressure();

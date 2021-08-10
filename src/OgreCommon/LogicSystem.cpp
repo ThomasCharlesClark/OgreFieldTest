@@ -147,7 +147,7 @@ namespace MyThirdOgre
                     auto leapMotionFrame = reinterpret_cast<const Leap_MotionMessage*>(data);
                     hand->setPosition(leapMotionFrame->timeSinceLast, leapMotionFrame->position);
                     hand->setVelocity(leapMotionFrame->timeSinceLast, leapMotionFrame->velocity);
-                    hand->setInk(leapMotionFrame->timeSinceLast, leapMotionFrame->addInk);
+                    hand->setInk(leapMotionFrame->timeSinceLast, leapMotionFrame->ink);
                 }
                 //dynamic_cast<LogicGameState*>(mCurrentGameState)->getField()->increaseVelocity(leapMotionFrame->timeSinceLast, leapMotionFrame->velocity);
             }

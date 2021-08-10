@@ -18,8 +18,8 @@ namespace MyThirdOgre
             mState.vPos = Ogre::Vector3(0, 0.0f, 0),
             mState.vVel = Ogre::Vector3::ZERO,
             mState.qRot = Ogre::Quaternion::IDENTITY,
-            mState.bActive = true,
-            mState.bAddingInk = false
+            mState.rInk = 0.0f,
+            mState.bActive = true
         };
 
         mOriginalState = HandState(mState);
@@ -50,12 +50,12 @@ namespace MyThirdOgre
             mHandMoDef,
             mState.vPos,
             mState.qRot,
-            Ogre::Vector3::UNIT_SCALE,
+            Ogre::Vector3::UNIT_SCALE * 2,
             true,
             0.4f);
 
 
-        mSphere = new Ogre::Sphere(mState.vPos, 1.5f);
+        mSphere = new Ogre::Sphere(mState.vPos, 5.0f);
     }
 
     void Hand::update(float timeSinceLast, Ogre::uint32 currIdx, Ogre::uint32 prevIdx) 
@@ -76,8 +76,8 @@ namespace MyThirdOgre
         mState.vVel = velocity;
     }
 
-    void Hand::setInk(float timeSinceLast, bool addingInk)
+    void Hand::setInk(float timeSinceLast, Ogre::Real ink)
     {
-        mState.bAddingInk = addingInk;
+        mState.rInk = ink;
     }
 }

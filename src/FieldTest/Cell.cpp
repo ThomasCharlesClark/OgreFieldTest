@@ -286,13 +286,12 @@ namespace MyThirdOgre
             Ogre::SceneMemoryMgrTypes::SCENE_DYNAMIC,
             mPlaneMoDef,
             Ogre::SceneManager::PrefabType::PT_PLANE,
-            mBoundary ? "Red" : "White",
+            mBoundary ? "Red" : "White", //"Blue",
             mState.vPos,
             pRot,
             Ogre::Vector3(0.005f, 0.005f, 0.005f) * mScale,
             true,
-            //mBoundary ? 0.4 : mState.rInk,
-            mBoundary ? 0.4 : (float)1 - mState.rInk,
+            mBoundary ? 0.4 : mState.rInk,
             true,
             mBoundary ? Ogre::Vector3::ZERO : mState.vInkColour);
     }
@@ -333,7 +332,7 @@ namespace MyThirdOgre
         mState.vVel = v;
     }
 
-    void Cell::setInk(Ogre::Vector3 v)
+    void Cell::setInkColour(Ogre::Vector3 v)
     {
         mState.vInkColour = v;
     }
@@ -361,7 +360,8 @@ namespace MyThirdOgre
             mVelocityArrowEntity->mTransform[currIdx]->vScale.y = 0;
             mVelocityArrowEntity->mTransform[currIdx]->vScale.z = vVelLen;
 
-            mPlaneEntity->mTransform[currIdx]->vPos.y = mState.rInk;
+            //mPlaneEntity->mTransform[currIdx]->vPos.y = mState.rPressure;
+            //mPlaneEntity->mTransform[currIdx]->vPos.y = mState.rInk;
             
             q.normalise();
 
@@ -393,8 +393,6 @@ namespace MyThirdOgre
 
             mPressureGradientArrowEntity->mTransform[currIdx]->qRot = q;
         }
-
-
 
         updatePlaneEntity();
     }

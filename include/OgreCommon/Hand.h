@@ -14,7 +14,7 @@ namespace MyThirdOgre
 	struct HandInfluence 
 	{
 		Ogre::Vector3 vVelocity;
-		bool bAddingInk;
+		Ogre::Real rInkAmount;
 
 		HandInfluence() {};
 
@@ -24,10 +24,10 @@ namespace MyThirdOgre
 			bAddingInk = false;
 		};*/
 
-		HandInfluence(Ogre::Vector3 v, bool ai)
+		HandInfluence(Ogre::Vector3 v, Ogre::Real ri)
 		{
 			vVelocity = v;
-			bAddingInk = ai;
+			rInkAmount = ri;
 		};
 	};
 
@@ -37,15 +37,15 @@ namespace MyThirdOgre
 		Ogre::Vector3 vPos;
 		Ogre::Vector3 vVel;
 		Ogre::Quaternion qRot;
+		Ogre::Real rInk;
 		bool bActive;
-		bool bAddingInk;
 
 		HandState() :
 			bIsVisible(false),
 			vPos(Ogre::Vector3::ZERO),
 			vVel(Ogre::Vector3::ZERO),
 			qRot(Ogre::Quaternion::IDENTITY),
-			bAddingInk(false),
+			rInk(0.0f),
 			bActive(false) { }
 
 		HandState(
@@ -53,14 +53,14 @@ namespace MyThirdOgre
 			Ogre::Vector3 vP,
 			Ogre::Vector3 vV,
 			Ogre::Quaternion qR,
-			bool a,
-			bool aI) {
+			Ogre::Real rI,
+			bool a) {
 			bIsVisible = bV;
 			vPos = vP;
 			vVel = vV;
 			qRot = qR;
+			rInk = rI;
 			bActive = a;
-			bAddingInk = aI;
 		}
 	};
 
@@ -99,7 +99,7 @@ namespace MyThirdOgre
 		virtual void update(float timeSinceLast, Ogre::uint32 currIdx, Ogre::uint32 prevIdx);
 		virtual void setPosition(float timeSinceLast, Ogre::Vector3 position);
 		virtual void setVelocity(float timeSinceLast, Ogre::Vector3 velocity);
-		virtual void setInk(float timeSinceLast, bool addingInk);
+		virtual void setInk(float timeSinceLast, Ogre::Real ink);
 	};
 }
 #endif
