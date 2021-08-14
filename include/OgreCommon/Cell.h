@@ -109,6 +109,7 @@ namespace MyThirdOgre
 		bool bActive;
 		Ogre::Real rVorticity;
 		Ogre::Real rInk;
+		Ogre::Real rMaxInk;
 		Ogre::Vector3 vInkColour;
 
 		CellState() : 
@@ -122,6 +123,7 @@ namespace MyThirdOgre
 			bActive(false),
 			rVorticity(0.0f),
 			rInk(0.0f),
+			rMaxInk(20.0f),
 			vInkColour(Ogre::Vector3(0.0f, 0.0f, 0.0f)) { };
 
 		CellState(
@@ -135,6 +137,7 @@ namespace MyThirdOgre
 			bool a,
 			Ogre::Real rVort,
 			Ogre::Real rI,
+			Ogre::Real rIM,
 			Ogre::Vector3 vIn) {
 			bIsBoundary = b;
 			vPos = vP;
@@ -146,6 +149,7 @@ namespace MyThirdOgre
 			bActive = a;
 			rVorticity = rVort;
 			rInk = rI;
+			rMaxInk = rIM;
 			vInkColour = vIn;
 		};
 	};
@@ -211,6 +215,7 @@ protected:
 			 float maxVelocitySquared,
 			 bool velocityArrowVisible,
 		  	 bool pressureGradientArrowVisible,
+			 float maxInk,
 			 GameEntityManager* geMgr);
 
 		~Cell();

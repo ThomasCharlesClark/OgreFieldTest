@@ -38,6 +38,7 @@ namespace MyThirdOgre
 		Ogre::Vector3 vVel;
 		Ogre::Quaternion qRot;
 		Ogre::Real rInk;
+		Ogre::Real rMaxInk;
 		bool bActive;
 
 		HandState() :
@@ -46,6 +47,7 @@ namespace MyThirdOgre
 			vVel(Ogre::Vector3::ZERO),
 			qRot(Ogre::Quaternion::IDENTITY),
 			rInk(0.0f),
+			rMaxInk(20.0f),
 			bActive(false) { }
 
 		HandState(
@@ -54,12 +56,14 @@ namespace MyThirdOgre
 			Ogre::Vector3 vV,
 			Ogre::Quaternion qR,
 			Ogre::Real rI,
+			Ogre::Real rIM,
 			bool a) {
 			bIsVisible = bV;
 			vPos = vP;
 			vVel = vV;
 			qRot = qR;
 			rInk = rI;
+			rMaxInk = rIM;
 			bActive = a;
 		}
 	};
@@ -87,6 +91,7 @@ namespace MyThirdOgre
 		Hand(
 			int columnCount,
 			int rowCount,
+			float maxInk,
 			GameEntityManager* geMgr);
 		~Hand();
 

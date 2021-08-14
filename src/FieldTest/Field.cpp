@@ -15,11 +15,12 @@ using namespace MyThirdOgre;
 
 namespace MyThirdOgre
 {
-	Field::Field(GameEntityManager* geMgr, float scale, int columnCount, int rowCount) :
+	Field::Field(GameEntityManager* geMgr, float scale, int columnCount, int rowCount, float maxInk) :
 		mGameEntityManager(geMgr),
 		mScale(scale),
 		mHalfScale(0.5 * scale),
 		mDeltaX(1.0f),
+		mHalfDeltaX(0.5f),
 		mColumnCount(columnCount),
 		mRowCount(rowCount),
 		mGridLineMoDef(0),
@@ -35,30 +36,31 @@ namespace MyThirdOgre
 		mMinCellPressure(0.0f),		// 0 atmosphere...?
 		mMaxCellPressure(1.0f),		// this is BS
 		mMaxCellVelocitySquared(1000.0f),	// total guess
-		mViscosity(0.05f),					// total guess
-		mFluidDensity(0.2f),				// water density = 997kg/m^3
+		mViscosity(0.0f),					// total guess
+		mFluidDensity(0.0f),				// water density = 997kg/m^3
 		mKinematicViscosity(mViscosity / mFluidDensity),
 		mVelocityDissipationConstant(1.0f),
-		mInkDissipationConstant(0.991f),
+		mInkDissipationConstant(0.995f),
 		mIsRunning(true),
 		mPressureSpreadHalfWidth(4),
-		mVelocitySpreadHalfWidth(7),
+		mVelocitySpreadHalfWidth(2),
 #if OGRE_DEBUG_MODE
 		mGridVisible(true),
 		mVelocityVisible(true),
 		mPressureGradientVisible(true),
-		mJacobiIterationsPressure(60),
-		mJacobiIterationsDiffusion(60),
+		mJacobiIterationsPressure(20),
+		mJacobiIterationsDiffusion(20),
 #else
 		mGridVisible(false),
 		mVelocityVisible(false),
 		mPressureGradientVisible(false),
-		mJacobiIterationsPressure(60),
-		mJacobiIterationsDiffusion(60),
+		mJacobiIterationsPressure(40),
+		mJacobiIterationsDiffusion(40),
 #endif
 		mImpulses(std::vector<std::pair<CellCoord, HandInfluence>> { }),
 		mHand(0),
-		mVorticityConfinementScale(0.015f)
+		mVorticityConfinementScale(0.015f),
+		mMaxInk(maxInk)
 	{
 		mReciprocalDeltaX = (float)1 / mDeltaX;
 		mHalfReciprocalDeltaX = 0.5f / mReciprocalDeltaX;
@@ -68,10 +70,12 @@ namespace MyThirdOgre
 
 		createCells();
 
-		mActiveCell = mCells[{0, 0, mRowCount / 2 - 1}];
+		//mActiveCell = mCells[{0, 0, mRowCount / 2 - 1}];
+
 		//mActiveCell = mCells[{0, 0, 0}];
 
-		mActiveCell->setActive();
+		if (mActiveCell)
+			mActiveCell->setActive();
 	}
 
 	Field::~Field() {
@@ -143,6 +147,7 @@ namespace MyThirdOgre
 						mMaxCellVelocitySquared, 
 						mVelocityVisible,
 						mPressureGradientVisible,
+						mMaxInk,
 						mGameEntityManager);
 					mCells.insert({
 						c->getCellCoords(),
@@ -185,8 +190,6 @@ namespace MyThirdOgre
 
 			addImpulses(timeSinceLast, state);
 
-			assert(state.size() == mCells.size());
-
 			if (mViscosity > 0)
 				jacobiDiffusion(timeSinceLast, state);
 
@@ -198,9 +201,12 @@ namespace MyThirdOgre
 
 			subtractPressureGradient(timeSinceLast, state);
 
-			vorticityComputation(timeSinceLast, state);
+			if (mVorticityConfinementScale) {
+				vorticityComputation(timeSinceLast, state);
+				vorticityConfinement(timeSinceLast, state);
+			}
 
-			vorticityConfinement(timeSinceLast, state);
+			assert(state.size() == mCells.size());
 
 			for (const auto& c : state) {
 				auto cell = mCells[c.first];
@@ -274,17 +280,17 @@ namespace MyThirdOgre
 					dx = ceil(vPos.x);
 					dz = ceil(vPos.z);
 
-					ax = std::clamp(ax, -mColumnCount / 2 + 1, mColumnCount / 2 - 1);
-					az = std::clamp(az, -mRowCount / 2 + 1, mRowCount / 2 - 1);
+					ax = std::clamp(ax, -mColumnCount / 2, mColumnCount / 2);
+					az = std::clamp(az, -mRowCount / 2, mRowCount / 2);
 
-					bx = std::clamp(bx, -mColumnCount / 2 + 1, mColumnCount / 2 - 1);
-					bz = std::clamp(bz, -mRowCount / 2 + 1, mRowCount / 2 - 1);
+					bx = std::clamp(bx, -mColumnCount / 2, mColumnCount / 2);
+					bz = std::clamp(bz, -mRowCount / 2, mRowCount / 2);
 
-					cx = std::clamp(cx, -mColumnCount / 2 + 1, mColumnCount / 2 - 1);
-					cz = std::clamp(cz, -mRowCount / 2 + 1, mRowCount / 2 - 1);
+					cx = std::clamp(cx, -mColumnCount / 2, mColumnCount / 2);
+					cz = std::clamp(cz, -mRowCount / 2, mRowCount / 2);
 
-					dx = std::clamp(dx, -mColumnCount / 2 + 1, mColumnCount / 2 - 1);
-					dz = std::clamp(dz, -mRowCount / 2 + 1, mRowCount / 2 - 1);
+					dx = std::clamp(dx, -mColumnCount / 2, mColumnCount / 2);
+					dz = std::clamp(dz, -mRowCount / 2, mRowCount / 2);
 
 					a = state[{ax, 0, az}];
 					b = state[{bx, 0, bz}];
@@ -325,66 +331,6 @@ namespace MyThirdOgre
 
 					const_cast<CellState&>(cell.second).rInk = mInkDissipationConstant * rNewInk;
 				}
-
-				//auto cVel = cell.second.vVel;
-
-				//auto vPos = cell.second.vPos -(cVel * mReciprocalDeltaX * timeSinceLast);
-
-				//bool useCrossForm = false;
-
-				//CellState a, b, c, d;
-
-				//CellCoord cellCoord = cell.first;
-				//CellCoord vPosCoord = CellCoord(vPos.x, 0, vPos.z);
-
-				//auto aCoord = cellCoord + CellCoord(-1, 0, 1); // bottom left
-				//auto bCoord = cellCoord + CellCoord(-1, 0, -1); // top left
-				//auto cCoord = cellCoord + CellCoord(1, 0, -1); // top right
-				//auto dCoord = cellCoord + CellCoord(1, 0, 1); // bottom right
-				//	
-				//if (useCrossForm) {
-				//	aCoord = cellCoord + CellCoord(-1, 0, 0);  // left
-				//	bCoord = cellCoord + CellCoord(0, 0, -1); // top 
-				//	cCoord = cellCoord + CellCoord(1, 0, 0);  // right
-				//	dCoord = cellCoord + CellCoord(0, 0, 1);   // bottom 
-				//}
-
-				//a = state[aCoord];
-				//b = state[bCoord];
-				//c = state[cCoord];
-				//d = state[dCoord];
-
-				//Ogre::Vector3 vNewVel = vectorBiLerp(
-				//	a.vPos,
-				//	b.vPos,
-				//	c.vPos,
-				//	d.vPos,
-				//	a.vVel,
-				//	b.vVel,
-				//	c.vVel,
-				//	d.vVel,
-				//	vPos.x,
-				//	vPos.z,
-				//	useCrossForm
-				//);
-
-				//const_cast<CellState&>(cell.second).vVel = mVelocityDissipationConstant * vNewVel;
-
-				//Ogre::Real rNewInk = scalarBiLerp(
-				//	a.vPos,
-				//	b.vPos,
-				//	c.vPos,
-				//	d.vPos,
-				//	a.rInk,
-				//	b.rInk,
-				//	c.rInk,
-				//	d.rInk,
-				//	vPos.x,
-				//	vPos.z,
-				//	useCrossForm
-				//);
-
-				//const_cast<CellState&>(cell.second).rInk = mInkDissipationConstant * rNewInk;
 			}
 		}
 	}
@@ -408,15 +354,15 @@ namespace MyThirdOgre
 			if (!cell.second.bIsBoundary) {
 				auto aCoord = cell.first + CellCoord(-1, 0, 0); // left
 				auto bCoord = cell.first + CellCoord(1, 0, 0); // right
-				auto cCoord = cell.first + CellCoord(0, 0, 1); // top
-				auto dCoord = cell.first + CellCoord(0, 0, -1); // bottom
+				auto cCoord = cell.first + CellCoord(0, 0, -1); // top
+				auto dCoord = cell.first + CellCoord(0, 0, 1); // bottom
 
 				auto a = state[aCoord];
 				auto b = state[bCoord];
 				auto c = state[cCoord];
 				auto d = state[dCoord];
 
-				const_cast<CellState&>(cell.second).rVorticity = ((a.vVel.z - b.vVel.z) - (c.vVel.x - d.vVel.x)) * mHalfReciprocalDeltaX;
+				const_cast<CellState&>(cell.second).rVorticity = ((a.vVel.z - b.vVel.z) - (c.vVel.x - d.vVel.x)) * mHalfDeltaX;
 			}
 		}
 	}
@@ -427,8 +373,8 @@ namespace MyThirdOgre
 			if (!cell.second.bIsBoundary) {
 				auto aCoord = cell.first + CellCoord(-1, 0, 0); // left
 				auto bCoord = cell.first + CellCoord(1, 0, 0); // right
-				auto cCoord = cell.first + CellCoord(0, 0, 1); // top
-				auto dCoord = cell.first + CellCoord(0, 0, -1); // bottom
+				auto cCoord = cell.first + CellCoord(0, 0, -1); // top
+				auto dCoord = cell.first + CellCoord(0, 0, 1); // bottom
 
 				auto a = state[aCoord];
 				auto b = state[bCoord];
@@ -439,7 +385,7 @@ namespace MyThirdOgre
 					(abs(c.rVorticity) - abs(d.rVorticity),
 					0.0f,
 					abs(b.rVorticity) - abs(a.rVorticity)) 
-					* mHalfReciprocalDeltaX;
+					* mHalfDeltaX;
 
 				force.normalise();
 
@@ -457,10 +403,10 @@ namespace MyThirdOgre
 				if (!cell.second.bIsBoundary) {
 					auto aCoord = cell.first + CellCoord(-1, 0, 0); // left
 					auto bCoord = cell.first + CellCoord(1, 0, 0); // right
-					auto cCoord = cell.first + CellCoord(0, 0, 1); // top
-					auto dCoord = cell.first + CellCoord(0, 0, -1); // bottom
+					auto cCoord = cell.first + CellCoord(0, 0, -1); // top
+					auto dCoord = cell.first + CellCoord(0, 0, 1); // bottom
 
-					float alpha = mHalfReciprocalDeltaX * mHalfReciprocalDeltaX / (mViscosity * timeSinceLast);
+					float alpha = mHalfDeltaX * mHalfDeltaX / (mViscosity * timeSinceLast);
 					float rBeta = 1 / (4 + alpha);
 					auto beta = cell.second.vVel;
 
@@ -484,15 +430,15 @@ namespace MyThirdOgre
 			if (!cell.second.bIsBoundary) {
 				auto aCoord = cell.first + CellCoord(-1, 0, 0); // left
 				auto bCoord = cell.first + CellCoord(1, 0, 0); // right
-				auto cCoord = cell.first + CellCoord(0, 0, 1); // top
-				auto dCoord = cell.first + CellCoord(0, 0, -1); // bottom
+				auto cCoord = cell.first + CellCoord(0, 0, -1); // top
+				auto dCoord = cell.first + CellCoord(0, 0, 1); // bottom
 
 				auto a = state[aCoord];
 				auto b = state[bCoord];
 				auto c = state[cCoord];
 				auto d = state[dCoord];
 
-				const_cast<CellState&>(cell.second).rDivergence = ((a.vVel.x - b.vVel.x) + (c.vVel.z - d.vVel.z)) * mHalfReciprocalDeltaX;
+				const_cast<CellState&>(cell.second).rDivergence = ((a.vVel.x - b.vVel.x) + (c.vVel.z - d.vVel.z)) * mHalfDeltaX;
 
 				if (cell.second.rDivergence != 0)
 					int f = 0;
@@ -514,10 +460,10 @@ namespace MyThirdOgre
 
 					auto aCoord = cell.first + CellCoord(-1, 0, 0); // left
 					auto bCoord = cell.first + CellCoord(1, 0, 0); // right
-					auto cCoord = cell.first + CellCoord(0, 0, 1); // top
-					auto dCoord = cell.first + CellCoord(0, 0, -1); // bottom
+					auto cCoord = cell.first + CellCoord(0, 0, -1); // top
+					auto dCoord = cell.first + CellCoord(0, 0, 1); // bottom
 
-					float alpha = -mHalfReciprocalDeltaX * mHalfReciprocalDeltaX;
+					float alpha = -mHalfDeltaX * mHalfDeltaX;
 					float rBeta = 0.25f;
 					auto beta = cell.second.rDivergence;
 
@@ -545,8 +491,8 @@ namespace MyThirdOgre
 
 				auto aCoord = cell.first + CellCoord(-1, 0, 0); // left
 				auto bCoord = cell.first + CellCoord(1, 0, 0); // right
-				auto cCoord = cell.first + CellCoord(0, 0, 1); // top
-				auto dCoord = cell.first + CellCoord(0, 0, -1); // bottom
+				auto cCoord = cell.first + CellCoord(0, 0, -1); // top
+				auto dCoord = cell.first + CellCoord(0, 0, 1); // bottom
 
 				auto a = state[aCoord];
 				auto b = state[bCoord];
@@ -556,12 +502,17 @@ namespace MyThirdOgre
 				Ogre::Vector3 gradient = Ogre::Vector3(
 					(a.rPressure - b.rPressure),
 					0.0f,
-					(c.rPressure - d.rPressure)) * mHalfReciprocalDeltaX;
+					(c.rPressure - d.rPressure)) * mHalfDeltaX;
 
 				if (gradient != Ogre::Vector3::ZERO)
 					int f = 0;
-
-				const_cast<CellState&>(cell.second).vVel -= (1 / mFluidDensity * gradient);
+				
+				if (mFluidDensity) {
+					const_cast<CellState&>(cell.second).vVel -= (1 / mFluidDensity) * gradient;
+				}
+				else {
+					const_cast<CellState&>(cell.second).vVel -= gradient;
+				}
 				const_cast<CellState&>(cell.second).vPressureGradient = gradient;
 			}
 		}
@@ -573,34 +524,36 @@ namespace MyThirdOgre
 			if (cell.second.bIsBoundary) {
 
 				// edges
-				CellState neighbourState = CellState();
+				CellCoord adjustment = CellCoord();
 
-				if (cell.first.mIndexX == 0) {
-					neighbourState = state[cell.first + CellCoord(1, 0, 0)];
+				if (cell.first.mIndexX == -(mColumnCount / 2)) {
+					adjustment = CellCoord(1, 0, 0);
 				}
-				else if (cell.first.mIndexX == mColumnCount - 1) {
-					neighbourState = state[cell.first + CellCoord(-1, 0, 0)];
+				else if (cell.first.mIndexX == mColumnCount / 2) {
+					adjustment = CellCoord(-1, 0, 0);
 				}
-				else if (cell.first.mIndexZ == 0) {
-					neighbourState = state[cell.first + CellCoord(0, 0, 1)];
+				else if (cell.first.mIndexZ == -(mRowCount / 2)) {
+					adjustment = CellCoord(0, 0, 1);
 				}
-				else if (cell.first.mIndexZ == mRowCount - 1) {
-					neighbourState = state[cell.first + CellCoord(0, 0, -1)];
+				else if (cell.first.mIndexZ == mRowCount / 2) {
+					adjustment = CellCoord(0, 0, -1);
 				}
 
 				//corners
-				if (cell.first.mIndexX == 0 && cell.first.mIndexZ == 0) {
-					neighbourState = state[cell.first + CellCoord(1, 0, 1)];
+				if (cell.first.mIndexX == -(mColumnCount / 2) && cell.first.mIndexZ == -(mRowCount / 2)) {
+					adjustment = CellCoord(1, 0, 1);
 				}
-				else if (cell.first.mIndexX == 0 && cell.first.mIndexZ == mRowCount) {
-					neighbourState = state[cell.first + CellCoord(1, 0, -1)];
+				else if (cell.first.mIndexX == -(mColumnCount / 2) && cell.first.mIndexZ == mRowCount / 2) {
+					adjustment = CellCoord(1, 0, -1);
 				}
-				else if (cell.first.mIndexX == mColumnCount && cell.first.mIndexZ == 0) {
-					neighbourState = state[cell.first + CellCoord(-1, 0, 1)];
+				else if (cell.first.mIndexX == mColumnCount / 2 && cell.first.mIndexZ == -(mRowCount / 2)) {
+					adjustment = CellCoord(-1, 0, 1);
 				} 
-				else if (cell.first.mIndexX == mColumnCount && cell.first.mIndexZ == mRowCount) {
-					neighbourState = state[cell.first + CellCoord(-1, 0, -1)];
+				else if (cell.first.mIndexX == mColumnCount / 2 && cell.first.mIndexZ == mRowCount / 2) {
+					adjustment = CellCoord(-1, 0, -1);
 				}
+
+				CellState neighbourState = state[cell.first + adjustment];
 
 				const_cast<CellState&>(cell.second).rInk = neighbourState.rInk;
 				const_cast<CellState&>(cell.second).vVel = -1 * neighbourState.vVel;
@@ -611,7 +564,7 @@ namespace MyThirdOgre
 
 	void Field::addImpulse(float timeSinceLast) {
 		if (mActiveCell) {
-			mImpulses.push_back({ mActiveCell->getCellCoords(), HandInfluence(Ogre::Vector3(0.0f, 0.0f, -15.0f), 1.0f) });
+			mImpulses.push_back({ mActiveCell->getCellCoords(), HandInfluence(Ogre::Vector3(0.0f, 0.0f, -15.0f), 10.0f) });
 		}
 	}
 
@@ -622,7 +575,7 @@ namespace MyThirdOgre
 	void Field::rotateVelocityClockwise(float timeSinceLast) {
 		if (mIsRunning) {
 			float rotationRadians = Ogre::Math::DegreesToRadians(
-				50
+				15
 				* timeSinceLast
 				* mBaseManualVelocityAdjustmentSpeed
 				* (1 + mManualAdjustmentSpeedModifier * mBoostedManualVelocityAdjustmentSpeed));
@@ -671,7 +624,7 @@ namespace MyThirdOgre
 	void Field::rotateVelocityCounterClockwise(float timeSinceLast) {
 		if (mIsRunning) {
 			float rotationRadians = Ogre::Math::DegreesToRadians(
-				50
+				15
 				* timeSinceLast
 				* mBaseManualVelocityAdjustmentSpeed
 				* (1 + mManualAdjustmentSpeedModifier * mBoostedManualVelocityAdjustmentSpeed));
@@ -722,11 +675,13 @@ namespace MyThirdOgre
 			if (mActiveCell) {
 				if (!mActiveCell->getIsBoundary()) {
 
-					auto vImpulse = Ogre::Vector3(0.0f, 0.0f, -300.0f);
+					auto vImpulse = Ogre::Vector3(0.0f, 0.0f, -5.0f);
 
 					auto vNew = vImpulse * (1 + timeSinceLast
 						* mBaseManualVelocityAdjustmentSpeed
 						* (1 + mManualAdjustmentSpeedModifier * mBoostedManualVelocityAdjustmentSpeed));
+
+					//mImpulses.push_back({ mActiveCell->getCellCoords(), HandInfluence(vNew, 1.0f) });
 
 					for (int i = -mVelocitySpreadHalfWidth; i < mVelocitySpreadHalfWidth + 1; i++) {
 						for (int j = -mVelocitySpreadHalfWidth; j < mVelocitySpreadHalfWidth + 1; j++) {
@@ -734,12 +689,15 @@ namespace MyThirdOgre
 								auto cNeighbour = mCells.find(mActiveCell->getCellCoords() + CellCoord(i, 0, j));
 								if (cNeighbour != mCells.end()) {
 									if (i == 0 && j == 0) {
-										mImpulses.push_back({ cNeighbour->first, HandInfluence(vNew, 1.0f) });
+										mImpulses.push_back({ cNeighbour->first, HandInfluence(vNew, mMaxInk - 5) });
 									}
 									else {
-										auto cNeighbourImpulse = vNew * (1 / (mActiveCell->getState().vPos - cNeighbour->second->getState().vPos).length());
+										auto qRot = (mActiveCell->getState().vPos).getRotationTo(cNeighbour->second->getState().vPos);
+										auto cNeighbourImpulse = qRot * vNew;
+										//auto cNeighbourImpulse =  -(mActiveCell->getState().vPos - cNeighbour->second->getState().vPos);
 										if (!cNeighbour->second->getIsBoundary()) {
-											mImpulses.push_back({ cNeighbour->first, HandInfluence(cNeighbourImpulse, (mActiveCell->getState().vPos - cNeighbour->second->getState().vPos).length()) });
+											mImpulses.push_back({ cNeighbour->first, HandInfluence(cNeighbourImpulse, (mMaxInk - 5) * 1 / (mActiveCell->getState().vPos - cNeighbour->second->getState().vPos).squaredLength()) }); // fun to be had with coefficients of ink
+											//mImpulses.push_back({ cNeighbour->first, HandInfluence(cNeighbourImpulse, 1 / cNeighbourImpulse.squaredLength()) });
 										}
 									}
 								}
@@ -768,12 +726,13 @@ namespace MyThirdOgre
 							auto cNeighbour = mCells.find(mActiveCell->getCellCoords() + CellCoord(i, 0, j));
 							if (cNeighbour != mCells.end()) {
 								if (i == 0 && j == 0) {
-									mImpulses.push_back({ cNeighbour->first, HandInfluence(vNew, 1.0f) });
+									mImpulses.push_back({ cNeighbour->first, HandInfluence(vNew, 5.0f) });
 								}
 								else {
-									auto cNeighbourImpulse = vNew * (1 / (mActiveCell->getState().vPos - cNeighbour->second->getState().vPos).length());
+									//auto cNeighbourImpulse = vNew * (1 / (mActiveCell->getState().vPos - cNeighbour->second->getState().vPos).length());
+									auto cNeighbourImpulse = mActiveCell->getState().vPos - cNeighbour->second->getState().vPos;
 									if (!cNeighbour->second->getIsBoundary()) {
-										mImpulses.push_back({ cNeighbour->first, HandInfluence(cNeighbourImpulse, (mActiveCell->getState().vPos - cNeighbour->second->getState().vPos).length()) });
+										mImpulses.push_back({ cNeighbour->first, HandInfluence(cNeighbourImpulse, cNeighbourImpulse.length()) });
 									}
 								}
 							}
@@ -980,6 +939,13 @@ namespace MyThirdOgre
 
 		for (auto& c : mCells) {
 			mGameEntityManager->toggleGameEntityVisibility(c.second->getPressureGradientArrowGameEntity(), mPressureGradientVisible);
+		}
+	}
+
+	void Field::toggleVelocityIndicators(void) {
+		mVelocityVisible = !mVelocityVisible;
+		for (auto& c : mCells) {
+			mGameEntityManager->toggleGameEntityVisibility(c.second->getVelocityArrowGameEntity(), mVelocityVisible);
 		}
 	}
 }

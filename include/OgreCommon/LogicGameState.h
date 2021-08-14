@@ -31,6 +31,7 @@ namespace MyThirdOgre
         float                                 mFieldScale;
         int                                 mFieldColumnCount;
         int                                 mFieldRowCount;
+        float                                mMaxInk;
         Field                               *mField;
         Hand                                *mHand;
         LogicSystem                         *mLogicSystem;
@@ -42,7 +43,7 @@ namespace MyThirdOgre
 		MovableObjectDefinition             *mCameraMoDef;
 
         bool                                mSpaceKey;
-        bool                                mInputKeys[11];
+        bool                                mInputKeys[12];
 
     public:
         LogicGameState();

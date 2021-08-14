@@ -21,6 +21,7 @@ namespace MyThirdOgre
 		float	mScale;
 		float	mHalfScale;
 		float	mDeltaX;
+		float	mHalfDeltaX;
 		float	mHalfReciprocalDeltaX;
 		float	mReciprocalDeltaX; // radix?
 		int		mCellCount;
@@ -31,6 +32,7 @@ namespace MyThirdOgre
 		float	mBoostedManualVelocityAdjustmentSpeed;
 		float	mBaseManualPressureAdjustmentSpeed;
 		float	mBoostedManualPressureAdjustmentSpeed;
+		float   mMaxInk;
 
 
 		float mMinCellPressure;
@@ -72,7 +74,7 @@ namespace MyThirdOgre
 		virtual void createCells(void);
 
 	public:
-		Field(GameEntityManager* geMgr, float scale, int columnCount, int rowCount);
+		Field(GameEntityManager* geMgr, float scale, int columnCount, int rowCount, float maxInk);
 		~Field();
 
 		virtual void _notifyHand(Hand* hand) { mHand = hand; };
@@ -121,5 +123,6 @@ namespace MyThirdOgre
 		virtual void rotateVelocityCounterClockwise(float timeSinceLast);
 
 		virtual void togglePressureGradientIndicators(void);
+		virtual void toggleVelocityIndicators(void);
 	};
 }

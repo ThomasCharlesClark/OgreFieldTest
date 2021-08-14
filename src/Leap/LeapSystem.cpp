@@ -21,7 +21,7 @@ namespace MyThirdOgre
         mConnectionHandle(0),
         mPreviousTrackingMessage(LEAP_CONNECTION_MESSAGE()),
         mRunning(false),
-        mVelocityScalingFactor(200.0f),
+        mVelocityScalingFactor(30.0f),
         mPositionScalingFactor(5.0f)
     {
 

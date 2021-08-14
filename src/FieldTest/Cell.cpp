@@ -32,6 +32,7 @@ namespace MyThirdOgre
         float maxVelocitySquared,
         bool velocityArrowVisible,
         bool pressureGradientArrowVisible,
+        float maxInk,
         GameEntityManager* geMgr
     ) :
         mScale(scale),
@@ -67,13 +68,14 @@ namespace MyThirdOgre
             mState.bIsBoundary = mBoundary,
             mState.vPos = Ogre::Vector3(mCellCoords.mIndexX, 0, mCellCoords.mIndexZ) * mScale,
             mState.vVel = Ogre::Vector3::ZERO,
-            mState.rPressure = 0,//0.5 * (mCellCoords.mIndexX + mCellCoords.mIndexZ),//  4x^2 + y - 6
+            mState.rPressure = 0.0f, //0.5 * (mCellCoords.mIndexX + mCellCoords.mIndexZ),//  4x^2 + y - 6
             mState.vPressureGradient = Ogre::Vector3::ZERO,
             mState.rDivergence = 0,
             mState.qRot = Ogre::Quaternion::IDENTITY,
             mState.bActive = false,
             mState.rVorticity = 0,
-            mState.rInk = 0, // mCellCoords.mIndexX < (adjustmentX + 3) ? 1 : 0,// (float)1 / (float)(mCellCoords.mIndexX - 10),
+            mState.rInk = 0.0f,//mCellCoords.mIndexX < (adjustmentX + 3) ? 1 : 0,// (float)1 / (float)(mCellCoords.mIndexX - 10),
+            mState.rMaxInk = maxInk,
             mState.vInkColour = Ogre::Vector3(0.968, 0.529, 0.094)
             //mState.vInkColour = Ogre::Vector3(1.0f, 0.0f, 0.0f)
         };
@@ -361,7 +363,7 @@ namespace MyThirdOgre
             mVelocityArrowEntity->mTransform[currIdx]->vScale.z = vVelLen;
 
             //mPlaneEntity->mTransform[currIdx]->vPos.y = mState.rPressure;
-            //mPlaneEntity->mTransform[currIdx]->vPos.y = mState.rInk;
+            //mPlaneEntity->mTransform[currIdx]->vPos.y = 1 / (mState.rMaxInk / (mState.rInk == 0 ? 1 : mState.rInk));
             
             q.normalise();
 
@@ -403,12 +405,31 @@ namespace MyThirdOgre
                 //mGameEntityManager->gameEntityAlphaChange(mPlaneEntity, mState.rPressure / mMaxPressure);
             }
             else {
-                if (mState.bActive) {
-                    //mGameEntityManager->gameEntityColourChange(mPlaneEntity, mState.vInkColour);
-                }
-                else {
-                    mGameEntityManager->gameEntityAlphaChange(mPlaneEntity, mState.rInk);
-                }
+                //if (mState.bActive) {
+                //}
+                //else {
+
+
+                    //mGameEntityManager->gameEntityAlphaChange(mPlaneEntity, mState.rPressure / mMaxPressure);
+
+                // 
+
+                //mState.vInkColour = Ogre::Math::lerp(Ogre::Vector3(0.968, 0.529, 0.094), Ogre::Vector3(0.988, 0.631, 0.631), (mState.rMaxInk / mState.rInk == 0 ? 1 : mState.rInk));
+
+                //if (mState.rInk > mState.rMaxInk / 2) {
+                //    //mState.vInkColour = Ogre::Vector3(1.0f, 0.0f, 0.0f);
+                //    mGameEntityManager->gameEntityAlphaChange(mPlaneEntity, ((mState.rMaxInk) / mState.rInk == 0 ? 1 : mState.rInk / (mState.rMaxInk / 2)));
+                //}
+                //else {
+                    //mState.vInkColour = Ogre::Vector3(0.968, 0.529, 0.094);
+                    mGameEntityManager->gameEntityAlphaChange(mPlaneEntity, (mState.rMaxInk / mState.rInk == 0 ? 1 : mState.rInk / 2));
+                //}
+
+                //mGameEntityManager->gameEntityColourChange(mPlaneEntity, mState.vInkColour);
+
+
+
+                //}
             }
         }
         //if (mPlaneMoDef) {

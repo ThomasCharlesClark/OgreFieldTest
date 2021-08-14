@@ -83,7 +83,7 @@ namespace MyThirdOgre
         mThreadGameEntityToUpdate( 0 ),
         mThreadWeight( 0 ),
         mQuit( false ),
-        mAlwaysAskForConfig( false ),
+        mAlwaysAskForConfig( false),
         mUseHlmsDiskCache( true ),
         mUseMicrocodeCache( true ),
         mBackgroundColour( backgroundColour )

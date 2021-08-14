@@ -22,9 +22,9 @@
 using namespace MyThirdOgre;
 
 extern const double cFrametime;
-const double cFrametime = 1.0 / 25.0;
+const double cFrametime = 1.0 / 60.0;
 extern const double cLogicFrametime;
-const double cLogicFrametime = 1.0 / 60.0;
+const double cLogicFrametime = 1.0 / 120.0;
 extern const double cLeapFrametime;
 const double cLeapFrametime = 1.0 / 240.0;
 

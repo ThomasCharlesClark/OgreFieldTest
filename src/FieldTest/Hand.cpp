@@ -6,6 +6,7 @@ namespace MyThirdOgre
 	Hand::Hand(
         int columnCount, 
         int rowCount,
+        float maxInk,
         GameEntityManager* geMgr
     ) :
             mColumnCount(columnCount),
@@ -19,6 +20,7 @@ namespace MyThirdOgre
             mState.vVel = Ogre::Vector3::ZERO,
             mState.qRot = Ogre::Quaternion::IDENTITY,
             mState.rInk = 0.0f,
+            mState.rMaxInk = maxInk,
             mState.bActive = true
         };
 
@@ -78,6 +80,9 @@ namespace MyThirdOgre
 
     void Hand::setInk(float timeSinceLast, Ogre::Real ink)
     {
-        mState.rInk = ink;
+        if (ink < mState.rMaxInk)
+            mState.rInk = ink;
+        else
+            mState.rInk = mState.rMaxInk;
     }
 }

@@ -21,6 +21,7 @@ namespace MyThirdOgre
 #endif
         mField( 0 ), 
         mHand( 0 ),
+        mMaxInk ( 20.0f ),
         mLogicSystem( 0 ), 
         mCameraController( 0 ),
         mCameraMoDef ( 0 ),
@@ -79,12 +80,12 @@ namespace MyThirdOgre
 
         mCameraController = new CameraControllerMultiThreading(mCameraEntity, width, height);
 
-        mField = new Field(geMgr, mFieldScale, mFieldColumnCount, mFieldRowCount);
+        mField = new Field(geMgr, mFieldScale, mFieldColumnCount, mFieldRowCount, mMaxInk);
 
 #if OGRE_DEBUG_MODE
-        mHand = new Hand(mFieldColumnCount, mFieldRowCount, geMgr); //0; //noop
+        mHand = new Hand(mFieldColumnCount, mFieldRowCount, mMaxInk, geMgr); //0; //noop
 #else
-        mHand = new Hand(mFieldColumnCount, mFieldRowCount, geMgr);
+        mHand = new Hand(mFieldColumnCount, mFieldRowCount, mMaxInk, geMgr);
 #endif
 
         if (mHand)
@@ -124,6 +125,9 @@ namespace MyThirdOgre
         if (mInputKeys[10])
             mField->togglePressureGradientIndicators();
 
+        if (mInputKeys[11])
+            mField->toggleVelocityIndicators();
+
         mInputKeys[4] = false; // Num Pad 4
         mInputKeys[5] = false; // Num Pad 6
         mInputKeys[6] = false; // Num Pad 8
@@ -131,6 +135,7 @@ namespace MyThirdOgre
         mInputKeys[8] = false; // Num Pad Plus
         mInputKeys[9] = false; // Num Pad Minus
         mInputKeys[10] = false; // Number Row 5
+        mInputKeys[11] = false; // Number Row 6
 
         if (mCameraController)
             mCameraController->update(timeSinceLast, currIdx, prevIdx, mLogicSystem->getMouseX(), mLogicSystem->getMouseY());
@@ -182,6 +187,9 @@ namespace MyThirdOgre
                 break;
             case SDL_SCANCODE_5:
                 mInputKeys[10] = true;
+                break;
+            case SDL_SCANCODE_6:
+                mInputKeys[11] = true;
                 break;
             case SDL_SCANCODE_RETURN:
                 mField->toggleIsRunning();
