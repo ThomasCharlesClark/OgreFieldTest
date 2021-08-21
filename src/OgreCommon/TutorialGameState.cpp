@@ -49,14 +49,21 @@ namespace MyThirdOgre
     //-----------------------------------------------------------------------------------
     void TutorialGameState::createScene01(void)
     {
-        //createDebugTextOverlay();
+        createDebugTextOverlay();
 
         Ogre::Light* light = mGraphicsSystem->getSceneManager()->createLight();
         Ogre::SceneNode* lightNode = mGraphicsSystem->getSceneManager()->getRootSceneNode()->createChildSceneNode();
         lightNode->attachObject(light);
-        light->setPowerScale(Ogre::Math::PI); //Since we don't do HDR, counter the PBS' division by PI
+        light->setPowerScale(Ogre::Math::PI * 2); //Since we don't do HDR, counter the PBS' division by PI
         light->setType(Ogre::Light::LT_DIRECTIONAL);
         light->setDirection(Ogre::Vector3(-1, -1, -1).normalisedCopy());
+
+        //Ogre::Light* light2 = mGraphicsSystem->getSceneManager()->createLight();
+        //Ogre::SceneNode* lightNode2 = mGraphicsSystem->getSceneManager()->getRootSceneNode()->createChildSceneNode();
+        //lightNode2->attachObject(light2);
+        //lightNode2->setPosition(0, 10, 0);
+        //light2->setPowerScale(10.0f); //Since we don't do HDR, counter the PBS' division by PI
+        //light2->setType(Ogre::Light::LT_POINT);
 
         //mCameraController = new CameraController(mGraphicsSystem, false);
     }

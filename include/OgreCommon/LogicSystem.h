@@ -6,6 +6,7 @@
 #include "OgrePrerequisites.h"
 #include "SDL_events.h"
 #include "OgreWindow.h"
+#include "GraphicsSystem.h"
 
 #include <deque>
 
@@ -13,6 +14,7 @@ namespace MyThirdOgre
 {
     class GameEntityManager;
     class CameraController;
+    class GraphicsSystem;
 
     class LogicSystem : public BaseSystem
     {
@@ -23,7 +25,7 @@ namespace MyThirdOgre
         int* mMouseY;
 
     protected:
-        BaseSystem          *mGraphicsSystem;
+        GraphicsSystem          *mGraphicsSystem;
         GameEntityManager   *mGameEntityManager;
 
         Ogre::uint32                mCurrentTransformIdx;
@@ -36,7 +38,7 @@ namespace MyThirdOgre
         LogicSystem( GameState *gameState );
         virtual ~LogicSystem();
 
-        void _notifyGraphicsSystem( BaseSystem *graphicsSystem )    { mGraphicsSystem = graphicsSystem; }
+        void _notifyGraphicsSystem(GraphicsSystem* graphicsSystem )    { mGraphicsSystem = graphicsSystem; }
         void _notifyGameEntityManager( GameEntityManager *mgr )     { mGameEntityManager = mgr; }
         virtual void _notifyWindowWidth(float width);
         virtual void _notifyWindowHeight(float height);
@@ -49,6 +51,7 @@ namespace MyThirdOgre
         int* getMouseX(void) { return mMouseX; }
         int* getMouseY(void) { return mMouseY; }
 
+        GraphicsSystem* getGraphicsSystem(void)                     { return mGraphicsSystem; }
         GameEntityManager* getGameEntityManager(void)               { return mGameEntityManager; }
         Ogre::uint32 getCurrentTransformIdx(void) const             { return mCurrentTransformIdx; }
     };

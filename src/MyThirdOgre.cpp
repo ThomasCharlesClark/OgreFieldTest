@@ -1,3 +1,4 @@
+#pragma enable_d3d11_debug_symbols
 
 #include "GraphicsSystem.h"
 #include "LogicSystem.h"
@@ -24,7 +25,7 @@ using namespace MyThirdOgre;
 extern const double cFrametime;
 const double cFrametime = 1.0 / 60.0;
 extern const double cLogicFrametime;
-const double cLogicFrametime = 1.0 / 120.0;
+const double cLogicFrametime = 1.0 / 60.0;
 extern const double cLeapFrametime;
 const double cLeapFrametime = 1.0 / 240.0;
 

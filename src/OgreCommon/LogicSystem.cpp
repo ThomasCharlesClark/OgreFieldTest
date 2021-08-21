@@ -149,9 +149,9 @@ namespace MyThirdOgre
                     hand->setVelocity(leapMotionFrame->timeSinceLast, leapMotionFrame->velocity);
                     hand->setInk(leapMotionFrame->timeSinceLast, leapMotionFrame->ink);
                 }
-                //dynamic_cast<LogicGameState*>(mCurrentGameState)->getField()->increaseVelocity(leapMotionFrame->timeSinceLast, leapMotionFrame->velocity);
             }
             break;
+
         default:
             break;
         }

@@ -76,7 +76,7 @@ namespace MyThirdOgre
             mState.rVorticity = 0,
             mState.rInk = 0.0f,//mCellCoords.mIndexX < (adjustmentX + 3) ? 1 : 0,// (float)1 / (float)(mCellCoords.mIndexX - 10),
             mState.rMaxInk = maxInk,
-            mState.vInkColour = Ogre::Vector3(0.968, 0.529, 0.094)
+            mState.vInkColour = Ogre::Vector3(1, 0.494, 0) // Ogre::Vector3(0.968, 0.529, 0.094)
             //mState.vInkColour = Ogre::Vector3(1.0f, 0.0f, 0.0f)
         };
 
@@ -271,9 +271,9 @@ namespace MyThirdOgre
         mPlaneMoDef->resourceGroup = Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME;
         mPlaneMoDef->moType = MoTypePrefabPlane;
 
-        Ogre::Quaternion pRot = Ogre::Quaternion::IDENTITY;
+        Ogre::Quaternion qRot = Ogre::Quaternion::IDENTITY;
 
-        pRot.FromAngleAxis(Ogre::Radian(Ogre::Degree(-90)), Ogre::Vector3::UNIT_X);
+        qRot.FromAngleAxis(Ogre::Radian(Ogre::Degree(-90)), Ogre::Vector3::UNIT_X);
 
         Ogre::String name = "pIP_";
 
@@ -290,7 +290,7 @@ namespace MyThirdOgre
             Ogre::SceneManager::PrefabType::PT_PLANE,
             mBoundary ? "Red" : "White", //"Blue",
             mState.vPos,
-            pRot,
+            qRot,
             Ogre::Vector3(0.005f, 0.005f, 0.005f) * mScale,
             true,
             mBoundary ? 0.4 : mState.rInk,
@@ -422,10 +422,15 @@ namespace MyThirdOgre
                 //}
                 //else {
                     //mState.vInkColour = Ogre::Vector3(0.968, 0.529, 0.094);
-                    mGameEntityManager->gameEntityAlphaChange(mPlaneEntity, (mState.rMaxInk / mState.rInk == 0 ? 1 : mState.rInk / 2));
+
+                //mState.vInkColour.x *= mState.rInk * (1 / mState.rMaxInk);
+                //mState.vInkColour.y *= mState.rInk * (1 / mState.rMaxInk);
+                    mGameEntityManager->gameEntityColourChange(mPlaneEntity, mState.vInkColour);
+
+                    mGameEntityManager->gameEntityAlphaChange(mPlaneEntity, (mState.rMaxInk / mState.rInk == 0 ? 1 : mState.rInk / 10));
+                    //mGameEntityManager->gameEntityAlphaChange(mPlaneEntity, mState.rInk * (1 / mState.rMaxInk));
                 //}
 
-                //mGameEntityManager->gameEntityColourChange(mPlaneEntity, mState.vInkColour);
 
 
 

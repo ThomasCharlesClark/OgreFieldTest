@@ -79,6 +79,9 @@
     <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\BaseSystem.cpp">
       <Filter>Source Files\Core</Filter>
     </ClCompile>
+    <ClCompile Include="include\OgreCommon\FieldComputeSystem.cpp">
+      <Filter>Source Files\Field</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\OgreCommon\Cell.h">
@@ -122,9 +125,6 @@
     </ClInclude>
     <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\GameEntity.h">
       <Filter>Header Files\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\Threading\MqMessages.h">
-      <Filter>Header Files\Other</Filter>
     </ClInclude>
     <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\System\Android\AndroidSystems.h">
       <Filter>Header Files\Other</Filter>
@@ -192,6 +192,12 @@
     <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\Threading\YieldTimer.h">
       <Filter>Header Files\Other</Filter>
     </ClInclude>
+    <ClInclude Include="include\OgreCommon\FieldComputeSystem.h">
+      <Filter>Header Files\Field</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\Threading\MqMessages.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\CMakeLists.txt" />
@@ -242,6 +248,9 @@
     <Filter Include="Source Files\Core">
       <UniqueIdentifier>{23218f15-3f05-40af-aa40-c33918a226ff}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ComputeShaders">
+      <UniqueIdentifier>{7ebbdf12-aa70-4fde-8261-a9e4d1e972cd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="CMakeCache.txt" />
@@ -250,5 +259,20 @@
     <None Include="cmake_install.cmake" />
     <None Include=".gitignore" />
     <None Include=".gitattributes" />
+    <None Include="src\MyMaterials\compute\Compute.compositor">
+      <Filter>ComputeShaders</Filter>
+    </None>
+    <None Include="src\MyMaterials\compute\ComputeJobs.material.json">
+      <Filter>ComputeShaders</Filter>
+    </None>
+    <None Include="src\MyMaterials\compute\TutorialCompute02_UavBuffer.material">
+      <Filter>ComputeShaders</Filter>
+    </None>
+    <None Include="src\MyMaterials\compute\HLSL\ComputeTest.hlsl">
+      <Filter>ComputeShaders</Filter>
+    </None>
+    <None Include="src\MyMaterials\compute\HLSL\DrawFromUavBuffer_ps.hlsl">
+      <Filter>ComputeShaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

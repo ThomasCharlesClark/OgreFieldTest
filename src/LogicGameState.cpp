@@ -22,7 +22,7 @@ namespace MyThirdOgre
         mField( 0 ), 
         mHand( 0 ),
         mMaxInk ( 20.0f ),
-        mLogicSystem( 0 ), 
+        mLogicSystem( 0 ),
         mCameraController( 0 ),
         mCameraMoDef ( 0 ),
         mSpaceKey ( false )
@@ -128,6 +128,10 @@ namespace MyThirdOgre
         if (mInputKeys[11])
             mField->toggleVelocityIndicators();
 
+        if (mInputKeys[12])
+            if (mField->getComputeSystem())
+                mField->getComputeSystem()->writeDebugImages(timeSinceLast);
+
         mInputKeys[4] = false; // Num Pad 4
         mInputKeys[5] = false; // Num Pad 6
         mInputKeys[6] = false; // Num Pad 8
@@ -136,6 +140,7 @@ namespace MyThirdOgre
         mInputKeys[9] = false; // Num Pad Minus
         mInputKeys[10] = false; // Number Row 5
         mInputKeys[11] = false; // Number Row 6
+        mInputKeys[12] = false; // P key
 
         if (mCameraController)
             mCameraController->update(timeSinceLast, currIdx, prevIdx, mLogicSystem->getMouseX(), mLogicSystem->getMouseY());
@@ -196,6 +201,9 @@ namespace MyThirdOgre
                 break;
             case SDL_SCANCODE_ESCAPE:
                 mField->clearActiveCell();
+                break;
+            case SDL_SCANCODE_P:
+                mInputKeys[12] = true;
                 break;
             default:
                 break;

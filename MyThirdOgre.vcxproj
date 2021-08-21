@@ -322,6 +322,8 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\FieldTest\Cell.cpp" />
     <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\FieldTest\Field.cpp" />
     <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\FieldTest\Hand.cpp" />
+    <ClCompile Include="include\OgreCommon\FieldComputeSystem.cpp" />
+    <ClInclude Include="include\OgreCommon\FieldComputeSystem.h" />
     <ClInclude Include="include\OgreCommon\Cell.h" />
     <ClInclude Include="include\OgreCommon\Field.h" />
     <ClInclude Include="include\OgreCommon\Hand.h" />
@@ -390,6 +392,17 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <None Include=".gitattributes" />
     <None Include=".gitignore" />
     <None Include="cmake_install.cmake" />
+    <None Include="src\MyMaterials\compute\Compute.compositor" />
+    <None Include="src\MyMaterials\compute\ComputeJobs.material.json" />
+    <None Include="src\MyMaterials\compute\TutorialCompute02_UavBuffer.material" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\MyMaterials\compute\HLSL\ComputeTest.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="src\MyMaterials\compute\HLSL\DrawFromUavBuffer_ps.hlsl">
+      <FileType>Document</FileType>
+    </None>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -7,6 +7,7 @@
 #include "OgreManualObject2.h"
 #include "GameEntity.h"
 #include "GameEntityManager.h"
+#include "FieldComputeSystem.h"
 
 #include <map>
 #include <vector>
@@ -16,6 +17,7 @@ namespace MyThirdOgre
 	class Hand;
 	struct HandInfluence;
 
+	// this should inherit from gameEntity.
 	class Field
 	{
 		float	mScale;
@@ -68,17 +70,26 @@ namespace MyThirdOgre
 
 		float mVorticityConfinementScale;
 
+		bool mUseComputeSystem;
+		MovableObjectDefinition* mFieldComputeSystemMoDef;
+		FieldComputeSystem*		mFieldComputeSystem;
+
 	protected:
 		virtual void createGrid(void);
-
 		virtual void createCells(void);
+		virtual void createFieldComputeSystem(void);
 
 	public:
-		Field(GameEntityManager* geMgr, float scale, int columnCount, int rowCount, float maxInk);
+		Field(	GameEntityManager* geMgr, 
+				float scale, 
+				int columnCount,
+				int rowCount, 
+				float maxInk);
 		~Field();
 
 		virtual void _notifyHand(Hand* hand) { mHand = hand; };
-
+		
+		FieldComputeSystem* getComputeSystem(void) { return mFieldComputeSystem; };
 		Cell* getCell(CellCoord coords);
 
 		virtual void update(float timeSinceLast, Ogre::uint32 currentTransformIndex, Ogre::uint32 previousTransformIndex);

@@ -22,7 +22,8 @@ namespace MyThirdOgre
         MoTypeDynamicManualLineList,
         MoTypeDynamicManualObject,
         MoTypePrefabPlane,
-        MoTypeCamera
+        MoTypeCamera,
+        MoTypeFieldComputeSystem
     };
 
     struct MovableObjectDefinition
@@ -46,7 +47,7 @@ namespace MyThirdOgre
         std::vector<std::pair<int, int>> lines;
     };
 
-    struct GameEntity
+    class GameEntity
     {
     private:
         Ogre::uint32 mId;
@@ -57,11 +58,12 @@ namespace MyThirdOgre
         //----------------------------------------
         float                   mTransparency;
         Ogre::SceneNode         *mSceneNode;
-        Ogre::MovableObject* mMovableObject; //Could be Entity, InstancedEntity, Item.
+        Ogre::MovableObject*    mMovableObject; //Could be Entity, InstancedEntity, Item.
 
         Ogre::String                    mManualObjectDatablockName;
         Ogre::SceneManager::PrefabType  mPrefabType;
         ManualObjectLineListDefinition  mManualObjectDefinition;
+        Ogre::TextureGpu*               mTextureGpu;
 
         //Your custom pointers go here, i.e. physics representation.
         //used only by Logic thread (hkpEntity, btRigidBody, etc)
@@ -86,10 +88,15 @@ namespace MyThirdOgre
             mType( type ),
             mMoDefinition( moDefinition ),
             mTransformBufferIdx( 0 ),
-            mTransparency( 0 )
+            mTransparency( 0 ),
+            mTextureGpu( 0 )
         {
             for( int i=0; i<NUM_GAME_ENTITY_BUFFERS; ++i )
                 mTransform[i] = 0;
+        }
+        virtual ~GameEntity() 
+        {
+
         }
 
         Ogre::uint32 getId(void) const          { return mId; }

@@ -15,7 +15,12 @@ using namespace MyThirdOgre;
 
 namespace MyThirdOgre
 {
-	Field::Field(GameEntityManager* geMgr, float scale, int columnCount, int rowCount, float maxInk) :
+	Field::Field(
+		GameEntityManager* geMgr, 
+		float scale, 
+		int columnCount, 
+		int rowCount, 
+		float maxInk) :
 		mGameEntityManager(geMgr),
 		mScale(scale),
 		mHalfScale(0.5 * scale),
@@ -40,12 +45,12 @@ namespace MyThirdOgre
 		mFluidDensity(0.0f),				// water density = 997kg/m^3
 		mKinematicViscosity(mViscosity / mFluidDensity),
 		mVelocityDissipationConstant(1.0f),
-		mInkDissipationConstant(0.995f),
+		mInkDissipationConstant(0.991f),
 		mIsRunning(true),
 		mPressureSpreadHalfWidth(4),
 		mVelocitySpreadHalfWidth(2),
 #if OGRE_DEBUG_MODE
-		mGridVisible(true),
+		mGridVisible(false),
 		mVelocityVisible(true),
 		mPressureGradientVisible(true),
 		mJacobiIterationsPressure(20),
@@ -54,13 +59,15 @@ namespace MyThirdOgre
 		mGridVisible(false),
 		mVelocityVisible(false),
 		mPressureGradientVisible(false),
-		mJacobiIterationsPressure(40),
+		mJacobiIterationsPressure(80),
 		mJacobiIterationsDiffusion(40),
 #endif
 		mImpulses(std::vector<std::pair<CellCoord, HandInfluence>> { }),
 		mHand(0),
-		mVorticityConfinementScale(0.015f),
-		mMaxInk(maxInk)
+		mVorticityConfinementScale(0.065f),
+		mMaxInk(maxInk),
+		mUseComputeSystem( true ),
+		mFieldComputeSystem( 0 )
 	{
 		mReciprocalDeltaX = (float)1 / mDeltaX;
 		mHalfReciprocalDeltaX = 0.5f / mReciprocalDeltaX;
@@ -68,7 +75,8 @@ namespace MyThirdOgre
 		if (mGridVisible)
 			createGrid();
 
-		createCells();
+		if (!mUseComputeSystem)
+			createCells();
 
 		//mActiveCell = mCells[{0, 0, mRowCount / 2 - 1}];
 
@@ -76,12 +84,23 @@ namespace MyThirdOgre
 
 		if (mActiveCell)
 			mActiveCell->setActive();
+
+		if (mUseComputeSystem)
+			createFieldComputeSystem();
 	}
 
 	Field::~Field() {
 		if (mGridLineMoDef) {
 			delete mGridLineMoDef;
 			mGridLineMoDef = 0;
+		}
+
+		if (mUseComputeSystem) {
+			delete mFieldComputeSystemMoDef;
+			mFieldComputeSystem = 0;
+
+			delete mFieldComputeSystem;
+			mFieldComputeSystem = 0;
 		}
 
 		for (auto i = mCells.begin(); i != mCells.end(); i++) {
@@ -158,6 +177,26 @@ namespace MyThirdOgre
 		}
 	}
 
+	void Field::createFieldComputeSystem(void) 
+	{
+		mFieldComputeSystemMoDef = new MovableObjectDefinition();
+
+		mFieldComputeSystemMoDef->moType = MoTypeFieldComputeSystem;
+		mFieldComputeSystemMoDef->resourceGroup = Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME;
+
+		mFieldComputeSystem = mGameEntityManager->addFieldComputeSystem(
+			"mainGridComputeSystem",
+			Ogre::SceneMemoryMgrTypes::SCENE_STATIC,
+			mFieldComputeSystemMoDef,
+			"TestCompute",
+			Ogre::Vector3::ZERO,
+			Ogre::Quaternion::IDENTITY,
+			Ogre::Vector3::UNIT_SCALE // What does it mean to even scale an abstract concept... 
+									  // but it ISN'T an abstract concept: this is a concrete THING which exists at a POSITION and DOES STUFF.
+									  // might be sensible to try to avoid the notion of scaling it just yet, though.
+		);
+	}
+
 	Cell* Field::getCell(CellCoord coords)
 	{
 		return mCells[coords];
@@ -171,6 +210,13 @@ namespace MyThirdOgre
 	void Field::update(float timeSinceLast, Ogre::uint32 currentTransformIndex, Ogre::uint32 previousTransformIndex)
 	{
 		if (mIsRunning) {
+
+			// Noooooooooooooooo don't do that here
+			// Let the Graphics thread do all the updating of the field compute system
+			// otherwise BAD THINGS
+			/*if (mFieldComputeSystem) {
+				mFieldComputeSystem->update(timeSinceLast);
+			}*/
 
 			std::unordered_map<CellCoord, CellState> state;
 
@@ -689,14 +735,14 @@ namespace MyThirdOgre
 								auto cNeighbour = mCells.find(mActiveCell->getCellCoords() + CellCoord(i, 0, j));
 								if (cNeighbour != mCells.end()) {
 									if (i == 0 && j == 0) {
-										mImpulses.push_back({ cNeighbour->first, HandInfluence(vNew, mMaxInk - 5) });
+										mImpulses.push_back({ cNeighbour->first, HandInfluence(vNew, mMaxInk) });
 									}
 									else {
 										auto qRot = (mActiveCell->getState().vPos).getRotationTo(cNeighbour->second->getState().vPos);
 										auto cNeighbourImpulse = qRot * vNew;
 										//auto cNeighbourImpulse =  -(mActiveCell->getState().vPos - cNeighbour->second->getState().vPos);
 										if (!cNeighbour->second->getIsBoundary()) {
-											mImpulses.push_back({ cNeighbour->first, HandInfluence(cNeighbourImpulse, (mMaxInk - 5) * 1 / (mActiveCell->getState().vPos - cNeighbour->second->getState().vPos).squaredLength()) }); // fun to be had with coefficients of ink
+											mImpulses.push_back({ cNeighbour->first, HandInfluence(cNeighbourImpulse,  mMaxInk - cNeighbourImpulse.length()) }); // fun to be had with coefficients of ink
 											//mImpulses.push_back({ cNeighbour->first, HandInfluence(cNeighbourImpulse, 1 / cNeighbourImpulse.squaredLength()) });
 										}
 									}
@@ -726,13 +772,13 @@ namespace MyThirdOgre
 							auto cNeighbour = mCells.find(mActiveCell->getCellCoords() + CellCoord(i, 0, j));
 							if (cNeighbour != mCells.end()) {
 								if (i == 0 && j == 0) {
-									mImpulses.push_back({ cNeighbour->first, HandInfluence(vNew, 5.0f) });
+									mImpulses.push_back({ cNeighbour->first, HandInfluence(vNew, mMaxInk * 2) });
 								}
 								else {
 									//auto cNeighbourImpulse = vNew * (1 / (mActiveCell->getState().vPos - cNeighbour->second->getState().vPos).length());
 									auto cNeighbourImpulse = mActiveCell->getState().vPos - cNeighbour->second->getState().vPos;
 									if (!cNeighbour->second->getIsBoundary()) {
-										mImpulses.push_back({ cNeighbour->first, HandInfluence(cNeighbourImpulse, cNeighbourImpulse.length()) });
+										mImpulses.push_back({ cNeighbour->first, HandInfluence(cNeighbourImpulse, mMaxInk - cNeighbourImpulse.length()) });
 									}
 								}
 							}

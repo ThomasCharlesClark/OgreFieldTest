@@ -38,13 +38,41 @@
 #include "OgreEntity.h"
 
 #include "OgreHlmsPbsDatablock.h"
+#include "OgreHlmsUnlitDatablock.h"
 #include "OgreHlmsSamplerblock.h"
 
 #include "OgreSceneManager.h"
 
 #include "LogicSystem.h"
+#include "FieldComputeSystem.h"
 
 #include <fstream>
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//
+//
+
+//#include "OgreMaterialManager.h"
+//#include "OgreMaterial.h"
+//#include "OgreTechnique.h"
+//#include "OgrePass.h"
+//#include "Vao/OgreVaoManager.h"
+//#include "OgreDescriptorSetUav.h"
+//#include "OgreDescriptorSetTexture.h"
+//
+//#include "Vao/OgreReadOnlyBufferPacked.h"
+//
+//#include "OgreTextureGpu.h"
+//#include "OgreTextureGpuManager.h"
+//
+//#include "Compositor/OgreCompositorWorkspace.h"
+//#include "Compositor/OgreCompositorWorkspaceDef.h"
+
+#include "OgreRenderSystem.h"
+
+//
+//
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 #if OGRE_USE_SDL2
     #include <SDL_syswm.h>
@@ -74,7 +102,8 @@ namespace MyThirdOgre
         mRenderWindow( 0 ),
         mSceneManager( 0 ),
         mCamera( 0 ),
-        mWorkspace( 0 ),
+        mPrimaryWorkspace( 0 ),
+        mWorkspaces( {} ),
         mPluginsFolder( "./" ),
         mResourcePath( resourcePath ),
         mOverlaySystem( 0 ),
@@ -83,10 +112,11 @@ namespace MyThirdOgre
         mThreadGameEntityToUpdate( 0 ),
         mThreadWeight( 0 ),
         mQuit( false ),
-        mAlwaysAskForConfig( false),
+        mAlwaysAskForConfig( false ),
         mUseHlmsDiskCache( true ),
         mUseMicrocodeCache( true ),
-        mBackgroundColour( backgroundColour )
+        mBackgroundColour( backgroundColour ),
+        mFieldComputeSystems({})
     {
 #if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
         // Note:  macBundlePath works for iOS too. It's misnamed.
@@ -306,7 +336,12 @@ namespace MyThirdOgre
         loadResources();
         chooseSceneManager();
         createCamera();
-        mWorkspace = setupCompositor();
+        mPrimaryWorkspace = setupCompositor();
+        mWorkspaces.push_back(mPrimaryWorkspace);
+
+        //if (mUseCompute) {
+        //    mWorkspaces.push_back(setupComputeTestCompositor());
+        //}
 
     #if OGRE_USE_SDL2
         mInputHandler = new SdlInputHandler( mSdlWindow, mCurrentGameState,
@@ -326,10 +361,45 @@ namespace MyThirdOgre
                     mWriteAccessFolder + "ProfileAccum" );
     #endif
 #endif
+
+
+
+
+
+
     }
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    //
+    //
+    void GraphicsSystem::cleanupComputeJobs(void)
+    {
+        for (auto fieldIter = mFieldComputeSystems.begin(); fieldIter < mFieldComputeSystems.end(); fieldIter++) 
+        {
+            (*fieldIter)->deinitialise();
+        }
+
+        /*auto texIter = mComputeTexturesJobs.begin();
+
+        while (texIter != mComputeTexturesJobs.end())
+        {
+            texIter->second->clearUavBuffers();
+            texIter->second->clearTexBuffers();
+
+            texIter->first->removeListener(texIter->second);
+            
+            texIter = mComputeTexturesJobs.erase(texIter);
+        }*/
+    }
+    //
+    //
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
     //-----------------------------------------------------------------------------------
     void GraphicsSystem::deinitialize(void)
     {
+        cleanupComputeJobs();
+
         BaseSystem::deinitialize();
 
         saveTextureCache();
@@ -360,10 +430,28 @@ namespace MyThirdOgre
 
         SDL_Quit();
     #endif
+
+
     }
     //-----------------------------------------------------------------------------------
     void GraphicsSystem::update( float timeSinceLast )
     {
+        for (auto& iter : mFieldComputeSystems) {
+            iter->update(timeSinceLast);
+
+            if (iter->getDownloadingTextureViaTicket() && iter->getTextureTicket()->queryIsTransferDone()) {
+                iter->setDownloadingTextureViaTicket(false);
+                iter->getTexture(FieldComputeSystemTexture::Velocity)->writeContentsToFile(
+                    Ogre::String("testing-") +
+                    Ogre::StringConverter::toString(timeSinceLast) +
+                    Ogre::String(".png"), 0, 1, true);
+            }
+        }
+
+
+
+
+
         Ogre::WindowEventUtilities::messagePump();
 
     #if OGRE_USE_SDL2
@@ -396,6 +484,61 @@ namespace MyThirdOgre
         /*SDL_Rect rect;
         SDL_GetDisplayBounds( 0, &rect );
         SDL_GetDisplayBounds( 0, &rect );*/
+
+
+        // We don't actually want to be doing this update *here*.
+        // We do want the computeJob to exist; we need the resources (various HLMS json + compute HLSLs) to have been read from file...
+        // but we actually want the various FieldComputeSystem instances to be "given"? the compute jobs, and to be able to 
+        // specify their own resources as parameters to the shader calls...
+
+        // Okay, but what does this prove. Bugger all. This LOADS the compute shader, but we want to be able to instance it (and multiple other shaders)
+        // and set their parameters from somewhere far, far away - on another thread.
+        // Hmmmm.
+
+        // And how does this all tie in with "workspaces"?
+
+
+
+
+        //if (mUseCompute && mComputeJob)
+        //{
+        //    Ogre::Window* renderWindow = this->getRenderWindow();
+
+        //    // currently just using this as a "write a new png" hack, silly but whatever
+        //    // I now have a compute job running, reading (?) a UAV input and writing back to it?
+
+        //    // holy cow, I'm going to be able to edit my compute shaders on-the-fly and reload the results while still running my program.
+        //    if (mLastWindowWidth != renderWindow->getWidth() ||
+        //        mLastWindowHeight != renderWindow->getHeight())
+        //    {
+        //        Ogre::uint32 res[2];
+        //        res[0] = 800;// renderWindow->getWidth();
+        //        res[1] = 600;// renderWindow->getHeight();
+
+        //        //Update the compute shader's
+        //        Ogre::ShaderParams& shaderParams = mComputeJob->getShaderParams("default");
+        //        Ogre::ShaderParams::Param* texResolution = shaderParams.findParameter("texResolution");
+        //        texResolution->setManualValue(res, sizeof(res) / sizeof(Ogre::uint32));
+        //        shaderParams.setDirty();
+
+        //        mComputeJob->setNumThreadGroups((res[0] + mComputeJob->getThreadsPerGroupX() - 1u) /
+        //            mComputeJob->getThreadsPerGroupX(),
+        //            (res[1] + mComputeJob->getThreadsPerGroupY() - 1u) /
+        //            mComputeJob->getThreadsPerGroupY(), 1u);
+
+        //        //Update the pass that draws the UAV Buffer into the RTT (we could
+        //        //use auto param viewport_size, but this more flexible)
+        //        Ogre::GpuProgramParametersSharedPtr psParams = mDrawFromUavBufferMat->getTechnique(0)->
+        //            getPass(0)->getFragmentProgramParameters();
+
+        //        psParams->setNamedConstant("texResolution", res, 1u, 2u);
+
+        //        mUavTextureGpu->writeContentsToFile("testing.png", 0, 1, true);
+
+        //        mLastWindowWidth = renderWindow->getWidth();
+        //        mLastWindowHeight = renderWindow->getHeight();
+        //    }
+        //}
     }
     //-----------------------------------------------------------------------------------
     #if OGRE_USE_SDL2
@@ -488,6 +631,28 @@ namespace MyThirdOgre
             break;
         case Mq::LEAPFRAME_FINISHED:
             // noop
+            break;
+        case Mq::FIELD_COMPUTE_SYSTEM_WRITE_FILE_TESTING:
+            {
+                for (auto& iter : mFieldComputeSystems) {
+                    iter->getTextureTicket()->download(iter->getTexture(FieldComputeSystemTexture::Velocity), 0, false);
+                    iter->setDownloadingTextureViaTicket(true);
+                }
+
+                //auto msg = reinterpret_cast<const FieldComputeSystem_TestMessage*>(data);
+                //msg->mUavTextureGpu->writeContentsToFile(
+                //    Ogre::String("testing-") + 
+                //    Ogre::StringConverter::toString(msg->mTimeSinceLast) +
+                //    Ogre::String(".png"), 0, 1, true);
+            }
+            break;
+        case Mq::REMOVE_STAGING_TEXTURE:
+            {
+                Ogre::TextureGpuManager* texMgr = this->getRoot()->getRenderSystem()->getTextureGpuManager();
+                auto msg = const_cast<FieldComputeSystem_StagingTextureMessage*>(reinterpret_cast<const FieldComputeSystem_StagingTextureMessage*>(data));
+                texMgr->removeStagingTexture(msg->mStagingTexture);
+                msg->mStagingTexture = 0;
+            }
             break;
         default:
             break;
@@ -693,6 +858,22 @@ namespace MyThirdOgre
                 }
             }
         }
+
+        Ogre::String originalDataFolder = cf.getSetting("ComputeFolder", "Hlms", "");
+
+        const char* c_locations[4] =
+        {
+            "",
+            "GLSL",
+            "HLSL",
+            "Metal"
+        };
+
+        for (size_t i = 0; i < 4; ++i)
+        {
+            Ogre::String dataFolder = originalDataFolder + c_locations[i];
+            addResourceLocation(dataFolder, "FileSystem", "General");
+        }
     }
     //-----------------------------------------------------------------------------------
     void GraphicsSystem::registerHlms(void)
@@ -859,14 +1040,19 @@ namespace MyThirdOgre
         Ogre::CompositorManager2 *compositorManager = mRoot->getCompositorManager2();
 
         const Ogre::String workspaceName( "Demo Workspace" );
+
         if( !compositorManager->hasWorkspaceDefinition( workspaceName ) )
         {
             compositorManager->createBasicWorkspaceDef( workspaceName, mBackgroundColour,
                                                         Ogre::IdString() );
         }
 
-        return compositorManager->addWorkspace( mSceneManager, mRenderWindow->getTexture(), mCamera,
-                                                workspaceName, true );
+        return compositorManager->addWorkspace(
+            mSceneManager,
+            mRenderWindow->getTexture(),
+            mCamera,
+            workspaceName,
+            true);
     }
     //-----------------------------------------------------------------------------------
     void GraphicsSystem::initMiscParamsListener( Ogre::NameValuePairList &params )
@@ -875,20 +1061,25 @@ namespace MyThirdOgre
     //-----------------------------------------------------------------------------------
     void GraphicsSystem::stopCompositor(void)
     {
-        if( mWorkspace )
+        Ogre::CompositorManager2* compositorManager = mRoot->getCompositorManager2();
+
+        auto it = mWorkspaces.begin();
+
+        while (it != mWorkspaces.end())
         {
-            Ogre::CompositorManager2 *compositorManager = mRoot->getCompositorManager2();
-            compositorManager->removeWorkspace( mWorkspace );
-            mWorkspace = 0;
+            compositorManager->removeWorkspace(*it);
+            *it = 0;
+            it = mWorkspaces.erase(it);
         }
     }
     //-----------------------------------------------------------------------------------
     void GraphicsSystem::restartCompositor(void)
     {
         stopCompositor();
-        mWorkspace = setupCompositor();
+        mPrimaryWorkspace = setupCompositor();
+
+        mWorkspaces.push_back(mPrimaryWorkspace);
     }
-    //-----------------------------------------------------------------------------------
     //-----------------------------------------------------------------------------------
     struct GameEntityCmp
     {
@@ -1014,30 +1205,60 @@ namespace MyThirdOgre
             break;
             case MoTypePrefabPlane:
             {
-                Ogre::v1::Entity* pft = mSceneManager->createEntity(Ogre::SceneManager::PrefabType::PT_PLANE, Ogre::SCENE_DYNAMIC);
+                Ogre::v1::Entity* pft = mSceneManager->createEntity(Ogre::SceneManager::PrefabType::PT_PLANE, cge->gameEntity->mType);
 
                 pft->setDatablock(cge->gameEntity->mManualObjectDatablockName);
 
-                assert(dynamic_cast<Ogre::HlmsPbsDatablock*>(pft->getSubEntity(0)->getDatablock()));
+                if (cge->gameEntity->mTextureGpu == 0) 
+                {
+                    assert(dynamic_cast<Ogre::HlmsPbsDatablock*>(pft->getSubEntity(0)->getDatablock()));
 
-                auto datablock = dynamic_cast<Ogre::HlmsPbsDatablock*>(pft->getSubEntity(0)->getDatablock());
+                    auto datablock = dynamic_cast<Ogre::HlmsPbsDatablock*>(pft->getSubEntity(0)->getDatablock());
 
-                auto personalDatablock = dynamic_cast<Ogre::HlmsPbsDatablock*>(datablock->clone(Ogre::StringConverter::toString(cge->gameEntity->getId()) + Ogre::String("personalDataBlock")));
+                    auto personalDatablock = dynamic_cast<Ogre::HlmsPbsDatablock*>(datablock->clone(Ogre::StringConverter::toString(cge->gameEntity->getId()) + Ogre::String("personalDataBlock")));
 
-                Ogre::HlmsSamplerblock diffuseBlock(*personalDatablock->getSamplerblock(Ogre::PBSM_DIFFUSE));
-                diffuseBlock.mU = Ogre::TAM_WRAP;
-                diffuseBlock.mV = Ogre::TAM_WRAP;
-                diffuseBlock.mW = Ogre::TAM_WRAP;
-                personalDatablock->setSamplerblock(Ogre::PBSM_DIFFUSE, diffuseBlock);
+                    Ogre::HlmsSamplerblock diffuseBlock(*personalDatablock->getSamplerblock(Ogre::PBSM_DIFFUSE));
+                    diffuseBlock.mU = Ogre::TAM_WRAP;
+                    diffuseBlock.mV = Ogre::TAM_WRAP;
+                    diffuseBlock.mW = Ogre::TAM_WRAP;
+                    personalDatablock->setSamplerblock(Ogre::PBSM_DIFFUSE, diffuseBlock);
 
-                if (cge->useAlpha)
-                    personalDatablock->setTransparency(cge->gameEntity->mTransparency, Ogre::HlmsPbsDatablock::Transparent, true);
+                    if (cge->useAlpha)
+                        personalDatablock->setTransparency(cge->gameEntity->mTransparency, Ogre::HlmsPbsDatablock::Transparent, true);
 
-                if (cge->vColour != Ogre::Vector3::ZERO)
-                    personalDatablock->setDiffuse(cge->vColour);
+                    if (cge->vColour != Ogre::Vector3::ZERO)
+                        personalDatablock->setDiffuse(cge->vColour);
 
-                pft->getSubEntity(0)->setDatablock(personalDatablock);
+                    pft->getSubEntity(0)->setDatablock(personalDatablock);
+                }
+                else
+                {/*
+                    auto datablock = dynamic_cast<Ogre::HlmsUnlitDatablock*>(pft->getSubEntity(0)->getDatablock());
 
+                    auto personalDatablock = dynamic_cast<Ogre::HlmsUnlitDatablock*>(datablock->clone(Ogre::StringConverter::toString(cge->gameEntity->getId()) + Ogre::String("personalDataBlock")));*/
+
+                    /*if (cge->useAlpha)
+                        personalDatablock->setTransparency(cge->gameEntity->mTransparency, Ogre::HlmsPbsDatablock::Transparent, true);*/
+
+                    Ogre::HlmsManager* hlmsMgr = this->getRoot()->getHlmsManager();
+
+                    Ogre::HlmsUnlit* hlmsUnlit = static_cast<Ogre::HlmsUnlit*>(hlmsMgr->getHlms(Ogre::HLMS_UNLIT));
+
+                    auto personalDatablock = static_cast<Ogre::HlmsUnlitDatablock*>(hlmsUnlit->createDatablock(
+                        Ogre::StringConverter::toString(cge->gameEntity->getId()) + Ogre::String("personalDataBlock"),
+                        Ogre::StringConverter::toString(cge->gameEntity->getId()) + Ogre::String("personalDataBlock"),
+                        Ogre::HlmsMacroblock(),
+                        Ogre::HlmsBlendblock(),
+                        Ogre::HlmsParamVec()
+                    ));
+
+                    personalDatablock->setTexture(Ogre::PbsTextureTypes::PBSM_DIFFUSE, cge->gameEntity->mTextureGpu);
+
+                    //personalDatablock->setDiffuse(Ogre::Vector3(1.0f, 1.0f, 1.0f));
+
+                    pft->getSubEntity(0)->setDatablock(personalDatablock);
+
+                }
                 cge->gameEntity->mMovableObject = pft;
             }
             break;
@@ -1065,6 +1286,156 @@ namespace MyThirdOgre
                 //    cge->gameEntity->mMovableObject->detachFromParent();
             }
             break;
+            case MoTypeFieldComputeSystem:
+            {
+                assert(static_cast<FieldComputeSystem*>(cge->gameEntity));
+
+                auto fieldComputeSystem = static_cast<FieldComputeSystem*>(cge->gameEntity);
+
+                Ogre::CompositorManager2* compositorManager = mRoot->getCompositorManager2();
+
+                const Ogre::String workspaceName("Test Compute Workspace");
+
+                if (!compositorManager->hasWorkspaceDefinition(workspaceName))
+                {
+                    compositorManager->createBasicWorkspaceDef(workspaceName, mBackgroundColour,
+                        Ogre::IdString());
+                }
+
+                Ogre::Root* root = this->getRoot();
+
+                Ogre::HlmsCompute* hlmsCompute = root->getHlmsManager()->getComputeHlms();
+
+                fieldComputeSystem->setComputeJob(hlmsCompute->findComputeJob("TestJob"));
+
+                fieldComputeSystem->setMaterial(Ogre::MaterialManager::getSingleton().load(
+                    "DrawFromUavBuffer", Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME).
+                    staticCast<Ogre::Material>());
+
+                Ogre::RenderSystem* renderSystem = this->getRoot()->getRenderSystem();
+                Ogre::VaoManager* vaoManager = renderSystem->getVaoManager();
+
+                Ogre::TextureGpuManager* texMgr = root->getRenderSystem()->getTextureGpuManager();
+
+                fieldComputeSystem->setLeapMotionStagingTexture(texMgr->getStagingTexture(
+                    fieldComputeSystem->getWidth(),
+                    fieldComputeSystem->getHeight(),
+                    fieldComputeSystem->getDepth(),
+                    fieldComputeSystem->getDepth(),
+                    fieldComputeSystem->getPixelFormat()));
+
+                fieldComputeSystem->setAsyncTextureTicket(texMgr->createAsyncTextureTicket(
+                    fieldComputeSystem->getWidth(),
+                    fieldComputeSystem->getHeight(),
+                    fieldComputeSystem->getDepth(),
+                    fieldComputeSystem->getTextureType(),
+                    fieldComputeSystem->getPixelFormat()));
+
+                Ogre::TextureGpu* textures[2];
+                textures[0] =
+                    texMgr->createTexture(
+                        "velocityTexture",
+                        "velocityTexture",
+                        Ogre::GpuPageOutStrategy::Discard,
+                        Ogre::TextureFlags::Uav | Ogre::TextureFlags::RenderToTexture,
+                        fieldComputeSystem->getTextureType(),
+                        Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME,
+                        0u,
+                        0u);
+
+                textures[1] =
+                    texMgr->createTexture(
+                        "leapMotionTexture",
+                        "leapMotionTexture",
+                        Ogre::GpuPageOutStrategy::Discard,
+                        Ogre::TextureFlags::Uav | Ogre::TextureFlags::RenderToTexture,
+                        fieldComputeSystem->getTextureType(),
+                        Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME,
+                        0u,
+                        0u);
+
+                fieldComputeSystem->setTextures(std::array<Ogre::TextureGpu*, 2> { textures[0], textures[1] });
+
+                fieldComputeSystem->getTexture(FieldComputeSystemTexture::Velocity)->setNumMipmaps(1);
+                fieldComputeSystem->getTexture(FieldComputeSystemTexture::Velocity)->setResolution(fieldComputeSystem->getWidth(), fieldComputeSystem->getHeight());
+                fieldComputeSystem->getTexture(FieldComputeSystemTexture::Velocity)->setPixelFormat(fieldComputeSystem->getPixelFormat());
+
+                fieldComputeSystem->getTexture(FieldComputeSystemTexture::LeapMotion)->setNumMipmaps(1);
+                fieldComputeSystem->getTexture(FieldComputeSystemTexture::LeapMotion)->setResolution(fieldComputeSystem->getWidth(), fieldComputeSystem->getHeight());
+                fieldComputeSystem->getTexture(FieldComputeSystemTexture::LeapMotion)->setPixelFormat(fieldComputeSystem->getPixelFormat());
+
+                Ogre::DescriptorSetUav::TextureSlot uavSlot(Ogre::DescriptorSetUav::TextureSlot::makeEmpty());
+                uavSlot.access = Ogre::ResourceAccess::ReadWrite;
+                uavSlot.pixelFormat = fieldComputeSystem->getPixelFormat();
+
+                uavSlot.texture = fieldComputeSystem->getTexture(FieldComputeSystemTexture::Velocity);
+                fieldComputeSystem->getComputeJob()->_setUavTexture(0, uavSlot);
+
+                uavSlot.texture = fieldComputeSystem->getTexture(FieldComputeSystemTexture::LeapMotion);
+                fieldComputeSystem->getComputeJob()->_setUavTexture(1, uavSlot);
+
+                bool canUseSynchronousUpload = fieldComputeSystem
+                    ->getTexture(FieldComputeSystemTexture::Velocity)
+                    ->getNextResidencyStatus() == Ogre::GpuResidency::Resident 
+                    && fieldComputeSystem->getTexture(FieldComputeSystemTexture::Velocity)->isDataReady();
+
+                if (!canUseSynchronousUpload) {
+                    fieldComputeSystem->getTexture(FieldComputeSystemTexture::Velocity)->waitForData();
+                }
+
+                canUseSynchronousUpload = fieldComputeSystem
+                    ->getTexture(FieldComputeSystemTexture::LeapMotion)
+                    ->getNextResidencyStatus() == Ogre::GpuResidency::Resident
+                    && fieldComputeSystem->getTexture(FieldComputeSystemTexture::LeapMotion)->isDataReady();
+
+                if (!canUseSynchronousUpload) {
+                    fieldComputeSystem->getTexture(FieldComputeSystemTexture::LeapMotion)->waitForData();
+                }
+
+                fieldComputeSystem
+                    ->getTexture(FieldComputeSystemTexture::Velocity)
+                    ->scheduleTransitionTo(Ogre::GpuResidency::Resident, 0, true);
+
+                fieldComputeSystem
+                    ->getTexture(FieldComputeSystemTexture::LeapMotion)
+                    ->scheduleTransitionTo(Ogre::GpuResidency::Resident, 0, true);
+
+                Ogre::CompositorChannelVec channels;
+                
+                channels.reserve(2u);
+                channels.push_back(fieldComputeSystem->getTexture(FieldComputeSystemTexture::Velocity));
+                channels.push_back(fieldComputeSystem->getTexture(FieldComputeSystemTexture::LeapMotion));
+
+                mWorkspaces.push_back(compositorManager->addWorkspace(
+                    mSceneManager,
+                    channels,
+                    mCamera,
+                    workspaceName,
+                    true));
+
+                //mComputeTexturesJobs.push_back({ fieldComputeSystem->getTexture(), fieldComputeSystem->getComputeJob() });
+
+                mFieldComputeSystems.push_back(fieldComputeSystem);
+
+                Ogre::ManualObject* mo = mSceneManager->createManualObject(Ogre::SCENE_STATIC);
+
+                mo->begin(cge->gameEntity->mManualObjectDatablockName, Ogre::OT_LINE_LIST);
+
+                for (auto p : cge->gameEntity->mManualObjectDefinition.points) {
+                    mo->position(p);
+                }
+
+                for (auto l : cge->gameEntity->mManualObjectDefinition.lines) {
+                    mo->line(l.first, l.second);
+                }
+
+                mo->end();
+
+                cge->gameEntity->mMovableObject = mo;
+
+                fieldComputeSystem->initialise();
+            }
+            break;
             default: 
             {
                 throw "MyThirdOgre::MovableObjectType not catered for in GraphicsSystem::gameEntityAdded!";
@@ -1072,7 +1443,6 @@ namespace MyThirdOgre
             break;
         }
 
-        //if (!cge->gameEntity->mMovableObject->isAttached())
         sceneNode->attachObject( cge->gameEntity->mMovableObject );
 
         sceneNode->setVisible( cge->visible );

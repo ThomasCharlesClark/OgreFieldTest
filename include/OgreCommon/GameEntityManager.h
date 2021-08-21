@@ -14,6 +14,7 @@ namespace MyThirdOgre
     class GraphicsSystem;
     class LogicSystem;
     struct ManualObjectLineListDefinition;
+    struct FieldComputeSystem;
 
     class GameEntityManager
     {
@@ -89,16 +90,17 @@ namespace MyThirdOgre
         size_t              mScheduledForRemovalCurrentSlot;
         std::vector<size_t> mScheduledForRemovalAvailableSlots;
 
-        Mq::MessageQueueSystem  *mGraphicsSystem;
-        LogicSystem             *mLogicSystem;
-
         Ogre::uint32 getScheduledForRemovalAvailableSlot(void);
         void destroyAllGameEntitiesIn( GameEntityVec &container );
 
         void aquireTransformSlot( size_t &outSlot, size_t &outBufferIdx );
         void releaseTransformSlot( size_t bufferIdx, GameEntityTransform *transform );
 
+
     public:
+        Mq::MessageQueueSystem* mGraphicsSystem;
+        LogicSystem* mLogicSystem;
+
         GameEntityManager( Mq::MessageQueueSystem *graphicsSystem,
                            LogicSystem *logicSystem );
         ~GameEntityManager();
@@ -141,7 +143,8 @@ namespace MyThirdOgre
                                     const bool useAlpha = false,
                                     const float alpha = 1.0f,
                                     const bool visible = true,
-                                    const Ogre::Vector3 vColour = Ogre::Vector3::ZERO);
+                                    const Ogre::Vector3 vColour = Ogre::Vector3::ZERO,
+                                    Ogre::TextureGpu* mTex = NULL);
 
         GameEntity* addGameEntity( const Ogre::String& name,
                                    const Ogre::SceneMemoryMgrTypes type,
@@ -154,6 +157,17 @@ namespace MyThirdOgre
                                    const bool useAlpha = false,
                                    const float alpha = 1.0f,
                                    const bool visible = true );
+
+        FieldComputeSystem* addFieldComputeSystem(  const Ogre::String& name,
+                                                    const Ogre::SceneMemoryMgrTypes type,
+                                                    const MovableObjectDefinition* moDefinition,
+                                                    const Ogre::String& computeJobName,
+                                                    const Ogre::Vector3& initialPos,
+                                                    const Ogre::Quaternion& initialRot,
+                                                    const Ogre::Vector3& initialScale,
+                                                    const bool useAlpha = false,
+                                                    const float alpha = 1.0f,
+                                                    const bool visible = true);
 
         /** Removes the GameEntity from the world. The pointer is not immediately destroyed,
             we first need to release data in other threads (i.e. Graphics).

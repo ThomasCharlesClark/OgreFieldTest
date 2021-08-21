@@ -21,6 +21,15 @@
 
 #include <GameEntityManager.h>
 
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//
+// 
+#include "OgreRenderSystem.h"
+//
+//
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
 namespace MyThirdOgre
 {
     class SdlInputHandler;
@@ -28,6 +37,16 @@ namespace MyThirdOgre
     class GraphicsSystem : public BaseSystem, public Ogre::UniformScalableTask
     {
     protected:
+
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        //  
+        // 
+        //std::vector<std::pair<Ogre::TextureGpu*, Ogre::HlmsComputeJob*>>       mComputeTexturesJobs;
+        std::vector<FieldComputeSystem*> mFieldComputeSystems;
+        //
+        //
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
         BaseSystem* mLogicSystem;
 
 #if OGRE_USE_SDL2
@@ -39,7 +58,8 @@ namespace MyThirdOgre
         Ogre::Window* mRenderWindow;
         Ogre::SceneManager* mSceneManager;
         Ogre::Camera* mCamera;
-        Ogre::CompositorWorkspace* mWorkspace;
+        Ogre::CompositorWorkspace*  mPrimaryWorkspace;
+        std::vector<Ogre::CompositorWorkspace*> mWorkspaces;
         Ogre::String                mPluginsFolder;
         Ogre::String                mWriteAccessFolder;
         Ogre::String                mResourcePath;
@@ -89,6 +109,8 @@ namespace MyThirdOgre
         /// method to change the default behavior if setupCompositor() is overridden, be
         /// aware @mBackgroundColour will be ignored
         virtual Ogre::CompositorWorkspace* setupCompositor(void);
+
+        //virtual Ogre::CompositorWorkspace* setupComputeTestCompositor(void);
 
         /// Called right before initializing Ogre's first window, so the params can be customized
         virtual void initMiscParamsListener(Ogre::NameValuePairList& params);
@@ -144,7 +166,7 @@ namespace MyThirdOgre
         Ogre::Window* getRenderWindow(void) const { return mRenderWindow; }
         Ogre::SceneManager* getSceneManager(void) const { return mSceneManager; }
         Ogre::Camera* getCamera(void) const { return mCamera; }
-        Ogre::CompositorWorkspace* getCompositorWorkspace(void) const { return mWorkspace; }
+        Ogre::CompositorWorkspace* getCompositorWorkspace(void) const { return mPrimaryWorkspace; }
         Ogre::v1::OverlaySystem* getOverlaySystem(void) const { return mOverlaySystem; }
 
         const Ogre::String& getPluginsFolder(void) const { return mPluginsFolder; }
@@ -159,6 +181,8 @@ namespace MyThirdOgre
         virtual void changeGameEntityAlpha(const GameEntityManager::GameEntityAlphaChange* change);
 
         virtual void changeGameEntityVisibility(const GameEntityManager::GameEntityVisibilityChange* change);
+
+        virtual void cleanupComputeJobs(void);
     };
 }
 

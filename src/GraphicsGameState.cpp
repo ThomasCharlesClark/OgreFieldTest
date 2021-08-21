@@ -24,12 +24,12 @@ namespace MyThirdOgre
     void GraphicsGameState::generateDebugText(float timeSinceLast, Ogre::String& outText)
     {
         TutorialGameState::generateDebugText(timeSinceLast, outText);
-        outText += "\nPress F2 to fake a GPU bottleneck (frame skip). ";
+       /* outText += "\nPress F2 to fake a GPU bottleneck (frame skip). ";
         outText += gFakeFrameskip ? "[On]" : "[Off]";
         outText += "\nPress F3 to fake a CPU Logic bottleneck. ";
         outText += gFakeSlowmo ? "[On]" : "[Off]";
         outText += "\nPress F4 to enable interpolation. ";
-        outText += mEnableInterpolation ? "[On]" : "[Off]";
+        outText += mEnableInterpolation ? "[On]" : "[Off]";*/
 
         //Show the current weight.
         //The text doesn't get updated every frame while displaying
@@ -69,7 +69,9 @@ namespace MyThirdOgre
             return;
         }
 
-        if (arg.keysym.sym == SDLK_F2)
+        TutorialGameState::keyReleased(arg);
+
+        /*if (arg.keysym.sym == SDLK_F2)
         {
             gFakeFrameskip = !gFakeFrameskip;
         }
@@ -84,6 +86,6 @@ namespace MyThirdOgre
         else
         {
             TutorialGameState::keyReleased(arg);
-        }
+        }*/
     }
 }

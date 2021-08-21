@@ -1,0 +1,78 @@
+compositor_node PassThrough
+{
+	in 0 rt_renderwindow
+	
+	target rt_renderwindow
+	{
+		pass clear
+		{
+			colour_value 0.2 0.4 0.6 1
+		}
+		
+		pass render_scene
+		{
+			overlays on
+		}
+	}
+}
+
+workspace "Demo Workspace"
+{
+	connect_output PassThrough 0
+}
+
+compositor_node TestComputeNode
+{
+	in 0 velocityTexture
+	//in 1 leapMotionTexture
+	
+	//buffer name size bytesPerElement [target_width] [target_height] bind_flags
+	buffer testBuffer 1 4 target_width target_height
+	
+	target
+	{
+		pass compute
+		{
+			job	TestJob
+			
+			//input 0 mrtTexture 1
+			//uav_buffer # bufferName offset_start size read write allow_write_after_write
+			uav_buffer 0 testBuffer write
+		}
+	}
+
+	target velocityTexture
+	{
+		pass clear
+		{
+			colour_value 0.2 0.4 0.6 1
+		}
+
+		//The bindings made by pass bind_uav PERSIST even after we're out of velocityTexture.
+		pass bind_uav
+		{
+			starting_slot 1
+			uav_buffer 0 testBuffer			read
+		}
+
+		//Compositor will issue the appropiate barriers because
+		//it knows testTexture will be used as a texture.
+		pass render_quad
+		{
+			material DrawFromUavBuffer
+			uses_uav 0 read
+		}
+
+		//pass render_scene
+		//{
+		//	overlays	off
+		//}
+	}
+
+	//out_buffer 0 testBuffer
+}
+
+workspace "Test Compute Workspace"
+{
+	connect_output TestComputeNode 0
+}
