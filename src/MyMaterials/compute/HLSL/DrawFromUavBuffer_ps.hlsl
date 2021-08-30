@@ -1,5 +1,4 @@
 RWStructuredBuffer<uint> pixelBuffer : register(u1);
-RWStructuredBuffer<uint> leapBuffer : register(u2);
 
 struct PS_INPUT
 {

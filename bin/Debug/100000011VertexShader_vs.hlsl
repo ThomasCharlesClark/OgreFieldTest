@@ -9,65 +9,55 @@
 	***	hlms_lights_spotparams	0
 	***	uv_detail_nm2	0
 	***	BRDF_Default	1
+	***	set0_texture_slot_end	2
 	***	uv_specular	0
-	***	specular_map_sampler	0
-	***	normal_sampling_format	-1392068498
 	***	hlms_lights_directional	0
 	***	samplerStateStart	2
 	***	alpha_test	0
-	***	roughness_map_sampler	1
 	***	GGX_height_correlated	1
 	***	metallic_workflow	0
 	***	hw_gamma_write	1
 	***	uv_detail_weight	0
-	***	roughness_map_idx	2
+	***	hlms_alpha_to_coverage	0
 	***	cubemaps_as_diffuse_gi	1
 	***	uv_detail_nm3	0
 	***	hlms_pose_normals	0
 	***	hlms_pose_half	0
 	***	hlms_lights_spot	1
 	***	uv_normal	0
-	***	hlms_alphablend	1
-	***	textureMaps2	4
-	***	num_textures	3
-	***	normal_map_tex	2
+	***	hlms_alphablend	0
+	***	num_textures	1
 	***	uv_detail3	0
-	***	normal_map	1
+	***	normal_map	0
+	***	hlms_tangent	1
 	***	uv_detail1	0
 	***	fresnel_workflow	0
 	***	perceptual_roughness	1
 	***	alpha_test_shadow_caster_only	0
 	***	materials_per_buffer	2
 	***	hw_gamma_read	1
-	***	normal_map_tex_idx	1
 	***	hlms_skeleton	0
 	***	hlms_lights_point	1
 	***	diffuse_map_sampler	0
-	***	transparent_mode	1
 	***	s_lights_directional_non_caster	1
 	***	uv_detail0	0
 	***	uv_diffuse	0
 	***	diffuse_map	1
 	***	uv_detail_nm0	0
-	***	normal_rg_snorm	-1392068498
-	***	specular_map	1
 	***	diffuse_map_idx	0
 	***	hlms_lights_attenuation	0
-	***	use_texture_alpha	1
 	***	hlms_render_depth_only	0
-	***	normal_map_tex_sampler	0
 	***	uv_detail2	0
 	***	textureMaps0	2
-	***	hlms_qtangent	1
 	***	uv_roughness	0
-	***	roughness_map	3
 	***	receive_shadows	1
-	***	textureMaps1	3
+	***	clear_coat	0
 	***	needs_view_dir	1
+	***	set1_texture_slot_end	3
 	***	use_planar_reflections	0
-	***	specular_map_idx	0
+	***	hlms_normal	1
 	***	ltc_texture_available	1
-	***	num_samplers	2
+	***	num_samplers	1
 	***	normal_weight	0
 	DONE DUMPING PROPERTIES
 	DONE DUMPING PIECES

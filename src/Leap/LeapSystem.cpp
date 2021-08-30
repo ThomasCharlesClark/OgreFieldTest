@@ -84,7 +84,7 @@ namespace MyThirdOgre
 
                         vPos /= mPositionScalingFactor;
 
-                        vPos.y -= 35;
+                        vPos.y -= 50;
 
                         vVel.normalise();
 

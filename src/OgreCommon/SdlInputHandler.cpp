@@ -16,13 +16,16 @@ namespace MyThirdOgre
     SdlInputHandler::SdlInputHandler( SDL_Window *sdlWindow,
                                       MouseListener *mouseListener,
                                       KeyboardListener *keyboardListener,
-                                      JoystickListener *joystickListener ) :
+                                      JoystickListener *joystickListener,
+                                      ControllerListener *controllerListener ) :
         mSdlWindow( sdlWindow ),
         mLogicSystem( 0 ),
         mGraphicsSystem ( 0 ),
         mMouseListener( mouseListener ),
         mKeyboardListener( keyboardListener ),
         mJoystickListener( joystickListener ),
+        mControllerListener ( controllerListener ),
+        mController ( 0 ),
         mWantRelative( true ),
         mWantMouseGrab( true ),
         mWantMouseVisible( false ),
@@ -33,12 +36,17 @@ namespace MyThirdOgre
         mWindowHasFocus( true ),
         mWarpX( 0 ),
         mWarpY( 0 ),
-        mWarpCompensate( false )
+        mWarpCompensate( false ),
+        mWantController ( true  )
     {
+        if (mWantController)
+            mController = SDL_GameControllerOpen(0);
     }
     //-----------------------------------------------------------------------------------
     SdlInputHandler::~SdlInputHandler()
     {
+        if (mController)
+            SDL_GameControllerClose(mController);
     }
     //-----------------------------------------------------------------------------------
     void SdlInputHandler::handleWindowEvent( const SDL_Event& evt )
@@ -175,10 +183,48 @@ namespace MyThirdOgre
                 }
                 break;
             case SDL_JOYDEVICEADDED:
+                {
+                    //SDL_JoystickOpen(evt.jdevice.which);
+                    //std::cout << "Detected a new joystick: " << SDL_JoystickNameForIndex(evt.jdevice.which) << std::endl;
+                }
+                break;
+            case SDL_JOYDEVICEREMOVED:
+                {
+                    //std::cout << "A joystick has been removed" << std::endl;
+                }
+                break;
+            case SDL_CONTROLLERAXISMOTION:
+            {
+                if (mControllerListener)
+                    mControllerListener->controllerAxisMoved(evt.caxis, evt.caxis.axis);
+
+                if (mLogicSystem)
+                    mGraphicsSystem->queueSendMessage(mLogicSystem, Mq::SDL_EVENT, evt);
+            }
+            break;
+            case SDL_CONTROLLERBUTTONDOWN:
+            {
+                if (mControllerListener)
+                    mControllerListener->controllerButtonPressed(evt.cbutton, evt.cbutton.button);
+
+                if (mLogicSystem)
+                    mGraphicsSystem->queueSendMessage(mLogicSystem, Mq::SDL_EVENT, evt);
+            }
+            break;
+            case SDL_CONTROLLERBUTTONUP:
+            {
+                if (mControllerListener)
+                    mControllerListener->controllerButtonReleased(evt.cbutton, evt.cbutton.button);
+
+                if (mLogicSystem)
+                    mGraphicsSystem->queueSendMessage(mLogicSystem, Mq::SDL_EVENT, evt);
+            }
+            break;
+            case SDL_CONTROLLERDEVICEADDED:
                 //SDL_JoystickOpen(evt.jdevice.which);
                 //std::cout << "Detected a new joystick: " << SDL_JoystickNameForIndex(evt.jdevice.which) << std::endl;
                 break;
-            case SDL_JOYDEVICEREMOVED:
+            case SDL_CONTROLLERDEVICEREMOVED:
                 //std::cout << "A joystick has been removed" << std::endl;
                 break;
             case SDL_WINDOWEVENT:

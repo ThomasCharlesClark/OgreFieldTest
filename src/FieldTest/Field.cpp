@@ -108,6 +108,15 @@ namespace MyThirdOgre
 		}
 	}
 
+	void Field::_notifyHand(Hand* hand) 
+	{
+		mHand = hand;
+
+		if (mFieldComputeSystem) {
+			mFieldComputeSystem->_notifyHand(mHand);
+		}
+	}
+
 	void Field::createGrid(void) {
 
 		mGridLineMoDef = new MovableObjectDefinition();
@@ -217,7 +226,7 @@ namespace MyThirdOgre
 			/*if (mFieldComputeSystem) {
 				mFieldComputeSystem->update(timeSinceLast);
 			}*/
-
+			
 			std::unordered_map<CellCoord, CellState> state;
 
 			for (const auto& c : mCells) {

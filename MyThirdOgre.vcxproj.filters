@@ -274,5 +274,6 @@
     <None Include="src\MyMaterials\compute\HLSL\DrawFromUavBuffer_ps.hlsl">
       <Filter>ComputeShaders</Filter>
     </None>
+    <None Include="src\MyMaterials\MainWorkspace.compositor" />
   </ItemGroup>
 </Project>

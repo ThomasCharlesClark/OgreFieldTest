@@ -1,4 +1,3 @@
-
 // GLSL shaders
 fragment_program DrawFromUavBuffer_ps_GLSL glsl
 {

@@ -3,15 +3,14 @@
     {
         "TestJob" :
         {
-            "threads_per_group" : [16, 16, 1],
-            "thread_groups" : [8, 8, 1],
+            "threads_per_group" : [8, 8, 1],
+            "thread_groups" : [4, 4, 1],
 
             "source" : "ComputeTest",
 
-            "uav_units" : 2,
+            "uav_units": 2,
 
-            "params" : [ ["texResolution",   [128, 128], "uint"] ]
-			
+            "params" : [ ["texResolution",   [256, 256], "uint"] ]
         }
     }
 }

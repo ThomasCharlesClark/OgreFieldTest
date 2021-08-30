@@ -395,6 +395,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <None Include="src\MyMaterials\compute\Compute.compositor" />
     <None Include="src\MyMaterials\compute\ComputeJobs.material.json" />
     <None Include="src\MyMaterials\compute\TutorialCompute02_UavBuffer.material" />
+    <None Include="src\MyMaterials\MainWorkspace.compositor" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\MyMaterials\compute\HLSL\ComputeTest.hlsl">
@@ -407,4 +408,9 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties src_4MyMaterials_4compute_4ComputeJobs_1material_1json__JsonSchema="https://github.com/go-vela/types/releases/latest/download/schema.json" />
+    </VisualStudio>
+  </ProjectExtensions>
 </Project>

@@ -146,6 +146,20 @@ namespace MyThirdOgre
                                     const Ogre::Vector3 vColour = Ogre::Vector3::ZERO,
                                     Ogre::TextureGpu* mTex = NULL);
 
+        GameEntity* addGameEntity(const Ogre::String& name,
+            const Ogre::SceneMemoryMgrTypes type,
+            const MovableObjectDefinition* moDefinition,
+            const std::vector<Ogre::Vector3> vertexList,
+            const Ogre::String datablockName,
+            const Ogre::Vector3& initialPos,
+            const Ogre::Quaternion& initialRot,
+            const Ogre::Vector3& initialScale,
+            const bool useAlpha = false,
+            const float alpha = 1.0f,
+            const bool visible = true,
+            const Ogre::Vector3 vColour = Ogre::Vector3::ZERO,
+            Ogre::TextureGpu* mTex = NULL);
+
         GameEntity* addGameEntity( const Ogre::String& name,
                                    const Ogre::SceneMemoryMgrTypes type,
                                    const MovableObjectDefinition* moDefinition,

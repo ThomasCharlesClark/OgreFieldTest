@@ -87,7 +87,7 @@ namespace MyThirdOgre
 				float maxInk);
 		~Field();
 
-		virtual void _notifyHand(Hand* hand) { mHand = hand; };
+		virtual void _notifyHand(Hand* hand);
 		
 		FieldComputeSystem* getComputeSystem(void) { return mFieldComputeSystem; };
 		Cell* getCell(CellCoord coords);

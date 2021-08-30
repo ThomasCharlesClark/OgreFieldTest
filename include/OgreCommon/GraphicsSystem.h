@@ -25,6 +25,7 @@
 //
 // 
 #include "OgreRenderSystem.h"
+#include "OgreWireAabb.h"
 //
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -63,6 +64,7 @@ namespace MyThirdOgre
         Ogre::String                mPluginsFolder;
         Ogre::String                mWriteAccessFolder;
         Ogre::String                mResourcePath;
+        Ogre::WireAabb*             mWireAabb;
 
         Ogre::v1::OverlaySystem* mOverlaySystem;
 

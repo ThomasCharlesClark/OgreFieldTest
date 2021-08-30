@@ -1,0 +1,22 @@
+compositor_node PassThrough
+{
+	in 0 rt_renderwindow
+	
+	target rt_renderwindow
+	{
+		pass clear
+		{
+			colour_value 0.2 0.4 0.6 1
+		}
+		
+		pass render_scene
+		{
+			overlays on
+		}
+	}
+}
+
+workspace "Demo Workspace"
+{
+	connect_output PassThrough 0
+}

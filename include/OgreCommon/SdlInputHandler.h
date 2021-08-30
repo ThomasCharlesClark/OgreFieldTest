@@ -20,6 +20,7 @@ namespace MyThirdOgre
     class MouseListener;
     class KeyboardListener;
     class JoystickListener;
+    class ControllerListener;
 
     class SdlInputHandler
     {
@@ -30,6 +31,8 @@ namespace MyThirdOgre
         MouseListener       *mMouseListener;
         KeyboardListener    *mKeyboardListener;
         JoystickListener    *mJoystickListener;
+        ControllerListener  *mControllerListener;
+        SDL_GameController  *mController;
 
         // User settings
         /// User setting. From the SDL docs: While the mouse is in relative mode, the
@@ -41,6 +44,8 @@ namespace MyThirdOgre
         bool        mWantMouseGrab;
         /// Whether to show the mouse.
         bool        mWantMouseVisible;
+        /// Whether to use a game controller.
+        bool        mWantController;
 
         // Describes internal state.
         bool        mIsMouseRelative;
@@ -72,7 +77,8 @@ namespace MyThirdOgre
         SdlInputHandler( SDL_Window *sdlWindow,
                          MouseListener *mouseListener,
                          KeyboardListener *keyboardListener,
-                         JoystickListener *joystickListener );
+                         JoystickListener *joystickListener,
+                         ControllerListener *controllerListener );
         virtual ~SdlInputHandler();
 
         void _handleSdlEvents( const SDL_Event& evt );

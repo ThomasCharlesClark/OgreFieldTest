@@ -20,6 +20,7 @@ namespace MyThirdOgre
         NumMovableObjectType,
         MoTypeStaticManualLineList,
         MoTypeDynamicManualLineList,
+        MoTypeDynamicTriangleList,
         MoTypeDynamicManualObject,
         MoTypePrefabPlane,
         MoTypeCamera,

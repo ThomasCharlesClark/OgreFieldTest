@@ -59,7 +59,7 @@ hlms Green pbs
 {	
 	roughness 		0.02
 	fresnel 		1.33
-	diffuse_map		red10x10.png
+	diffuse_map		green10x10.png
 }
 
 hlms Blue pbs

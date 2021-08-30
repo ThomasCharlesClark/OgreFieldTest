@@ -14,6 +14,9 @@ struct SDL_JoyButtonEvent;
 struct SDL_JoyAxisEvent;
 struct SDL_JoyHatEvent;
 
+struct SDL_ControllerButtonEvent;
+struct SDL_ControllerAxisEvent;
+
 namespace MyThirdOgre
 {
     class MouseListener
@@ -42,6 +45,14 @@ namespace MyThirdOgre
         virtual void joyButtonReleased( const SDL_JoyButtonEvent &evt, int button ) {}
         virtual void joyAxisMoved( const SDL_JoyAxisEvent &arg, int axis ) {}
         virtual void joyPovMoved( const SDL_JoyHatEvent &arg, int index ) {}
+    };
+
+    class ControllerListener
+    {
+    public:
+        virtual void controllerButtonPressed(const SDL_ControllerButtonEvent& evt, int button) {}
+        virtual void controllerButtonReleased(const SDL_ControllerButtonEvent& evt, int button) {}
+        virtual void controllerAxisMoved(const SDL_ControllerAxisEvent& evt, int axis) {}
     };
 }
 

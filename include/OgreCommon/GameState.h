@@ -6,7 +6,7 @@
 
 namespace MyThirdOgre
 {
-    class GameState : public MouseListener, public KeyboardListener, public JoystickListener
+    class GameState : public MouseListener, public KeyboardListener, public JoystickListener, public ControllerListener
     {
     public:
         virtual ~GameState() {}

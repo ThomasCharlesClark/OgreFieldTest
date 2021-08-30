@@ -26,6 +26,14 @@
 			"texture_type" : 3,
 			"poolId" : 0
 		},
+		"green10x10.png" : 
+		{
+			"resolution" : [10, 10, 1],
+			"mipmaps" : 4,
+			"format" : "PFG_RGBA8_UNORM_SRGB",
+			"texture_type" : 3,
+			"poolId" : 0
+		},
 		"transparent10x10.png" : 
 		{
 			"resolution" : [10, 10, 1],

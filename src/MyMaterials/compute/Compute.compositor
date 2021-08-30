@@ -1,34 +1,14 @@
-compositor_node PassThrough
-{
-	in 0 rt_renderwindow
-	
-	target rt_renderwindow
-	{
-		pass clear
-		{
-			colour_value 0.2 0.4 0.6 1
-		}
-		
-		pass render_scene
-		{
-			overlays on
-		}
-	}
-}
-
-workspace "Demo Workspace"
-{
-	connect_output PassThrough 0
-}
 
 compositor_node TestComputeNode
 {
 	in 0 velocityTexture
-	//in 1 leapMotionTexture
-	
+	in_buffer 0 inputUavBuffer
+
 	//buffer name size bytesPerElement [target_width] [target_height] bind_flags
-	buffer testBuffer 1 4 target_width target_height
-	
+	//texture leapMotionTexture target_width target_height PFG_RGBA8_UNORM depth_pool 0 uav
+
+	buffer temporaryBuffer 1 4 target_width target_height
+
 	target
 	{
 		pass compute
@@ -37,7 +17,10 @@ compositor_node TestComputeNode
 			
 			//input 0 mrtTexture 1
 			//uav_buffer # bufferName offset_start size read write allow_write_after_write
-			uav_buffer 0 testBuffer write
+
+			//uav_buffer 0 testBuffer write
+			uav_buffer 0 temporaryBuffer write
+			uav_buffer 1 inputUavBuffer read
 		}
 	}
 
@@ -52,7 +35,9 @@ compositor_node TestComputeNode
 		pass bind_uav
 		{
 			starting_slot 1
-			uav_buffer 0 testBuffer			read
+			//uav_buffer 0 testBuffer	read
+			uav_buffer 0 temporaryBuffer read
+			uav_buffer 1 inputUavBuffer read
 		}
 
 		//Compositor will issue the appropiate barriers because
@@ -63,16 +48,17 @@ compositor_node TestComputeNode
 			uses_uav 0 read
 		}
 
-		//pass render_scene
-		//{
-		//	overlays	off
-		//}
+		pass bind_uav
+		{
+		}
 	}
 
-	//out_buffer 0 testBuffer
+	out 0 velocityTexture
+	out_buffer 0 inputUavBuffer
 }
 
 workspace "Test Compute Workspace"
 {
+	connect_buffer_external 0 TestComputeNode 0
 	connect_output TestComputeNode 0
 }
