@@ -44,6 +44,11 @@ namespace MyThirdOgre
 
             outText += "\nBlend weight: ";
             outText += Ogre::StringConverter::toString(weight);
+
+            if (mGraphicsSystem->getAdditionalDebugText() != "") {
+                outText += "\n\n";
+                outText += mGraphicsSystem->getAdditionalDebugText();
+            }
         }
     }
     //-----------------------------------------------------------------------------------

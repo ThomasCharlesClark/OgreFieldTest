@@ -124,7 +124,8 @@ namespace MyThirdOgre
         mUseMicrocodeCache( true ),
         mBackgroundColour( backgroundColour ),
         mFieldComputeSystems({}),
-        mWireAabb(0)
+        mWireAabb(0),
+        mAdditionalDebugText("")
     {
 #if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
         // Note:  macBundlePath works for iOS too. It's misnamed.
@@ -1241,9 +1242,7 @@ namespace MyThirdOgre
 
                     assert(dynamic_cast<Ogre::HlmsPbsDatablock*>(mo->getSection(0)->getDatablock()));
 
-                    auto datablock = dynamic_cast<Ogre::HlmsPbsDatablock*>(mo->getSection(0)->getDatablock());
-
-                    auto personalDatablock = dynamic_cast<Ogre::HlmsPbsDatablock*>(datablock->clone(Ogre::StringConverter::toString(cge->gameEntity->getId()) + Ogre::String("personalDataBlock")));
+                    auto personalDatablock = dynamic_cast<Ogre::HlmsPbsDatablock*>(mo->getSection(0)->getDatablock());
 
                     Ogre::HlmsSamplerblock diffuseBlock(*personalDatablock->getSamplerblock(Ogre::PBSM_DIFFUSE));
                     diffuseBlock.mU = Ogre::TAM_CLAMP;
@@ -1266,8 +1265,8 @@ namespace MyThirdOgre
                     Ogre::HlmsPbs* hlmsPbs = static_cast<Ogre::HlmsPbs*>(hlmsMgr->getHlms(Ogre::HLMS_PBS));
 
                     auto personalDatablock = static_cast<Ogre::HlmsPbsDatablock*>(hlmsPbs->createDatablock(
-                        Ogre::StringConverter::toString(cge->gameEntity->getId()) + Ogre::String("personalDataBlock"),
-                        Ogre::StringConverter::toString(cge->gameEntity->getId()) + Ogre::String("personalDataBlock"),
+                        "",
+                        "",
                         Ogre::HlmsMacroblock(),
                         Ogre::HlmsBlendblock(),
                         Ogre::HlmsParamVec()
@@ -1304,7 +1303,7 @@ namespace MyThirdOgre
 
                     auto datablock = dynamic_cast<Ogre::HlmsPbsDatablock*>(pft->getSubEntity(0)->getDatablock());
 
-                    auto personalDatablock = dynamic_cast<Ogre::HlmsPbsDatablock*>(datablock->clone(Ogre::StringConverter::toString(cge->gameEntity->getId()) + Ogre::String("personalDataBlock")));
+                    auto personalDatablock = dynamic_cast<Ogre::HlmsPbsDatablock*>(datablock->clone(""));
 
                     Ogre::HlmsSamplerblock diffuseBlock(*personalDatablock->getSamplerblock(Ogre::PBSM_DIFFUSE));
                     diffuseBlock.mU = Ogre::TAM_WRAP;
@@ -1327,8 +1326,8 @@ namespace MyThirdOgre
                     Ogre::HlmsPbs* hlmsPbs = static_cast<Ogre::HlmsPbs*>(hlmsMgr->getHlms(Ogre::HLMS_PBS));
 
                     auto personalDatablock = static_cast<Ogre::HlmsPbsDatablock*>(hlmsPbs->createDatablock(
-                        Ogre::StringConverter::toString(cge->gameEntity->getId()) + Ogre::String("personalDataBlock"),
-                        Ogre::StringConverter::toString(cge->gameEntity->getId()) + Ogre::String("personalDataBlock"),
+                        "",
+                        "",
                         Ogre::HlmsMacroblock(),
                         Ogre::HlmsBlendblock(),
                         Ogre::HlmsParamVec()
@@ -1386,6 +1385,8 @@ namespace MyThirdOgre
                 assert(static_cast<FieldComputeSystem*>(cge->gameEntity));
 
                 auto fieldComputeSystem = static_cast<FieldComputeSystem*>(cge->gameEntity);
+
+                fieldComputeSystem->_notifyGraphicsSystem(this);
 
                 Ogre::CompositorManager2* compositorManager = mRoot->getCompositorManager2();
 

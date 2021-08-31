@@ -40,8 +40,10 @@ namespace MyThirdOgre
 
 		std::vector<FieldComputeSystem_BoundingHierarchyBox> mChildren;
 		std::vector<size_t> mBufferIndices;
+		GameEntity*			mLeafEntity;
 
 		bool mIsLeaf;
+		bool mLeafVisible;
 		int mLeafIndexX;
 		int mLeafIndexZ;
 
@@ -55,6 +57,9 @@ namespace MyThirdOgre
 			mIsLeaf = false;
 			mLeafIndexX = -1;
 			mLeafIndexZ = -1;
+
+			mLeafEntity = 0;
+			mLeafVisible = false;
 
 			mAaBb = Ogre::AxisAlignedBox(mCenter - mHalfWidths, mCenter + mHalfWidths);
 			mChildren = std::vector<FieldComputeSystem_BoundingHierarchyBox>({});
@@ -107,6 +112,7 @@ namespace MyThirdOgre
 			MovableObjectDefinition*	mPlaneMoDef;
 			MovableObjectDefinition*	mDebugPlaneMoDef;
 			GameEntity*					mPlaneEntity;
+			GraphicsSystem*				mGraphicsSystem;
 
 		protected:
 			GameEntityManager*					mGameEntityManager;
@@ -122,6 +128,7 @@ namespace MyThirdOgre
 			Hand*								mHand;
 
 			std::vector<FieldComputeSystem_BoundingHierarchyBox>	mFieldBoundingHierarchy;
+			std::vector<FieldComputeSystem_BoundingHierarchyBox*>	mLeaves;
 			bool													mDebugFieldBoundingHierarchy;
 
 		public:
@@ -129,6 +136,7 @@ namespace MyThirdOgre
 				Ogre::SceneMemoryMgrTypes type, GameEntityManager* geMgr);
 			~FieldComputeSystem();
 
+			virtual void _notifyGraphicsSystem(GraphicsSystem* gs);
 			virtual void _notifyStagingTextureRemoved(const FieldComputeSystem_StagingTextureMessage* msg);
 
 			virtual void initialise(void);
@@ -170,12 +178,12 @@ namespace MyThirdOgre
 				FieldComputeSystem_BoundingHierarchyBox& box,
 				int& leafIndexX,
 				int& leafIndexZ,
-				std::vector<FieldComputeSystem_BoundingHierarchyBox*>& leaves,
-				int& depthCount);
+				float& depthCount);
 
 			virtual void buildBoundingDivisionIntersections(const size_t index, FieldComputeSystem_BoundingHierarchyBox& box);
 
 			virtual void traverseBoundingHierarchy(const FieldComputeSystem_BoundingHierarchyBox& level, 
-				const std::vector<size_t>* indicesList);
+				const std::vector<size_t>* indicesList,
+				int& aabbIntersectionCount);
 	};
 }

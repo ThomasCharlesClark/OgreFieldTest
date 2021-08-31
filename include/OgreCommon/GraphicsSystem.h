@@ -65,6 +65,7 @@ namespace MyThirdOgre
         Ogre::String                mWriteAccessFolder;
         Ogre::String                mResourcePath;
         Ogre::WireAabb*             mWireAabb;
+        Ogre::String                mAdditionalDebugText;
 
         Ogre::v1::OverlaySystem* mOverlaySystem;
 
@@ -185,6 +186,9 @@ namespace MyThirdOgre
         virtual void changeGameEntityVisibility(const GameEntityManager::GameEntityVisibilityChange* change);
 
         virtual void cleanupComputeJobs(void);
+
+        Ogre::String getAdditionalDebugText(void) { return mAdditionalDebugText; }
+        virtual void setAdditionalDebugText(Ogre::String t) { mAdditionalDebugText = t; };
     };
 }
 

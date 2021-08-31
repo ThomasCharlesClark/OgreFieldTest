@@ -23,6 +23,8 @@ namespace MyThirdOgre
 	FieldComputeSystem::FieldComputeSystem(Ogre::uint32 id, const MovableObjectDefinition* moDefinition,
 		Ogre::SceneMemoryMgrTypes type, GameEntityManager* geMgr) : GameEntity(id, moDefinition, type)
 	{
+		mGraphicsSystem = 0;
+
 		mTextureType = Ogre::TextureTypes::Type2D;
 		mPixelFormat = Ogre::PixelFormatGpu::PFG_RGBA8_UNORM;
 
@@ -96,7 +98,9 @@ namespace MyThirdOgre
 		mHand = 0;
 
 		mDebugFieldBoundingHierarchy = false;
+
 		mFieldBoundingHierarchy = std::vector<FieldComputeSystem_BoundingHierarchyBox>({});
+		mLeaves = std::vector<FieldComputeSystem_BoundingHierarchyBox*>({});
 	}
 
 	FieldComputeSystem::~FieldComputeSystem() 
@@ -156,24 +160,41 @@ namespace MyThirdOgre
 
 	void FieldComputeSystem::createBoundingHierarchy(void) 
 	{
-		float xRes = mFieldWidth;
-		float zRes = mFieldHeight;
+		float xRes = mFieldWidth / 2;
+		float zRes = mFieldHeight / 2;
 
-		int depthCount = 2;
+		float depthCount = 0.5f;
 
 		mFieldBoundingHierarchy.push_back(FieldComputeSystem_BoundingHierarchyBox(
 			Ogre::Vector3(0, 0, 0),
-			Ogre::Vector3(mFieldWidth / 2, 0, mFieldHeight / 2)
+			Ogre::Vector3(xRes, 0, zRes)
 		));
+
+		if (mDebugFieldBoundingHierarchy) {
+			mGameEntityManager->addGameEntity(Ogre::BLANKSTRING,
+				Ogre::SceneMemoryMgrTypes::SCENE_DYNAMIC,
+				mDebugPlaneMoDef,
+				std::vector<Ogre::Vector3>({
+					Ogre::Vector3(-xRes, 0.0f, zRes),
+					Ogre::Vector3(xRes, 0.0f, zRes),
+					Ogre::Vector3(xRes, 0.0f, -zRes),
+					Ogre::Vector3(-xRes, 0.0f, -zRes),
+					}),
+					"White",
+					Ogre::Vector3(0, depthCount, 0),
+					Ogre::Quaternion::IDENTITY,
+					//Ogre::Vector3(0.05f, 0.05f, 0.05f),
+					Ogre::Vector3::UNIT_SCALE,
+					true,
+					0.35f);
+		}
 
 		int leafIndexX = 0;
 		int leafIndexZ = 0;
 
-		auto leaves = std::vector<FieldComputeSystem_BoundingHierarchyBox*>({});
+		subdivideBoundingHierarchy(xRes, zRes, mFieldBoundingHierarchy[0], leafIndexX, leafIndexZ, depthCount);
 
-		subdivideBoundingHierarchy(xRes, zRes, mFieldBoundingHierarchy[0], leafIndexX, leafIndexZ, leaves, depthCount);
-
-		for (auto& leaf : leaves) {
+		for (auto& leaf : mLeaves) {
 
 			int offsetX = leaf->mAaBb.getMinimum().x;
 			int offsetZ = leaf->mAaBb.getMinimum().z;
@@ -245,17 +266,16 @@ namespace MyThirdOgre
 		FieldComputeSystem_BoundingHierarchyBox& box, 
 		int& leafIndexX,
 		int& leafIndexZ,
-		std::vector<FieldComputeSystem_BoundingHierarchyBox*>& leaves,
-		int& depthCount)
+		float& depthCount)
 	{
 		Ogre::Quaternion qRot = Ogre::Quaternion::IDENTITY;
 
-		xRes /= 2;
-		zRes /= 2;
+		depthCount += 0.2f;
 
 		if (xRes >= mLeafWidth && zRes >= mLeafHeight) {
 
-			Ogre::Vector3 hw = Ogre::Vector3(box.mHalfWidths.x, box.mHalfWidths.y, box.mHalfWidths.z) / 2;
+			Ogre::Vector3 hw = Ogre::Vector3(box.mHalfWidths.x, box.mHalfWidths.y, box.mHalfWidths.z) / 2; // these SHOULD be quarter-widths:
+																										// as we're dividing space in quads
 
 			auto a = FieldComputeSystem_BoundingHierarchyBox(
 						Ogre::Vector3(box.mCenter.x + -hw.x, hw.y, box.mCenter.z + hw.z), 
@@ -279,68 +299,68 @@ namespace MyThirdOgre
 					Ogre::SceneMemoryMgrTypes::SCENE_DYNAMIC,
 					mDebugPlaneMoDef,
 					std::vector<Ogre::Vector3>({
-						a.mCenter + Ogre::Vector3(-(a.mHalfWidths.x * 2), 0.0f, (a.mHalfWidths.z * 2)),
-						a.mCenter + Ogre::Vector3((a.mHalfWidths.x * 2), 0.0f, (a.mHalfWidths.z * 2)),
-						a.mCenter + Ogre::Vector3((a.mHalfWidths.x * 2), 0.0f, -(a.mHalfWidths.z * 2)),
-						a.mCenter + Ogre::Vector3(-(a.mHalfWidths.x * 2), 0.0f, -(a.mHalfWidths.z * 2)),
+							Ogre::Vector3(-a.mHalfWidths.x, 0.0f, a.mHalfWidths.z),
+							Ogre::Vector3(a.mHalfWidths.x, 0.0f, a.mHalfWidths.z),
+							Ogre::Vector3(a.mHalfWidths.x, 0.0f, -a.mHalfWidths.z),
+							Ogre::Vector3(-a.mHalfWidths.x, 0.0f, -a.mHalfWidths.z),
 						}),
-						"Green",
-						a.mCenter + Ogre::Vector3(0, depthCount++, 0),
+						"White",
+						a.mCenter + Ogre::Vector3(0, depthCount, 0),
 						qRot,
 						//Ogre::Vector3(0.05f, 0.05f, 0.05f),
 						Ogre::Vector3::UNIT_SCALE,
-						false,
+						true,
 						0.35f);
 
 				mGameEntityManager->addGameEntity(Ogre::BLANKSTRING,
 					Ogre::SceneMemoryMgrTypes::SCENE_DYNAMIC,
 					mDebugPlaneMoDef,
 					std::vector<Ogre::Vector3>({
-						b.mCenter + Ogre::Vector3(-(b.mHalfWidths.x * 2), 0.0f, (b.mHalfWidths.z * 2)),
-						b.mCenter + Ogre::Vector3((b.mHalfWidths.x * 2), 0.0f, (b.mHalfWidths.z * 2)),
-						b.mCenter + Ogre::Vector3((b.mHalfWidths.x * 2), 0.0f, -(b.mHalfWidths.z * 2)),
-						b.mCenter + Ogre::Vector3(-(b.mHalfWidths.x * 2), 0.0f, -(b.mHalfWidths.z * 2)),
+							Ogre::Vector3(-b.mHalfWidths.x, 0.0f, b.mHalfWidths.z),
+							Ogre::Vector3(b.mHalfWidths.x, 0.0f, b.mHalfWidths.z),
+							Ogre::Vector3(b.mHalfWidths.x, 0.0f, -b.mHalfWidths.z),
+							Ogre::Vector3(-b.mHalfWidths.x, 0.0f, -b.mHalfWidths.z),
 						}),
-						"Green",
-						b.mCenter + Ogre::Vector3(0, depthCount++, 0),
+						"White",
+						b.mCenter + Ogre::Vector3(0, depthCount, 0),
 						qRot,
 						//Ogre::Vector3(0.05f, 0.05f, 0.05f),
 						Ogre::Vector3::UNIT_SCALE,
-						false,
+						true,
 						0.35f);
 
 				mGameEntityManager->addGameEntity(Ogre::BLANKSTRING,
 					Ogre::SceneMemoryMgrTypes::SCENE_DYNAMIC,
 					mDebugPlaneMoDef,
 					std::vector<Ogre::Vector3>({
-						c.mCenter + Ogre::Vector3(-(c.mHalfWidths.x * 2), 0.0f, (c.mHalfWidths.z * 2)),
-						c.mCenter + Ogre::Vector3((c.mHalfWidths.x * 2), 0.0f, (c.mHalfWidths.z * 2)),
-						c.mCenter + Ogre::Vector3((c.mHalfWidths.x * 2), 0.0f, -(c.mHalfWidths.z * 2)),
-						c.mCenter + Ogre::Vector3(-(c.mHalfWidths.x * 2), 0.0f, -(c.mHalfWidths.z * 2)),
+							Ogre::Vector3(-c.mHalfWidths.x, 0.0f, c.mHalfWidths.z),
+							Ogre::Vector3(c.mHalfWidths.x, 0.0f, c.mHalfWidths.z),
+							Ogre::Vector3(c.mHalfWidths.x, 0.0f, -c.mHalfWidths.z),
+							Ogre::Vector3(-c.mHalfWidths.x, 0.0f, -c.mHalfWidths.z),
 						}),
-						"Green",
-						c.mCenter + Ogre::Vector3(0, depthCount++, 0),
+						"White",
+						c.mCenter + Ogre::Vector3(0, depthCount, 0),
 						qRot,
 						//Ogre::Vector3(0.05f, 0.05f, 0.05f),
 						Ogre::Vector3::UNIT_SCALE,
-						false,
+						true,
 						0.35f);
 
 				mGameEntityManager->addGameEntity(Ogre::BLANKSTRING,
 					Ogre::SceneMemoryMgrTypes::SCENE_DYNAMIC,
 					mDebugPlaneMoDef,
 					std::vector<Ogre::Vector3>({
-						d.mCenter + Ogre::Vector3(-(d.mHalfWidths.x * 2), 0.0f, (d.mHalfWidths.z * 2)),
-						d.mCenter + Ogre::Vector3((d.mHalfWidths.x * 2), 0.0f, (d.mHalfWidths.z * 2)),
-						d.mCenter + Ogre::Vector3((d.mHalfWidths.x * 2), 0.0f, -(d.mHalfWidths.z * 2)),
-						d.mCenter + Ogre::Vector3(-(d.mHalfWidths.x * 2), 0.0f, -(d.mHalfWidths.z * 2)),
+							Ogre::Vector3(-d.mHalfWidths.x, 0.0f, d.mHalfWidths.z),
+							Ogre::Vector3(d.mHalfWidths.x, 0.0f, d.mHalfWidths.z),
+							Ogre::Vector3(d.mHalfWidths.x, 0.0f, -d.mHalfWidths.z),
+							Ogre::Vector3(-d.mHalfWidths.x, 0.0f, -d.mHalfWidths.z),
 						}),
-						"Green",
-						d.mCenter + Ogre::Vector3(0, depthCount++, 0),
+						"White",
+						d.mCenter + Ogre::Vector3(0, depthCount, 0),
 						qRot,
 						//Ogre::Vector3(0.05f, 0.05f, 0.05f),
 						Ogre::Vector3::UNIT_SCALE,
-						false,
+						true,
 						0.35f);
 			}
 
@@ -350,31 +370,32 @@ namespace MyThirdOgre
 			box.mChildren.push_back(d);
 		}
 
+		xRes /= 2;
+		zRes /= 2;
+
 		for (auto& iter : box.mChildren) {
-			subdivideBoundingHierarchy(xRes, zRes, iter, leafIndexX, leafIndexZ, leaves, depthCount);
+			subdivideBoundingHierarchy(xRes, zRes, iter, leafIndexX, leafIndexZ, depthCount);
 		}
 
 		if (box.mChildren.size() == 0) {
 
-			depthCount++;
-
 			if (mDebugFieldBoundingHierarchy) {
-				mGameEntityManager->addGameEntity(Ogre::BLANKSTRING,
+				box.mLeafEntity = mGameEntityManager->addGameEntity(Ogre::BLANKSTRING,
 					Ogre::SceneMemoryMgrTypes::SCENE_DYNAMIC,
 					mDebugPlaneMoDef,
 					std::vector<Ogre::Vector3>({
-						box.mCenter + Ogre::Vector3(-(box.mHalfWidths.x * 2), 0.0f, (box.mHalfWidths.z * 2)),
-						box.mCenter + Ogre::Vector3((box.mHalfWidths.x * 2), 0.0f, (box.mHalfWidths.z * 2)),
-						box.mCenter + Ogre::Vector3((box.mHalfWidths.x * 2), 0.0f, -(box.mHalfWidths.z * 2)),
-						box.mCenter + Ogre::Vector3(-(box.mHalfWidths.x * 2), 0.0f, -(box.mHalfWidths.z * 2)),
+							Ogre::Vector3(-box.mHalfWidths.x, 0.0f, box.mHalfWidths.z),
+							Ogre::Vector3(box.mHalfWidths.x, 0.0f, box.mHalfWidths.z),
+							Ogre::Vector3(box.mHalfWidths.x, 0.0f, -box.mHalfWidths.z),
+							Ogre::Vector3(-box.mHalfWidths.x, 0.0f, -box.mHalfWidths.z),
 						}),
 						"Blue",
-						box.mCenter + Ogre::Vector3(0, 0, 0),
+						box.mCenter + Ogre::Vector3(0, 1.0f, 0),
 						qRot,
 						Ogre::Vector3::UNIT_SCALE,
 						true,
 						0.25f,
-						true);
+						mDebugFieldBoundingHierarchy);
 			}
 
 			box.mIsLeaf = true;
@@ -388,7 +409,7 @@ namespace MyThirdOgre
 				leafIndexX = 0;
 			}
 
-			leaves.push_back(&box);
+			mLeaves.push_back(&box);
 		}
 	}
 
@@ -422,6 +443,11 @@ namespace MyThirdOgre
 		}
 	}
 
+	void FieldComputeSystem::_notifyGraphicsSystem(GraphicsSystem* gs) 
+	{
+		mGraphicsSystem = gs;
+	}
+	
 	void FieldComputeSystem::_notifyStagingTextureRemoved(const FieldComputeSystem_StagingTextureMessage* msg) 
 	{
 		if (msg->mStagingTexture == mLeapMotionStagingTexture) 
@@ -576,13 +602,35 @@ namespace MyThirdOgre
 
 			auto c = Ogre::ColourValue(0.0f, 0.0f, 0.24f, 0.0f);
 
+			for (auto& leaf : mLeaves) {
+				if (leaf->mLeafVisible) {
+					leaf->mLeafVisible = false;
+					mGameEntityManager->toggleGameEntityVisibility(leaf->mLeafEntity, false);
+				}
+			}
+
 			if (mHand && mFieldBoundingHierarchy.size())
 			{
 				auto indices = std::vector<size_t>({});
 
-				traverseBoundingHierarchy(mFieldBoundingHierarchy[0], &indices);
+				int aabbIntersectionCount = 0;
+
+				traverseBoundingHierarchy(mFieldBoundingHierarchy[0], &indices, aabbIntersectionCount);
+
+				if (mGraphicsSystem) {
+					mGraphicsSystem->setAdditionalDebugText(
+						Ogre::String("\nIntersecting: ") + Ogre::StringConverter::toString(aabbIntersectionCount) + Ogre::String(" Leaf AaBbs"));
+				}
 
 				if (indices.size()) {
+
+					int f = 0;
+
+					if (mGraphicsSystem) {
+						mGraphicsSystem->setAdditionalDebugText(
+							Ogre::String("\nIntersecting: ") + Ogre::StringConverter::toString(aabbIntersectionCount) + Ogre::String(" Leaf AaBbs") +
+							Ogre::String("\nSeeing: " + Ogre::StringConverter::toString(indices.size()) + Ogre::String(" buffer indices")));
+					}
 
 					//auto buffer = getUavBuffer(0);
 					//size_t uavBufferNumElements = buffer->getNumElements();
@@ -689,15 +737,21 @@ namespace MyThirdOgre
 
 	void FieldComputeSystem::traverseBoundingHierarchy(
 		const FieldComputeSystem_BoundingHierarchyBox& level, 
-		const std::vector<size_t>* indicesList)
+		const std::vector<size_t>* indicesList,
+		int& aabbIntersectionCount)
 	{
 		//if (mHand->getBoundingSphere()->intersects(level.mAaBb)) {
 		if (level.mAaBb.intersects(*mHand->getBoundingSphere())) {
 			if (level.mChildren.size()) {
 				for (const auto& iter : level.mChildren)
-					traverseBoundingHierarchy(iter, indicesList);
+					traverseBoundingHierarchy(iter, indicesList, aabbIntersectionCount);
 			}
 			else {
+				aabbIntersectionCount++;
+				if (level.mLeafEntity) {
+					const_cast<FieldComputeSystem_BoundingHierarchyBox&>(level).mLeafVisible = true;
+					mGameEntityManager->toggleGameEntityVisibility(level.mLeafEntity, true);
+				}
 				for (const auto& iter : level.mBufferIndices)
 					const_cast<std::vector<size_t>*>(indicesList)->push_back(iter);
 			}
