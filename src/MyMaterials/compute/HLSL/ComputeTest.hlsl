@@ -9,6 +9,8 @@ RWStructuredBuffer<Particle> otherBuffer : register(u1); //changing the type fro
 
 uniform uint2 texResolution;
 
+uniform float mBlueBleedOff = 0.9997;
+
 uint packUnorm4x8( float4 value )
 {
 	uint x = uint(saturate(value.x) * 255.0f);
@@ -29,14 +31,18 @@ void main
 {
 	if( gl_GlobalInvocationID.x < texResolution.x && gl_GlobalInvocationID.y < texResolution.y )
 	{
-		//uint idx = gl_GlobalInvocationID.y * texResolution.x + gl_GlobalInvocationID.x;
-		//pixelBuffer[idx] = packUnorm4x8(float4(float2(gl_LocalInvocationID.xy) / 16.0f, otherBuffer[0].colour.x,
-		//	1.0f));
+		/*uint idx = gl_GlobalInvocationID.y * texResolution.x + gl_GlobalInvocationID.x;
+		pixelBuffer[idx] = packUnorm4x8(float4(float2(gl_LocalInvocationID.xy) / 8.0f, otherBuffer[0].colour.x,
+			1.0f));*/
+
 		//	//1.0f - ((1.0f / texResolution.x) * gl_GlobalInvocationID.x)));
 		//	//(1.0f / texResolution.x) * gl_GlobalInvocationID.x ));
 
-
 		uint idx = gl_GlobalInvocationID.y * texResolution.x + gl_GlobalInvocationID.x;
-		pixelBuffer[idx] = packUnorm4x8(otherBuffer[idx].colour);// float4(otherBuffer[idx].x, otherBuffer[idx].y, otherBuffer[idx].z, otherBuffer[idx].w));
+
+		//otherBuffer[idx].colour.z *= mBlueBleedOff;
+
+		pixelBuffer[idx] = packUnorm4x8(otherBuffer[idx].colour);
+		//otherBuffer[idx].colour.z = 0.0;
 	}
 }

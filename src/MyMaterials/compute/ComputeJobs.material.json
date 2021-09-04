@@ -10,7 +10,13 @@
 
             "uav_units": 2,
 
-            "params" : [ ["texResolution",   [256, 256], "uint"] ]
+          "params": [
+            [
+              "texResolution",
+              [ 256, 256 ],
+              "uint"
+            ]
+          ]
         }
     }
 }

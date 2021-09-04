@@ -15,6 +15,7 @@
 #include <array>
 #include <Hand.h>
 #include "OgreAxisAlignedBox.h"
+#include <Cell.h>
 
 namespace MyThirdOgre
 {
@@ -31,6 +32,30 @@ namespace MyThirdOgre
 		}
 	};
 
+	struct FieldComputeSystem_BufferIndexPosition
+	{
+
+	public:
+		size_t mIndex;
+		Ogre::Vector3 mPosition;
+		Ogre::Vector3* mFieldCenter;
+
+		FieldComputeSystem_BufferIndexPosition(
+			size_t i,
+			Ogre::Vector3 p,
+			Ogre::Vector3* fC
+		) : mIndex(i),
+			mPosition(p),
+			mFieldCenter(fC)
+		{
+
+		}
+
+		Ogre::Vector3 getPosition(void) {
+			return *mFieldCenter + mPosition;
+		}
+	};
+
 	struct FieldComputeSystem_BoundingHierarchyBox
 	{
 		Ogre::Vector3 mCenter;
@@ -39,7 +64,7 @@ namespace MyThirdOgre
 		Ogre::AxisAlignedBox mAaBb;
 
 		std::vector<FieldComputeSystem_BoundingHierarchyBox> mChildren;
-		std::vector<size_t> mBufferIndices;
+		std::vector<FieldComputeSystem_BufferIndexPosition> mBufferIndices;
 		GameEntity*			mLeafEntity;
 
 		bool mIsLeaf;
@@ -63,7 +88,7 @@ namespace MyThirdOgre
 
 			mAaBb = Ogre::AxisAlignedBox(mCenter - mHalfWidths, mCenter + mHalfWidths);
 			mChildren = std::vector<FieldComputeSystem_BoundingHierarchyBox>({});
-			mBufferIndices = std::vector<size_t>({});
+			mBufferIndices = std::vector<FieldComputeSystem_BufferIndexPosition>({});
 		}
 	};
 
@@ -128,8 +153,15 @@ namespace MyThirdOgre
 			Hand*								mHand;
 
 			std::vector<FieldComputeSystem_BoundingHierarchyBox>	mFieldBoundingHierarchy;
-			std::vector<FieldComputeSystem_BoundingHierarchyBox*>	mLeaves;
+			std::map<CellCoord, FieldComputeSystem_BoundingHierarchyBox*> mLeaves;
 			bool													mDebugFieldBoundingHierarchy;
+
+			std::vector<Ogre::ColourValue>		mOtherBuffer;
+
+			float* mCpuInstanceBuffer;
+			float* RESTRICT_ALIAS mInstanceBuffer;
+			const float* mInstanceBufferStart;
+
 
 		public:
 			FieldComputeSystem(Ogre::uint32 id, const MovableObjectDefinition* moDefinition,
@@ -155,8 +187,8 @@ namespace MyThirdOgre
 
 			Ogre::TextureTypes::TextureTypes getTextureType(void) { return mTextureType; };
 			Ogre::PixelFormatGpu getPixelFormat(void) { return mPixelFormat; };
-			float getWidth(void) { return mBufferResolutionWidth; };
-			float getHeight(void) { return mBufferResolutionHeight; };
+			float getBufferResolutionWidth(void) { return mBufferResolutionWidth; };
+			float getBufferResolutionHeight(void) { return mBufferResolutionHeight; };
 			float getDepth(void) { return mBufferResolutionDepth; };
 			GameEntity* getPlane(void) { return mPlaneEntity; };
 			bool getDownloadingTextureViaTicket(void) { return mDownloadingTextureViaTicket; };
@@ -183,7 +215,7 @@ namespace MyThirdOgre
 			virtual void buildBoundingDivisionIntersections(const size_t index, FieldComputeSystem_BoundingHierarchyBox& box);
 
 			virtual void traverseBoundingHierarchy(const FieldComputeSystem_BoundingHierarchyBox& level, 
-				const std::vector<size_t>* indicesList,
+				const std::vector<FieldComputeSystem_BoundingHierarchyBox>* leaves,
 				int& aabbIntersectionCount);
 	};
 }

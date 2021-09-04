@@ -1293,7 +1293,34 @@ namespace MyThirdOgre
             break;
             case MoTypePrefabPlane:
             {
-                Ogre::v1::Entity* pft = mSceneManager->createEntity(Ogre::SceneManager::PrefabType::PT_PLANE, cge->gameEntity->mType);
+                Ogre::v1::Entity* pft = mSceneManager->createEntity(Ogre::SceneManager::PrefabType::PT_PLANE, Ogre::SCENE_DYNAMIC);
+
+                pft->setDatablock(cge->gameEntity->mManualObjectDatablockName);
+
+                assert(dynamic_cast<Ogre::HlmsPbsDatablock*>(pft->getSubEntity(0)->getDatablock()));
+
+                auto datablock = dynamic_cast<Ogre::HlmsPbsDatablock*>(pft->getSubEntity(0)->getDatablock());
+
+                auto personalDatablock = dynamic_cast<Ogre::HlmsPbsDatablock*>(datablock->clone(Ogre::StringConverter::toString(cge->gameEntity->getId()) + Ogre::String("personalDataBlock")));
+
+                Ogre::HlmsSamplerblock diffuseBlock(*personalDatablock->getSamplerblock(Ogre::PBSM_DIFFUSE));
+                diffuseBlock.mU = Ogre::TAM_WRAP;
+                diffuseBlock.mV = Ogre::TAM_WRAP;
+                diffuseBlock.mW = Ogre::TAM_WRAP;
+                personalDatablock->setSamplerblock(Ogre::PBSM_DIFFUSE, diffuseBlock);
+
+                if (cge->useAlpha)
+                    personalDatablock->setTransparency(cge->gameEntity->mTransparency, Ogre::HlmsPbsDatablock::Transparent, true);
+
+                if (cge->vColour != Ogre::Vector3::ZERO)
+                    personalDatablock->setDiffuse(cge->vColour);
+
+                pft->getSubEntity(0)->setDatablock(personalDatablock);
+
+                cge->gameEntity->mMovableObject = pft;
+
+
+                /*Ogre::v1::Entity* pft = mSceneManager->createEntity(Ogre::SceneManager::PrefabType::PT_PLANE, cge->gameEntity->mType);
 
                 if (cge->gameEntity->mTextureGpu == 0) 
                 {
@@ -1301,9 +1328,7 @@ namespace MyThirdOgre
 
                     assert(dynamic_cast<Ogre::HlmsPbsDatablock*>(pft->getSubEntity(0)->getDatablock()));
 
-                    auto datablock = dynamic_cast<Ogre::HlmsPbsDatablock*>(pft->getSubEntity(0)->getDatablock());
-
-                    auto personalDatablock = dynamic_cast<Ogre::HlmsPbsDatablock*>(datablock->clone(""));
+                    auto personalDatablock = dynamic_cast<Ogre::HlmsPbsDatablock*>(pft->getSubEntity(0)->getDatablock());
 
                     Ogre::HlmsSamplerblock diffuseBlock(*personalDatablock->getSamplerblock(Ogre::PBSM_DIFFUSE));
                     diffuseBlock.mU = Ogre::TAM_WRAP;
@@ -1353,7 +1378,7 @@ namespace MyThirdOgre
                 if (mWireAabb)
                     mWireAabb->track(pft);
 
-                cge->gameEntity->mMovableObject = pft;
+                cge->gameEntity->mMovableObject = pft;*/
             }
             break;
             case MoTypeCamera:
@@ -1414,15 +1439,15 @@ namespace MyThirdOgre
                 Ogre::TextureGpuManager* texMgr = root->getRenderSystem()->getTextureGpuManager();
 
                 fieldComputeSystem->setLeapMotionStagingTexture(texMgr->getStagingTexture(
-                    fieldComputeSystem->getWidth(),
-                    fieldComputeSystem->getHeight(),
+                    fieldComputeSystem->getBufferResolutionWidth(),
+                    fieldComputeSystem->getBufferResolutionHeight(),
                     fieldComputeSystem->getDepth(),
                     fieldComputeSystem->getDepth(),
                     fieldComputeSystem->getPixelFormat()));
 
                 fieldComputeSystem->setAsyncTextureTicket(texMgr->createAsyncTextureTicket(
-                    fieldComputeSystem->getWidth(),
-                    fieldComputeSystem->getHeight(),
+                    fieldComputeSystem->getBufferResolutionWidth(),
+                    fieldComputeSystem->getBufferResolutionHeight(),
                     fieldComputeSystem->getDepth(),
                     fieldComputeSystem->getTextureType(),
                     fieldComputeSystem->getPixelFormat()));
@@ -1441,7 +1466,7 @@ namespace MyThirdOgre
 
                 fieldComputeSystem->setTexture(textures[0]);
 
-                size_t uavBufferNumElements = fieldComputeSystem->getWidth() * fieldComputeSystem->getHeight();
+                size_t uavBufferNumElements = fieldComputeSystem->getBufferResolutionWidth() * fieldComputeSystem->getBufferResolutionHeight();
 
                 auto buffer = vaoManager->createUavBuffer(
                     uavBufferNumElements, 
@@ -1462,13 +1487,6 @@ namespace MyThirdOgre
 
                     auto c = Ogre::ColourValue(0.0f, 0.0f, 0.0f, 1.0f);
 
-                    if (i % 2 == 0) {
-                        c.b = 0.54f;
-                    }
-                    else {
-                       c.g = 0.30f;
-                    }
-
                     *instanceBuffer++ = c.r;
                     *instanceBuffer++ = c.g;
                     *instanceBuffer++ = c.b;
@@ -1481,12 +1499,13 @@ namespace MyThirdOgre
                 memset(instanceBuffer, 0, buffer->getTotalSizeBytes() -
                     (static_cast<size_t>(instanceBuffer - instanceBufferStart) * sizeof(float)));
 
+                // this just sets the entire buffer to opaque black
                 buffer->upload(mCpuInstanceBuffer, 0u, buffer->getNumElements());
                 
                 fieldComputeSystem->addUavBuffer(buffer);
 
                 fieldComputeSystem->getRenderTargetTexture()->setNumMipmaps(1);
-                fieldComputeSystem->getRenderTargetTexture()->setResolution(fieldComputeSystem->getWidth(), fieldComputeSystem->getHeight());
+                fieldComputeSystem->getRenderTargetTexture()->setResolution(fieldComputeSystem->getBufferResolutionWidth(), fieldComputeSystem->getBufferResolutionHeight());
                 fieldComputeSystem->getRenderTargetTexture()->setPixelFormat(fieldComputeSystem->getPixelFormat());
 
                 Ogre::DescriptorSetUav::TextureSlot uavSlot(Ogre::DescriptorSetUav::TextureSlot::makeEmpty());

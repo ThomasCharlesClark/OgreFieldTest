@@ -49,8 +49,8 @@ namespace MyThirdOgre
 		mLeafResolutionX = 0.5f;
 		mLeafResolutionZ = 0.5f;*/
 
-		mBufferResolutionWidth = 512.0f;
-		mBufferResolutionHeight = 512.0f;
+		mBufferResolutionWidth = 256.0f;
+		mBufferResolutionHeight = 256.0f;
 
 		mBufferResolutionDepth = 1.0f;
 
@@ -83,6 +83,12 @@ namespace MyThirdOgre
 
 		// 6 times
 
+		mOtherBuffer = std::vector<Ogre::ColourValue>({});
+
+		for (auto i = 0; i < mBufferResolutionWidth * mBufferResolutionHeight; i++) {
+			mOtherBuffer.push_back(Ogre::ColourValue(0.0f, 0.0f, 0.0f, 1.0f));
+		}
+			
 		mDrawFromUavBufferMat = Ogre::MaterialPtr();
 
 		mDeinitialised = false;
@@ -100,7 +106,19 @@ namespace MyThirdOgre
 		mDebugFieldBoundingHierarchy = false;
 
 		mFieldBoundingHierarchy = std::vector<FieldComputeSystem_BoundingHierarchyBox>({});
-		mLeaves = std::vector<FieldComputeSystem_BoundingHierarchyBox*>({});
+
+		mLeaves = std::map<CellCoord, FieldComputeSystem_BoundingHierarchyBox*>({});
+
+		
+		mCpuInstanceBuffer = reinterpret_cast<float*>(OGRE_MALLOC_SIMD(
+			(mBufferResolutionWidth * mBufferResolutionHeight) * sizeof(Ogre::ColourValue), Ogre::MEMCATEGORY_GENERAL));
+
+		mInstanceBuffer = reinterpret_cast<float*>(mCpuInstanceBuffer);
+
+		mInstanceBufferStart = mInstanceBuffer;
+
+		memset(mInstanceBuffer, 0, (mBufferResolutionWidth * mBufferResolutionHeight * sizeof(Ogre::ColourValue)) -
+			(static_cast<size_t>(mInstanceBuffer - mInstanceBufferStart) * sizeof(float)));
 	}
 
 	FieldComputeSystem::~FieldComputeSystem() 
@@ -113,6 +131,11 @@ namespace MyThirdOgre
 		if (mDebugPlaneMoDef) {
 			delete mDebugPlaneMoDef;
 			mDebugPlaneMoDef = 0;
+		}
+
+		for (auto i = mLeaves.begin(); i != mLeaves.end(); i++) {
+			delete i->second;
+			i->second = 0;
 		}
 
 		deinitialise();
@@ -158,7 +181,7 @@ namespace MyThirdOgre
 		createBoundingHierarchy();
 	}
 
-	void FieldComputeSystem::createBoundingHierarchy(void) 
+	void FieldComputeSystem::createBoundingHierarchy(void)
 	{
 		float xRes = mFieldWidth / 2;
 		float zRes = mFieldHeight / 2;
@@ -192,72 +215,57 @@ namespace MyThirdOgre
 		int leafIndexX = 0;
 		int leafIndexZ = 0;
 
-		subdivideBoundingHierarchy(xRes, zRes, mFieldBoundingHierarchy[0], leafIndexX, leafIndexZ, depthCount);
+		float offsetX = mLeafWidth / mLeafResolutionX;
+		float offsetZ = mLeafHeight / mLeafResolutionZ;
 
-		for (auto& leaf : mLeaves) {
+		float halfOffsetX = offsetX * 0.5f;
+		float halfOffsetZ = offsetZ * 0.5f;
+		
+		Ogre::Vector3 leafHalfWidths = Ogre::Vector3(mLeafWidth / 2, 0, mLeafHeight / 2);
 
-			int offsetX = leaf->mAaBb.getMinimum().x;
-			int offsetZ = leaf->mAaBb.getMinimum().z;
+		for (float z = 0; z < mLeafCountZ * mLeafWidth; z += mLeafWidth) 
+		{
+			leafIndexX = 0;
 
-			int offset = leaf->mLeafIndexX * mLeafResolutionX + (leaf->mLeafIndexZ * mLeafResolutionZ * mBufferResolutionWidth);
-			
-			for (size_t i = 0; i < mLeafResolutionX; i++) {
+			for (float x = 0; x < mLeafCountX * mLeafHeight; x += mLeafHeight) 
+			{
+				Ogre::Vector3 leafCenter = Ogre::Vector3(
+					(x + leafHalfWidths.x + ((mFieldWidth / 2) - mFieldWidth)),
+					0,
+					(z + leafHalfWidths.z + ((mFieldHeight / 2) - mFieldHeight))
+				);
+
+				FieldComputeSystem_BoundingHierarchyBox* box = new FieldComputeSystem_BoundingHierarchyBox(
+					leafCenter,
+					leafHalfWidths
+				);
+
+				int offset = leafIndexX * mLeafResolutionX + (leafIndexZ * mLeafResolutionZ * mBufferResolutionWidth);
+
+				auto corner = box->mAaBb.getCorner(Ogre::AxisAlignedBox::FAR_LEFT_BOTTOM);
+
 				for (size_t j = 0; j < mLeafResolutionZ; j++) {
-					leaf->mBufferIndices.push_back(offset + j + i);
+					for (size_t i = 0; i < mLeafResolutionX; i++) {
+						box->mBufferIndices.push_back(FieldComputeSystem_BufferIndexPosition(
+							offset + j + i,
+							Ogre::Vector3(
+								corner.x + (offsetX * i) + halfOffsetX,
+								0.0f,
+								corner.z + (offsetZ * j) + halfOffsetZ
+							),	// HERE
+							&mTransform[0]->vPos));
+					}
+
+					offset += (mBufferResolutionWidth - 1);
 				}
 
-				offset += (mBufferResolutionWidth - 1);
+				mLeaves.insert({ CellCoord(leafIndexX++, 0, leafIndexZ), box });
 			}
+
+			leafIndexZ++;
 		}
 
-		int f = 0;
-
-		//for (size_t i = 0; i < (mBufferResolutionWidth * mBufferResolutionHeight); ++i)
-		//for (size_t i = 0; i < (mBufferResolutionWidth * mBufferResolutionHeight); ++i)
-		//{
-		//	// for each of the data points in my buffer...
-		//	buildBoundingDivisionIntersections(i, mFieldBoundingHierarchy[0]);
-		//}
-
-		
-			//// we know we're a leaf at this point... can we KNOW what indices we will have, without having to iterate...
-			//// over more than a million points, testing each of them...?
-
-			//// how many will it contain
-			//// well we know how wide the whole thing is, and how many that infers total
-
-
-			//int offsetX = box.mAaBb.getMinimum().x;
-			//int offsetZ = box.mAaBb.getMinimum().z;
-
-			//
-			//
-
-
-			//// You've got a 1D array. You want to know what sections of that 1D array this particular "leaf" contains.
-			////
-			////		 leafIndexX adds an offset of N * containsX 
-			////		 _______ _______ _______
-			////		|		|		|		|
-			////		|	A	|	B	|	C	|
-			////		|_______|_______|_______|
-			////		|		|		|		|
-			////		|	D	|	E	|	F	| leafIndexZ adds an offset of N * containsZ * mBufferResolutionHeight
-			////		|_______|_______|_______|
-			////		|		|		|		|
-			////		|		|		|		|
-			////	
-			////
-
-			//int offset = leafIndexX * containsX + (leafIndexZ * containsZ * mBufferResolutionWidth);
-			//
-			//for (size_t i = 0; i < containsX; i++) {
-			//	for (size_t j = 0; j < containsZ; j++) {
-			//		box.mBufferIndices.push_back(offset + j + i);
-			//	}
-
-			//	offset += (mBufferResolutionWidth - 1);
-			//}
+		subdivideBoundingHierarchy(xRes, zRes, mFieldBoundingHierarchy[0], leafIndexX, leafIndexZ, depthCount);
 	}
 
 	void FieldComputeSystem::subdivideBoundingHierarchy(
@@ -268,11 +276,14 @@ namespace MyThirdOgre
 		int& leafIndexZ,
 		float& depthCount)
 	{
+		/*if (depthCount > 20)
+			return;*/
+
 		Ogre::Quaternion qRot = Ogre::Quaternion::IDENTITY;
 
 		depthCount += 0.2f;
 
-		if (xRes >= mLeafWidth && zRes >= mLeafHeight) {
+		if (xRes > mLeafWidth && zRes > mLeafHeight) {
 
 			Ogre::Vector3 hw = Ogre::Vector3(box.mHalfWidths.x, box.mHalfWidths.y, box.mHalfWidths.z) / 2; // these SHOULD be quarter-widths:
 																										// as we're dividing space in quads
@@ -379,6 +390,11 @@ namespace MyThirdOgre
 
 		if (box.mChildren.size() == 0) {
 
+			for (auto& iter : mLeaves) {
+				if (box.mAaBb.intersects(iter.second->mAaBb))
+					box.mChildren.push_back(*iter.second);
+			}
+
 			if (mDebugFieldBoundingHierarchy) {
 				box.mLeafEntity = mGameEntityManager->addGameEntity(Ogre::BLANKSTRING,
 					Ogre::SceneMemoryMgrTypes::SCENE_DYNAMIC,
@@ -402,14 +418,14 @@ namespace MyThirdOgre
 			box.mLeafIndexX = leafIndexX;
 			box.mLeafIndexZ = leafIndexZ;
 
-			leafIndexX++;
+			/*leafIndexX++;
 
 			if (leafIndexX > mLeafCountX - 1) {
 				leafIndexZ++;
 				leafIndexX = 0;
 			}
 
-			mLeaves.push_back(&box);
+			mLeaves.insert({ CellCoord(box.mLeafIndexX, 0, box.mLeafIndexZ), &box });*/
 		}
 	}
 
@@ -585,51 +601,41 @@ namespace MyThirdOgre
 			//	mTextureTicket->unmap();
 			//}
 			
+			auto c = Ogre::ColourValue(0.0f, 0.0f, 0.0f, 1.0f);
 
-
-			// bye-bye, performance!
-			// so what I need here is nested bounding boxes, with the final leaves "owning" chunks of the 
-			// complete index set
-			// how do I know what leaf owns which indices? either by predetermination or by an initial sweep test
-			// predetermination should absolutely be possible...
-			// let's say I want no more than 16 by 16 in each leaf
-
-			// how many boxes is that?
-
-			// well, you keep dividing width and height by two until... yeah what is 1024 the power of two of
-
-			// looks like I'll want... a lot of boxes. 64 by 64 is a lot.
-
-			auto c = Ogre::ColourValue(0.0f, 0.0f, 0.24f, 0.0f);
-
-			for (auto& leaf : mLeaves) {
-				if (leaf->mLeafVisible) {
-					leaf->mLeafVisible = false;
-					mGameEntityManager->toggleGameEntityVisibility(leaf->mLeafEntity, false);
+			/*for (auto& leaf : mLeaves) {
+				if (leaf.second->mLeafVisible) {
+					leaf.second->mLeafVisible = false;
+					mGameEntityManager->toggleGameEntityVisibility(leaf.second->mLeafEntity, false);
 				}
+			}*/
+
+			for (auto& iter : mOtherBuffer) {
+				if (iter.b > 0)
+					iter.b *= 0.996f;
 			}
 
 			if (mHand && mFieldBoundingHierarchy.size())
 			{
-				auto indices = std::vector<size_t>({});
+				auto leaves = std::vector<FieldComputeSystem_BoundingHierarchyBox>({});
 
 				int aabbIntersectionCount = 0;
 
-				traverseBoundingHierarchy(mFieldBoundingHierarchy[0], &indices, aabbIntersectionCount);
+				traverseBoundingHierarchy(mFieldBoundingHierarchy[0], &leaves, aabbIntersectionCount);
 
 				if (mGraphicsSystem) {
 					mGraphicsSystem->setAdditionalDebugText(
 						Ogre::String("\nIntersecting: ") + Ogre::StringConverter::toString(aabbIntersectionCount) + Ogre::String(" Leaf AaBbs"));
 				}
 
-				if (indices.size()) {
+				if (leaves.size()) {
 
 					int f = 0;
 
 					if (mGraphicsSystem) {
 						mGraphicsSystem->setAdditionalDebugText(
 							Ogre::String("\nIntersecting: ") + Ogre::StringConverter::toString(aabbIntersectionCount) + Ogre::String(" Leaf AaBbs") +
-							Ogre::String("\nSeeing: " + Ogre::StringConverter::toString(indices.size()) + Ogre::String(" buffer indices")));
+							Ogre::String("\nSeeing: " + Ogre::StringConverter::toString(leaves.size() * mLeafResolutionX * mLeafResolutionZ) + Ogre::String(" buffer indices")));
 					}
 
 					//auto buffer = getUavBuffer(0);
@@ -637,114 +643,125 @@ namespace MyThirdOgre
 
 					Ogre::Real rHandSphereSquared = mHand->getBoundingSphere()->getRadius() * mHand->getBoundingSphere()->getRadius();
 
-					for (const auto& i : indices) {
-						float x = i % (int)mBufferResolutionHeight - (mBufferResolutionHeight / 2);
-						float y = 0;
-						float z = i / (int)mBufferResolutionWidth - (mBufferResolutionWidth / 2);
+					Ogre::Vector3 vHandPos = mHand->getBoundingSphere()->getCenter();
 
-						Ogre::Vector3 pos = Ogre::Vector3(x, y, z);
-						Ogre::Vector3 dist = mHand->getBoundingSphere()->getCenter() - pos;
+					for (const auto& l : leaves) {
 
-						if (dist.length() < rHandSphereSquared) {
-							// not intersecting
+						float x = l.mAaBb.getMinimum().x;
+						float z = l.mAaBb.getMinimum().z;
 
-							//// thanks https://forums.ogre3d.org/viewtopic.php?t=96286
-							auto mCpuInstanceBuffer = reinterpret_cast<float*>(OGRE_MALLOC_SIMD(
-								1 * sizeof(Ogre::ColourValue), Ogre::MEMCATEGORY_GENERAL));
+						float zOffset = 0;
+						float xOffset = 0;
 
-							float* RESTRICT_ALIAS instanceBuffer = reinterpret_cast<float*>(mCpuInstanceBuffer);
+						for (size_t i = 0; i < l.mBufferIndices.size(); i++) {
 
-							const float* instanceBufferStart = instanceBuffer;
+							auto& index = l.mBufferIndices[i];
 
-							*instanceBuffer++ = c.r;
-							*instanceBuffer++ = c.g;
-							*instanceBuffer++ = c.b;
-							*instanceBuffer++ = c.a;
+							float xPos = x + xOffset;
+							float yPos = 0;
+							float zPos = z + zOffset;
 
-							getUavBuffer(0)->upload(mCpuInstanceBuffer, i, 1);
-						}
-						else {
-							// should be intersecting
-							auto mCpuInstanceBuffer = reinterpret_cast<float*>(OGRE_MALLOC_SIMD(
-								1 * sizeof(Ogre::ColourValue), Ogre::MEMCATEGORY_GENERAL));
+							xOffset += 1 / mLeafResolutionX;
 
-							float* RESTRICT_ALIAS instanceBuffer = reinterpret_cast<float*>(mCpuInstanceBuffer);
+							if (xOffset > mLeafResolutionX) {
+								xOffset = 0;
+								zOffset += 1 / mLeafResolutionZ;
+							}
 
-							const float* instanceBufferStart = instanceBuffer;
+							Ogre::Vector3 pos = index.mPosition;// Ogre::Vector3(xPos, yPos, zPos);
+							Ogre::Vector3 dist = vHandPos - pos;
+							Ogre::Real distLen = dist.length();
 
-							*instanceBuffer++ = c.r;
-							*instanceBuffer++ = c.g;
-							*instanceBuffer++ = c.b;
-							*instanceBuffer++ = 1.0f;// (float)sin(mTimeAccumulator);
-							getUavBuffer(0)->upload(mCpuInstanceBuffer, i, 1);
+							if (distLen < rHandSphereSquared) {
+
+								mOtherBuffer[index.mIndex].r = 0.0f;
+								mOtherBuffer[index.mIndex].g = 0.0f;
+								mOtherBuffer[index.mIndex].b = 0.34f;
+								mOtherBuffer[index.mIndex].a = 1.0f;
+
+								//// intersecting
+
+								////// thanks https://forums.ogre3d.org/viewtopic.php?t=96286
+								//auto mCpuInstanceBuffer = reinterpret_cast<float*>(OGRE_MALLOC_SIMD(
+								//	1 * sizeof(Ogre::ColourValue), Ogre::MEMCATEGORY_GENERAL));
+
+								//float* RESTRICT_ALIAS instanceBuffer = reinterpret_cast<float*>(mCpuInstanceBuffer);
+
+								//const float* instanceBufferStart = instanceBuffer;
+
+								//*instanceBuffer++ = c.r;
+								//*instanceBuffer++ = c.g;
+								//*instanceBuffer++ = 0.34f;
+								//*instanceBuffer++ = c.a;
+
+								//getUavBuffer(0)->upload(mCpuInstanceBuffer, index.mIndex, 1);
+							}
+							//else {
+
+							//	mOtherBuffer[index.mIndex].r = 0.0f;
+							//	mOtherBuffer[index.mIndex].g = 0.0f;
+							//	mOtherBuffer[index.mIndex].b = 0.0f;
+							//	mOtherBuffer[index.mIndex].a = 1.0f;
+
+
+							//	// not intersecting
+							//	//auto mCpuInstanceBuffer = reinterpret_cast<float*>(OGRE_MALLOC_SIMD(
+							//	//	1 * sizeof(Ogre::ColourValue), Ogre::MEMCATEGORY_GENERAL));
+
+							//	//float* RESTRICT_ALIAS instanceBuffer = reinterpret_cast<float*>(mCpuInstanceBuffer);
+
+							//	//const float* instanceBufferStart = instanceBuffer;
+
+							//	//*instanceBuffer++ = c.r;
+							//	//*instanceBuffer++ = c.g;
+							//	//*instanceBuffer++ = c.b;
+							//	//*instanceBuffer++ = c.a;// (float)sin(mTimeAccumulator);
+							//	//getUavBuffer(0)->upload(mCpuInstanceBuffer, index.mIndex, 1);
+							//}
 						}
 					}
 				}
 			}
 
 
-			//auto c = Ogre::ColourValue(0.0f, 0.0f, 0.24f, 0.0f);
 
-			////for (size_t i = 0; i < uavBufferNumElements; ++i) {
+
+			auto buffer = getUavBuffer(0);
+			auto uavBufferNumElements = buffer->getNumElements();
 			
-			////	if (mHand) {
+			auto s = sizeof(size_t);
+			auto f = sizeof(float);
+			auto co = sizeof(Ogre::ColourValue);
 
-			////		float x = i % (int)mHeight - (mHeight / 2);
-			////		float y = 0;
-			////		float z = i / (int)mWidth - (mWidth / 2);
+			float* instanceBuffer = const_cast<float*>(mInstanceBufferStart);
 
-			////		Ogre::Vector3 pos = Ogre::Vector3(x, y, z);
-			////		Ogre::Vector3 dist = mHand->getBoundingSphere()->getCenter() - pos;
+			for (const auto &iter : mOtherBuffer) {
+			
+				*instanceBuffer++ = iter.r;
+				*instanceBuffer++ = iter.g;
+				*instanceBuffer++ = iter.b;
+				*instanceBuffer++ = iter.a;// (float)sin(mTimeAccumulator);
+			}
 
-			////		*instanceBuffer++ = c.r;
-			////		*instanceBuffer++ = c.g;
-			////		*instanceBuffer++ = c.b;
+			auto tsb = buffer->getTotalSizeBytes();
+			auto calc = (size_t)(instanceBuffer - mInstanceBufferStart) * sizeof(float);
 
-			////		if (dist.length() < rHandSphereSquared) {
-			////			// not intersecting
-			////			*instanceBuffer++ = c.a;
-			////		}
-			////		else {
-			////			// should be intersecting
-			////			*instanceBuffer++ = 1.0f;// (float)sin(mTimeAccumulator);
-			////		}
+			OGRE_ASSERT_LOW(calc <= tsb);
 
-			////	}
-			////	else {
-			////		if (i % 2 == 0) {
-			////			c.b = 0.24f;
-			////		}
-			////		else {
-			////			c.g = 0.30f;
-			////		}
-
-			////		*instanceBuffer++ = c.r;
-			////		*instanceBuffer++ = c.g;
-			////		*instanceBuffer++ = c.b;
-			////		*instanceBuffer++ = (float)sin(mTimeAccumulator);// c.a;
-			////	}
-			////}
-
-			//OGRE_ASSERT_LOW((size_t)(instanceBuffer - instanceBufferStart) * sizeof(float) <=
-			//	buffer->getTotalSizeBytes());
-
-			//memset(instanceBuffer, 0, buffer->getTotalSizeBytes() -
-			//	(static_cast<size_t>(instanceBuffer - instanceBufferStart) * sizeof(float)));
-
-			//buffer->upload(mCpuInstanceBuffer, 0u, buffer->getNumElements());
+			buffer->upload(mCpuInstanceBuffer, 0u, buffer->getNumElements());
 		}
 	}
 
 	void FieldComputeSystem::traverseBoundingHierarchy(
 		const FieldComputeSystem_BoundingHierarchyBox& level, 
-		const std::vector<size_t>* indicesList,
+		const std::vector<FieldComputeSystem_BoundingHierarchyBox>* leaves,
 		int& aabbIntersectionCount)
 	{
 		//if (mHand->getBoundingSphere()->intersects(level.mAaBb)) {
 		if (level.mAaBb.intersects(*mHand->getBoundingSphere())) {
 			if (level.mChildren.size()) {
 				for (const auto& iter : level.mChildren)
-					traverseBoundingHierarchy(iter, indicesList, aabbIntersectionCount);
+					traverseBoundingHierarchy(iter, leaves, aabbIntersectionCount);
 			}
 			else {
 				aabbIntersectionCount++;
@@ -752,8 +769,8 @@ namespace MyThirdOgre
 					const_cast<FieldComputeSystem_BoundingHierarchyBox&>(level).mLeafVisible = true;
 					mGameEntityManager->toggleGameEntityVisibility(level.mLeafEntity, true);
 				}
-				for (const auto& iter : level.mBufferIndices)
-					const_cast<std::vector<size_t>*>(indicesList)->push_back(iter);
+
+				const_cast<std::vector<FieldComputeSystem_BoundingHierarchyBox>*>(leaves)->push_back(level);
 			}
 		}
 	}
