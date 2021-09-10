@@ -1,41 +1,93 @@
+/*compositor_node AdvectionCopyNode
+{
+	in 0 previousVelocityTexture
+	in 1 velocityTexture
+	
+	target previousVelocityTexture
+	{
+		pass clear
+		{
+			colour_value 0.5 0.0 0.0 1.0
+		}
+	}
+
+	out 0 previousVelocityTexture
+}*/
 
 compositor_node TestComputeNode
 {
-	in 0 velocityTexture
+	in 0 renderTarget
+	in 1 velocityTexture
+	in 2 previousVelocityTexture
+	in 3 pressureTexture
+	in 4 pressureGradientTexture
+	in 5 divergenceTexture
+	in 6 inkTexture
+	in 7 previousInkTexture
+
 	in_buffer 0 inputUavBuffer
 
 	//buffer name size bytesPerElement [target_width] [target_height] bind_flags
 	//texture leapMotionTexture target_width target_height PFG_RGBA8_UNORM depth_pool 0 uav
 
 	buffer temporaryBuffer 1 4 target_width target_height
-
+	
 	target
 	{
+		pass compute 
+		{
+			job AdvectionCopy
+		}
+
+		pass compute
+		{
+			job	Advection
+		}
+
+		pass compute
+		{
+			job	AddImpulses
+			
+			input 0 velocityTexture write
+			input 1 inkTexture write
+			uav_buffer 2 inputUavBuffer read
+		}
+		
+		pass compute
+		{
+			job Divergence
+		}
+		
+		pass compute
+		{
+			job JacobiPressure
+		}
+		
+		pass compute
+		{
+			job SubtractPressureGradient
+		}
+
 		pass compute
 		{
 			job	TestJob
 			
-			//input 0 mrtTexture 1
-			//uav_buffer # bufferName offset_start size read write allow_write_after_write
-
-			//uav_buffer 0 testBuffer write
-			uav_buffer 0 temporaryBuffer write
-			uav_buffer 1 inputUavBuffer read
+			uav_buffer 0 temporaryBuffer read
+			uav_buffer 1 inputUavBuffer write
 		}
 	}
 
-	target velocityTexture
+	target renderTarget 
 	{
 		pass clear
 		{
 			colour_value 0.2 0.4 0.6 1
 		}
 
-		//The bindings made by pass bind_uav PERSIST even after we're out of velocityTexture.
+		//The bindings made by pass bind_uav PERSIST even after we're out of renderTarget.
 		pass bind_uav
 		{
 			starting_slot 1
-			//uav_buffer 0 testBuffer	read
 			uav_buffer 0 temporaryBuffer read
 			uav_buffer 1 inputUavBuffer read
 		}
@@ -52,13 +104,33 @@ compositor_node TestComputeNode
 		{
 		}
 	}
-
-	out 0 velocityTexture
-	out_buffer 0 inputUavBuffer
 }
 
 workspace "Test Compute Workspace"
 {
 	connect_buffer_external 0 TestComputeNode 0
+	
+	/*connect_external 0 TestComputeNode 0
+	connect_external 1 TestComputeNode 1
+	connect_external 2 TestComputeNode 2
+	connect_external 3 TestComputeNode 3
+	connect_external 4 TestComputeNode 4
+	connect_external 5 TestComputeNode 5
+	connect_external 6 TestComputeNode 6
+	connect_external 7 TestComputeNode 7*/
+
 	connect_output TestComputeNode 0
+	connect_output TestComputeNode 1
+	connect_output TestComputeNode 2
+	connect_output TestComputeNode 3
+	connect_output TestComputeNode 4
+	connect_output TestComputeNode 5
+	connect_output TestComputeNode 6
+	connect_output TestComputeNode 7
+
+	
+	/*connect_external 2 AdvectionCopyNode 0
+	connect_external 1 AdvectionCopyNode 1
+
+	connect AdvectionCopyNode 0 TestComputeNode 2*/
 }

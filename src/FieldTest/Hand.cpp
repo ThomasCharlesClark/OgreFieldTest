@@ -58,6 +58,8 @@ namespace MyThirdOgre
 
 
         mSphere = new Ogre::Sphere(mState.vPos, 1.5f);
+
+        mOuterSphere = new Ogre::Sphere(mState.vPos, 3.0f);
     }
 
     void Hand::update(float timeSinceLast, Ogre::uint32 currIdx, Ogre::uint32 prevIdx) 
@@ -71,6 +73,7 @@ namespace MyThirdOgre
     {
         mState.vPos = position;
         mSphere->setCenter(mState.vPos);
+        mOuterSphere->setCenter(mState.vPos);
     }
 
     void Hand::setVelocity(float timeSinceLast, Ogre::Vector3 velocity) 

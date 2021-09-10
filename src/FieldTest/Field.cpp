@@ -198,7 +198,7 @@ namespace MyThirdOgre
 			Ogre::SceneMemoryMgrTypes::SCENE_STATIC,
 			mFieldComputeSystemMoDef,
 			"TestCompute",
-			Ogre::Vector3::ZERO,
+			Ogre::Vector3(0, 0, 0),
 			Ogre::Quaternion::IDENTITY,
 			Ogre::Vector3::UNIT_SCALE // What does it mean to even scale an abstract concept... 
 									  // but it ISN'T an abstract concept: this is a concrete THING which exists at a POSITION and DOES STUFF.

@@ -275,5 +275,32 @@
       <Filter>ComputeShaders</Filter>
     </None>
     <None Include="src\MyMaterials\MainWorkspace.compositor" />
+    <None Include="src\MyMaterials\compute\HLSL\Advection.hlsl">
+      <Filter>ComputeShaders</Filter>
+    </None>
+    <None Include="src\MyMaterials\compute\HLSL\AddImpulses.hlsl">
+      <Filter>ComputeShaders</Filter>
+    </None>
+    <None Include="src\MyMaterials\compute\HLSL\BoundaryConditions.hlsl">
+      <Filter>ComputeShaders</Filter>
+    </None>
+    <None Include="src\MyMaterials\compute\HLSL\Divergence.hlsl">
+      <Filter>ComputeShaders</Filter>
+    </None>
+    <None Include="src\MyMaterials\compute\HLSL\JacobiDiffusion.hlsl">
+      <Filter>ComputeShaders</Filter>
+    </None>
+    <None Include="src\MyMaterials\compute\HLSL\JacobiPressure.hlsl">
+      <Filter>ComputeShaders</Filter>
+    </None>
+    <None Include="src\MyMaterials\compute\HLSL\SubtractPressureGradient.hlsl">
+      <Filter>ComputeShaders</Filter>
+    </None>
+    <None Include="src\MyMaterials\compute\HLSL\CopyFromTexture_ps.hlsl">
+      <Filter>ComputeShaders</Filter>
+    </None>
+    <None Include="src\MyMaterials\compute\HLSL\AdvectionCopy.hlsl">
+      <Filter>ComputeShaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

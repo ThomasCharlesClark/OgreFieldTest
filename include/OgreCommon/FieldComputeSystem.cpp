@@ -23,10 +23,36 @@ namespace MyThirdOgre
 	FieldComputeSystem::FieldComputeSystem(Ogre::uint32 id, const MovableObjectDefinition* moDefinition,
 		Ogre::SceneMemoryMgrTypes type, GameEntityManager* geMgr) : GameEntity(id, moDefinition, type)
 	{
+		mTestComputeJob = 0;
+		mAdvectionCopyComputeJob = 0;
+		mAdvectionComputeJob = 0;
+		mAddImpulsesComputeJob = 0;
+		mDivergenceComputeJob = 0;
+		mJacobiPressureComputeJob = 0;
+		mSubtractPressureGradientComputeJob = 0;
+
+		mRenderTargetTexture = 0;
+		mVelocityTexture = 0;
+		mPreviousVelocityTexture = 0;
+		mPressureTexture = 0;
+		mPressureGradientTexture = 0;
+		mDivergenceTexture = 0;
+		mInkTexture = 0;
+		mPreviousInkTexture = 0;
+
+		mVelocityStagingTexture = 0;
+		mInkStagingTexture = 0;
+
 		mGraphicsSystem = 0;
 
-		mTextureType = Ogre::TextureTypes::Type2D;
-		mPixelFormat = Ogre::PixelFormatGpu::PFG_RGBA8_UNORM;
+		mTextureTicket2D = 0;
+		mTextureTicket3D = 0;
+
+		mTextureType2D = Ogre::TextureTypes::Type2D;
+		mTextureType3D = Ogre::TextureTypes::Type3D;
+
+		mPixelFormat2D = Ogre::PixelFormatGpu::PFG_RGBA8_UNORM;
+		mPixelFormat3D = Ogre::PixelFormatGpu::PFG_RGBA32_FLOAT;
 
 		mUavBuffers = new Ogre::UavBufferPackedVec({});
 
@@ -39,15 +65,6 @@ namespace MyThirdOgre
 		mDebugPlaneMoDef = new MovableObjectDefinition();
 		mDebugPlaneMoDef->moType = MoTypeDynamicTriangleList;
 		mDebugPlaneMoDef->resourceGroup = Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME;
-		/*
-		mBufferResolutionWidth = 1024.0f;
-		mBufferResolutionHeight = 1024.0f;
-		mBufferResolutionDepth = 1.0f;
-
-		mFieldWidth = 64.0f;
-		mFieldHeight = 64.0f;
-		mLeafResolutionX = 0.5f;
-		mLeafResolutionZ = 0.5f;*/
 
 		mBufferResolutionWidth = 256.0f;
 		mBufferResolutionHeight = 256.0f;
@@ -61,43 +78,33 @@ namespace MyThirdOgre
 		mLeafResolutionX = 16.0f;
 		mLeafResolutionZ = 16.0f;
 
-		// This means that leaf width and height must be calculated, not predefined - they depend upon the width of the plane used to display 
-		// the buffer.
-
 		mLeafCountX = mBufferResolutionWidth / mLeafResolutionX;
 		mLeafWidth = mFieldWidth / mLeafCountX;
 
 		mLeafCountZ = mBufferResolutionHeight / mLeafResolutionZ;
 		mLeafHeight = mFieldHeight / mLeafCountZ;
 		
-		// Riiiight... so how many times do I need to split my field up in order to achieve mLeafCountX & mLeafCountZ 
-		// leaves?
-
-		// mBufferResolutionWidth = 512
-		// /2 = 256
-		// /2 = 128
-		// /2 = 64
-		// /2 = 32
-		// /2 = 16
-		// /2 = 8
-
-		// 6 times
-
-		mOtherBuffer = std::vector<Ogre::ColourValue>({});
+		mInkInputBuffer = std::vector<Particle>({});
 
 		for (auto i = 0; i < mBufferResolutionWidth * mBufferResolutionHeight; i++) {
-			mOtherBuffer.push_back(Ogre::ColourValue(0.0f, 0.0f, 0.0f, 1.0f));
+			mInkInputBuffer.push_back({ Ogre::ColourValue(0.0f, 0.0f, 0.0f, 1.0f), Ogre::Vector3::ZERO });
 		}
 			
 		mDrawFromUavBufferMat = Ogre::MaterialPtr();
 
-		mDeinitialised = false;
-
 		mGameEntityManager = geMgr;
+
+		mDeinitialised = false;
 
 		mDownloadingTextureViaTicket = false;
 
-		mHaveSetShaderParamsOnce = false;
+		mHaveSetTestComputeShaderParameters = false;
+		mHaveSetAdvectionCopyComputeShaderParameters = false;
+		mHaveSetAdvectionComputeShaderParameters = false;
+		mHaveSetAddImpulsesComputeShaderParameters = false;
+		mHaveSetDivergenceComputeShaderParameters = false;
+		mHaveSetJacobiPressureComputeShaderParameters = false;
+		mHaveSetSubtractPressureGradientComputeShaderParameters = false;
 
 		mTimeAccumulator = 0.0f;
 
@@ -109,15 +116,14 @@ namespace MyThirdOgre
 
 		mLeaves = std::map<CellCoord, FieldComputeSystem_BoundingHierarchyBox*>({});
 
-		
 		mCpuInstanceBuffer = reinterpret_cast<float*>(OGRE_MALLOC_SIMD(
-			(mBufferResolutionWidth * mBufferResolutionHeight) * sizeof(Ogre::ColourValue), Ogre::MEMCATEGORY_GENERAL));
+			(mBufferResolutionWidth * mBufferResolutionHeight) * sizeof(Particle), Ogre::MEMCATEGORY_GENERAL));
 
 		mInstanceBuffer = reinterpret_cast<float*>(mCpuInstanceBuffer);
 
 		mInstanceBufferStart = mInstanceBuffer;
 
-		memset(mInstanceBuffer, 0, (mBufferResolutionWidth * mBufferResolutionHeight * sizeof(Ogre::ColourValue)) -
+		memset(mInstanceBuffer, 0, (mBufferResolutionWidth * mBufferResolutionHeight * sizeof(Particle)) -
 			(static_cast<size_t>(mInstanceBuffer - mInstanceBufferStart) * sizeof(float)));
 	}
 
@@ -155,9 +161,9 @@ namespace MyThirdOgre
 				Ogre::Vector3(mFieldWidth / 2, 0, mFieldHeight / 2),
 				Ogre::Vector3(mFieldWidth / 2, 0, -(mFieldHeight / 2)),
 				Ogre::Vector3(-(mFieldWidth / 2), 0, -(mFieldHeight / 2))
-			}),
+				}),
 			Ogre::BLANKSTRING,
-			Ogre::Vector3::ZERO,
+			mTransform[0]->vPos + Ogre::Vector3::ZERO,
 			Ogre::Quaternion::IDENTITY,
 			Ogre::Vector3::UNIT_SCALE,
 			true,
@@ -166,19 +172,76 @@ namespace MyThirdOgre
 			Ogre::Vector3::ZERO,
 			mRenderTargetTexture);
 
-		// this works nicely because the message wrapper retains the pointer
-		// the object is destroyed correctly on the graphics thread
-		this->mGameEntityManager->mLogicSystem->queueSendMessage(
-			this->mGameEntityManager->mGraphicsSystem, 
-			Mq::REMOVE_STAGING_TEXTURE, 
-			mLeapMotionStagingTexture);
-		// it's safe - and probably best - to set the pointer to 0 here
-		// even if the graphics thread hasn't yet destroyed the object
-		// because it will prevent us from messing with it further here when it was 
-		// already marked for destruction
-		mLeapMotionStagingTexture = 0;
-
 		createBoundingHierarchy();
+	}
+
+	void FieldComputeSystem::deinitialise(void)
+	{
+		if (!mDeinitialised)
+		{
+			mDrawFromUavBufferMat.setNull();
+
+			if (mTestComputeJob) {
+				mTestComputeJob->clearUavBuffers();
+				mTestComputeJob->clearTexBuffers();
+			}
+
+			//if (mLeapMotionStagingTexture) 
+			//{
+			//	//mStagingTexture->upload
+			//}
+
+			if (mRenderTargetTexture)
+			{
+				auto listeners = mRenderTargetTexture->getListeners();
+
+				if (listeners.size()) {
+					mRenderTargetTexture->removeListener(mTestComputeJob);
+
+					// It would seem that we do not need to remove HLMSUnlitDatablock listeners.
+					// These are probably being handled higher up the chain by the game entity destructors.
+					/*mTextures[FieldComputeSystemTexture::Velocity]->removeListener(static_cast<Ogre::HlmsUnlitDatablock*>(static_cast<Ogre::v1::Entity*>(mPlaneEntity->mMovableObject)->getSubEntity(0)->getDatablock()));*/
+				}
+			}
+
+			//if (mVelocityTexture) {
+
+			//	auto listeners = mVelocityTexture->getListeners();
+
+			//	if (listeners.size()) {
+			//		mVelocityTexture->removeListener(mTestComputeJob);
+			//		mVelocityTexture->removeListener(mAdvectionComputeJob);
+			//	}
+			//}
+
+			//if (mInkTexture) {
+
+			//	auto listeners = mInkTexture->getListeners();
+
+			//	if (listeners.size()) {
+			//		mVelocityTexture->removeListener(mTestComputeJob);
+			//		mInkTexture->removeListener(mAdvectionComputeJob);
+			//	}
+			//}
+
+
+			//if (mTextures[FieldComputeSystemTexture::LeapMotion])
+			//{
+			//	auto listeners = mTextures[FieldComputeSystemTexture::LeapMotion]->getListeners();
+
+			//	if (listeners.size()) {
+			//		// it would seem that this second texture, if "unused" in some capacity, 
+			//		// does not actually need to be removed here.
+
+			//		//mTextures[FieldComputeSystemTexture::LeapMotion]->removeListener(mComputeJob);
+			//	}
+			//}
+
+			delete mUavBuffers;
+			mUavBuffers = 0;
+
+			mDeinitialised = true;
+		}
 	}
 
 	void FieldComputeSystem::createBoundingHierarchy(void)
@@ -189,7 +252,7 @@ namespace MyThirdOgre
 		float depthCount = 0.5f;
 
 		mFieldBoundingHierarchy.push_back(FieldComputeSystem_BoundingHierarchyBox(
-			Ogre::Vector3(0, 0, 0),
+			mTransform[0]->vPos + Ogre::Vector3(0, 0, 0),
 			Ogre::Vector3(xRes, 0, zRes)
 		));
 
@@ -198,13 +261,13 @@ namespace MyThirdOgre
 				Ogre::SceneMemoryMgrTypes::SCENE_DYNAMIC,
 				mDebugPlaneMoDef,
 				std::vector<Ogre::Vector3>({
-					Ogre::Vector3(-xRes, 0.0f, zRes),
-					Ogre::Vector3(xRes, 0.0f, zRes),
-					Ogre::Vector3(xRes, 0.0f, -zRes),
-					Ogre::Vector3(-xRes, 0.0f, -zRes),
+						Ogre::Vector3(-xRes, 0.0f, zRes),
+						Ogre::Vector3(xRes, 0.0f, zRes),
+						Ogre::Vector3(xRes, 0.0f, -zRes),
+						Ogre::Vector3(-xRes, 0.0f, -zRes),
 					}),
 					"White",
-					Ogre::Vector3(0, depthCount, 0),
+					mTransform[0]->vPos + Ogre::Vector3(0, depthCount, 0),
 					Ogre::Quaternion::IDENTITY,
 					//Ogre::Vector3(0.05f, 0.05f, 0.05f),
 					Ogre::Vector3::UNIT_SCALE,
@@ -229,7 +292,7 @@ namespace MyThirdOgre
 
 			for (float x = 0; x < mLeafCountX * mLeafHeight; x += mLeafHeight) 
 			{
-				Ogre::Vector3 leafCenter = Ogre::Vector3(
+				Ogre::Vector3 leafCenter = mTransform[0]->vPos + Ogre::Vector3(
 					(x + leafHalfWidths.x + ((mFieldWidth / 2) - mFieldWidth)),
 					0,
 					(z + leafHalfWidths.z + ((mFieldHeight / 2) - mFieldHeight))
@@ -252,8 +315,7 @@ namespace MyThirdOgre
 								corner.x + (offsetX * i) + halfOffsetX,
 								0.0f,
 								corner.z + (offsetZ * j) + halfOffsetZ
-							),	// HERE
-							&mTransform[0]->vPos));
+							)));
 					}
 
 					offset += (mBufferResolutionWidth - 1);
@@ -289,19 +351,19 @@ namespace MyThirdOgre
 																										// as we're dividing space in quads
 
 			auto a = FieldComputeSystem_BoundingHierarchyBox(
-						Ogre::Vector3(box.mCenter.x + -hw.x, hw.y, box.mCenter.z + hw.z), 
+				Ogre::Vector3(box.mCenter.x + -hw.x, hw.y, box.mCenter.z + hw.z),
 						hw);
 
 			auto b = FieldComputeSystem_BoundingHierarchyBox(
-						Ogre::Vector3(box.mCenter.x + hw.x, hw.y, box.mCenter.z + hw.z), 
+				Ogre::Vector3(box.mCenter.x + hw.x, hw.y, box.mCenter.z + hw.z),
 						hw);
 
 			auto c = FieldComputeSystem_BoundingHierarchyBox(
-						Ogre::Vector3(box.mCenter.x + hw.x, hw.y, box.mCenter.z + -hw.z), 
+				Ogre::Vector3(box.mCenter.x + hw.x, hw.y, box.mCenter.z + -hw.z),
 						hw);
 
 			auto d = FieldComputeSystem_BoundingHierarchyBox(
-						Ogre::Vector3(box.mCenter.x + -hw.x, hw.y, box.mCenter.z + -hw.z), 
+				Ogre::Vector3(box.mCenter.x + -hw.x, hw.y, box.mCenter.z + -hw.z),
 						hw);
 
 			if (mDebugFieldBoundingHierarchy) {
@@ -466,68 +528,54 @@ namespace MyThirdOgre
 	
 	void FieldComputeSystem::_notifyStagingTextureRemoved(const FieldComputeSystem_StagingTextureMessage* msg) 
 	{
-		if (msg->mStagingTexture == mLeapMotionStagingTexture) 
+		if (msg->mStagingTexture == mVelocityStagingTexture) 
 		{
-			mLeapMotionStagingTexture = 0;
+			mVelocityStagingTexture = 0;
+		}
+		else if (msg->mStagingTexture == mInkStagingTexture) 
+		{
+			mInkStagingTexture = 0;
 		}
 	} 
-
-	void FieldComputeSystem::deinitialise(void) 
-	{
-		if (!mDeinitialised)
-		{
-			mDrawFromUavBufferMat.setNull();
-
-			if (mComputeJob) {
-				mComputeJob->clearUavBuffers();
-				mComputeJob->clearTexBuffers();
-			}
-
-			//if (mLeapMotionStagingTexture) 
-			//{
-			//	//mStagingTexture->upload
-			//}
-
-			if (mRenderTargetTexture) 
-			{
-				auto listeners = mRenderTargetTexture->getListeners();
-
-				if (listeners.size()) {
-					mRenderTargetTexture->removeListener(mComputeJob);
-
-					// It would seem that we do not need to remove HLMSUnlitDatablock listeners.
-					// These are probably being handled higher up the chain by the game entity destructors.
-					/*mTextures[FieldComputeSystemTexture::Velocity]->removeListener(static_cast<Ogre::HlmsUnlitDatablock*>(static_cast<Ogre::v1::Entity*>(mPlaneEntity->mMovableObject)->getSubEntity(0)->getDatablock()));*/
-				}
-			}
-
-			//if (mTextures[FieldComputeSystemTexture::LeapMotion])
-			//{
-			//	auto listeners = mTextures[FieldComputeSystemTexture::LeapMotion]->getListeners();
-
-			//	if (listeners.size()) {
-			//		// it would seem that this second texture, if "unused" in some capacity, 
-			//		// does not actually need to be removed here.
-
-			//		//mTextures[FieldComputeSystemTexture::LeapMotion]->removeListener(mComputeJob);
-			//	}
-			//}
-
-			delete mUavBuffers;
-			mUavBuffers = 0;
-
-			mDeinitialised = true;
-		}
-	}
 
 	void FieldComputeSystem::addUavBuffer(Ogre::UavBufferPacked* buffer) 
 	{
 		mUavBuffers->push_back(buffer);
 	}
 
-	void FieldComputeSystem::setComputeJob(Ogre::HlmsComputeJob* job)
+	void FieldComputeSystem::setTestComputeJob(Ogre::HlmsComputeJob* job)
 	{
-		mComputeJob = job;
+		mTestComputeJob = job;
+	}
+
+	void FieldComputeSystem::setAdvectionCopyComputeJob(Ogre::HlmsComputeJob* job)
+	{
+		mAdvectionCopyComputeJob = job;
+	}
+
+	void FieldComputeSystem::setAdvectionComputeJob(Ogre::HlmsComputeJob* job)
+	{
+		mAdvectionComputeJob = job;
+	}
+
+	void FieldComputeSystem::setAddImpulsesComputeJob(Ogre::HlmsComputeJob* job)
+	{
+		mAddImpulsesComputeJob = job;
+	}
+
+	void FieldComputeSystem::setDivergenceComputeJob(Ogre::HlmsComputeJob* job)
+	{
+		mDivergenceComputeJob = job;
+	}
+
+	void FieldComputeSystem::setJabobiPressureComputeJob(Ogre::HlmsComputeJob* job)
+	{
+		mJacobiPressureComputeJob = job;
+	}
+
+	void FieldComputeSystem::setSubtractPressureGradientComputeJob(Ogre::HlmsComputeJob* job)
+	{
+		mSubtractPressureGradientComputeJob = job;
 	}
 
 	void FieldComputeSystem::setMaterial(Ogre::MaterialPtr mat)
@@ -535,46 +583,251 @@ namespace MyThirdOgre
 		mDrawFromUavBufferMat = mat;
 	}
 
-	void FieldComputeSystem::setTexture(Ogre::TextureGpu* texture)
+	void FieldComputeSystem::setRenderTargetTexture(Ogre::TextureGpu* texture)
 	{
 		mRenderTargetTexture = texture;
 	}
 
-	void FieldComputeSystem::setLeapMotionStagingTexture(Ogre::StagingTexture* sTex) 
+	void FieldComputeSystem::setVelocityTexture(Ogre::TextureGpu* texture)
 	{
-		mLeapMotionStagingTexture = sTex;
+		mVelocityTexture = texture;
 	}
 
-	void FieldComputeSystem::setAsyncTextureTicket(Ogre::AsyncTextureTicket* texTicket) 
+	void FieldComputeSystem::setPreviousVelocityTexture(Ogre::TextureGpu* texture)
 	{
-		mTextureTicket = texTicket;
+		mPreviousVelocityTexture = texture;
+	}
+
+	void FieldComputeSystem::setPressureTexture(Ogre::TextureGpu* texture)
+	{
+		mPressureTexture = texture;
+	}
+
+	void FieldComputeSystem::setPressureGradientTexture(Ogre::TextureGpu* texture)
+	{
+		mPressureGradientTexture = texture;
+	}
+
+	void FieldComputeSystem::setDivergenceTexture(Ogre::TextureGpu* texture)
+	{
+		mDivergenceTexture = texture;
+	}
+
+	void FieldComputeSystem::setInkTexture(Ogre::TextureGpu* texture)
+	{
+		mInkTexture = texture;
+	}
+
+	void FieldComputeSystem::setPreviousInkTexture(Ogre::TextureGpu* texture)
+	{
+		mPreviousInkTexture = texture;
+	}
+
+	void FieldComputeSystem::setVelocityStagingTexture(Ogre::StagingTexture* sTex) 
+	{
+		mVelocityStagingTexture = sTex;
+	}
+
+	void FieldComputeSystem::setInkStagingTexture(Ogre::StagingTexture* sTex)
+	{
+		mInkStagingTexture = sTex;
+	}
+
+	void FieldComputeSystem::setAsyncTextureTicket2D(Ogre::AsyncTextureTicket* texTicket) 
+	{
+		mTextureTicket2D = texTicket;
+	}
+
+	void FieldComputeSystem::setAsyncTextureTicket3D(Ogre::AsyncTextureTicket* texTicket)
+	{
+		mTextureTicket3D = texTicket;
 	}
 
 	void FieldComputeSystem::update(float timeSinceLast)
 	{
 		mTimeAccumulator += timeSinceLast;
 
-		if (mComputeJob)
+		if (mAdvectionCopyComputeJob) {
+
+			if (!mHaveSetAdvectionCopyComputeShaderParameters) {
+				Ogre::uint32 res[2];
+				res[0] = mBufferResolutionWidth;
+				res[1] = mBufferResolutionHeight;
+
+				Ogre::ShaderParams& shaderParams = mAdvectionCopyComputeJob->getShaderParams("default");
+				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
+				Ogre::ShaderParams::Param* texResolution = shaderParams.findParameter("texResolution");
+				Ogre::ShaderParams::Param* reciprocalDeltaX = shaderParams.findParameter("reciprocalDeltaX");
+				tsl->setManualValue(timeSinceLast);
+				texResolution->setManualValue(res, sizeof(res) / sizeof(Ogre::uint32));
+				reciprocalDeltaX->setManualValue(1.0f);
+				shaderParams.setDirty();
+
+				mHaveSetAdvectionCopyComputeShaderParameters = true;
+			}
+			else {
+				Ogre::ShaderParams& shaderParams = mAdvectionCopyComputeJob->getShaderParams("default");
+				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
+				tsl->setManualValue(timeSinceLast);
+				shaderParams.setDirty();
+			}
+		}
+
+		if (mAdvectionComputeJob) {
+
+			if (!mHaveSetAdvectionComputeShaderParameters) {
+				Ogre::uint32 res[2];
+				res[0] = mBufferResolutionWidth;
+				res[1] = mBufferResolutionHeight;
+
+				Ogre::ShaderParams& shaderParams = mAdvectionComputeJob->getShaderParams("default");
+				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
+				Ogre::ShaderParams::Param* texResolution = shaderParams.findParameter("texResolution");
+				Ogre::ShaderParams::Param* reciprocalDeltaX = shaderParams.findParameter("reciprocalDeltaX");
+				tsl->setManualValue(timeSinceLast);
+				texResolution->setManualValue(res, sizeof(res) / sizeof(Ogre::uint32));
+				reciprocalDeltaX->setManualValue(1.0f);
+				shaderParams.setDirty();
+
+				mHaveSetAdvectionComputeShaderParameters = true;
+			}
+			else {
+				Ogre::ShaderParams& shaderParams = mAdvectionComputeJob->getShaderParams("default");
+				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
+				tsl->setManualValue(timeSinceLast);
+				shaderParams.setDirty();
+			}
+		}
+
+		if (mAddImpulsesComputeJob) {
+
+			if (!mHaveSetAddImpulsesComputeShaderParameters) {
+				Ogre::uint32 res[2];
+				res[0] = mBufferResolutionWidth;
+				res[1] = mBufferResolutionHeight;
+
+				Ogre::ShaderParams& shaderParams = mAddImpulsesComputeJob->getShaderParams("default");
+				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
+				Ogre::ShaderParams::Param* texResolution = shaderParams.findParameter("texResolution");
+				Ogre::ShaderParams::Param* reciprocalDeltaX = shaderParams.findParameter("reciprocalDeltaX");
+				tsl->setManualValue(timeSinceLast);
+				texResolution->setManualValue(res, sizeof(res) / sizeof(Ogre::uint32));
+				reciprocalDeltaX->setManualValue(1.0f);
+				shaderParams.setDirty();
+
+				mHaveSetAddImpulsesComputeShaderParameters = true;
+			}
+			else {
+				Ogre::ShaderParams& shaderParams = mAddImpulsesComputeJob->getShaderParams("default");
+				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
+				tsl->setManualValue(timeSinceLast);
+				shaderParams.setDirty();
+			}
+		}
+
+		if (mDivergenceComputeJob) {
+
+			if (!mHaveSetDivergenceComputeShaderParameters) {
+				Ogre::uint32 res[2];
+				res[0] = mBufferResolutionWidth;
+				res[1] = mBufferResolutionHeight;
+
+				Ogre::ShaderParams& shaderParams = mDivergenceComputeJob->getShaderParams("default");
+				Ogre::ShaderParams::Param* texResolution = shaderParams.findParameter("texResolution");
+				Ogre::ShaderParams::Param* halfDeltaX = shaderParams.findParameter("halfDeltaX");
+				texResolution->setManualValue(res, sizeof(res) / sizeof(Ogre::uint32));
+				halfDeltaX->setManualValue(0.5f);
+				shaderParams.setDirty();
+
+				mHaveSetDivergenceComputeShaderParameters = true;
+			}
+		}
+
+		if (mJacobiPressureComputeJob) {
+
+			if (!mHaveSetJacobiPressureComputeShaderParameters) {
+				Ogre::uint32 res[2];
+				res[0] = mBufferResolutionWidth;
+				res[1] = mBufferResolutionHeight;
+
+				Ogre::ShaderParams& shaderParams = mJacobiPressureComputeJob->getShaderParams("default");
+				Ogre::ShaderParams::Param* texResolution = shaderParams.findParameter("texResolution");
+				Ogre::ShaderParams::Param* halfDeltaX = shaderParams.findParameter("halfDeltaX");
+				texResolution->setManualValue(res, sizeof(res) / sizeof(Ogre::uint32));
+				halfDeltaX->setManualValue(0.5f);
+				shaderParams.setDirty();
+
+				mHaveSetJacobiPressureComputeShaderParameters = true;
+			}
+		}
+
+		if (mSubtractPressureGradientComputeJob) {
+
+			if (!mHaveSetSubtractPressureGradientComputeShaderParameters) {
+				Ogre::uint32 res[2];
+				res[0] = mBufferResolutionWidth;
+				res[1] = mBufferResolutionHeight;
+
+				Ogre::ShaderParams& shaderParams = mSubtractPressureGradientComputeJob->getShaderParams("default");
+				Ogre::ShaderParams::Param* texResolution = shaderParams.findParameter("texResolution");
+				Ogre::ShaderParams::Param* halfDeltaX = shaderParams.findParameter("halfDeltaX");
+				texResolution->setManualValue(res, sizeof(res) / sizeof(Ogre::uint32));
+				halfDeltaX->setManualValue(0.5f);
+				shaderParams.setDirty();
+
+				mHaveSetSubtractPressureGradientComputeShaderParameters = true;
+			}
+		}
+
+		if (mTestComputeJob)
 		{
-			if (!mHaveSetShaderParamsOnce) {
+			if (!mHaveSetTestComputeShaderParameters) {
 				Ogre::uint32 res[2];
 				res[0] = mBufferResolutionWidth;
 				res[1] = mBufferResolutionHeight;
 
 				//Update the compute shader's
-				Ogre::ShaderParams& shaderParams = mComputeJob->getShaderParams("default");
+				Ogre::ShaderParams& shaderParams = mTestComputeJob->getShaderParams("default");
+				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
 				Ogre::ShaderParams::Param* texResolution = shaderParams.findParameter("texResolution");
 				auto pb = shaderParams.findParameter("pixelBuffer");
 				texResolution->setManualValue(res, sizeof(res) / sizeof(Ogre::uint32));
+				tsl->setManualValue(timeSinceLast);
 				shaderParams.setDirty();
 
-				auto tpgx = mComputeJob->getThreadsPerGroupX();
-				auto tpgy = mComputeJob->getThreadsPerGroupY();
-				auto tpgz = mComputeJob->getThreadsPerGroupZ();
+				mTestComputeJob->setNumThreadGroups(
+					(res[0] + mTestComputeJob->getThreadsPerGroupX() - 1u) / mTestComputeJob->getThreadsPerGroupX(),
+					(res[1] + mTestComputeJob->getThreadsPerGroupY() - 1u) / mTestComputeJob->getThreadsPerGroupY(), 
+					1u);
 
-				mComputeJob->setNumThreadGroups(
-					(res[0] + mComputeJob->getThreadsPerGroupX() - 1u) / mComputeJob->getThreadsPerGroupX(),
-					(res[1] + mComputeJob->getThreadsPerGroupY() - 1u) / mComputeJob->getThreadsPerGroupY(), 
+				mAdvectionCopyComputeJob->setNumThreadGroups(
+					(res[0] + mAdvectionCopyComputeJob->getThreadsPerGroupX() - 1u) / mAdvectionCopyComputeJob->getThreadsPerGroupX(),
+					(res[1] + mAdvectionCopyComputeJob->getThreadsPerGroupY() - 1u) / mAdvectionCopyComputeJob->getThreadsPerGroupY(),
+					1u);
+
+				mAdvectionComputeJob->setNumThreadGroups(
+					(res[0] + mAdvectionComputeJob->getThreadsPerGroupX() - 1u) / mAdvectionComputeJob->getThreadsPerGroupX(),
+					(res[1] + mAdvectionComputeJob->getThreadsPerGroupY() - 1u) / mAdvectionComputeJob->getThreadsPerGroupY(),
+					1u);
+
+				mAddImpulsesComputeJob->setNumThreadGroups(
+					(res[0] + mAddImpulsesComputeJob->getThreadsPerGroupX() - 1u) / mAddImpulsesComputeJob->getThreadsPerGroupX(),
+					(res[1] + mAddImpulsesComputeJob->getThreadsPerGroupY() - 1u) / mAddImpulsesComputeJob->getThreadsPerGroupY(),
+					1u);
+
+				mDivergenceComputeJob->setNumThreadGroups(
+					(res[0] + mDivergenceComputeJob->getThreadsPerGroupX() - 1u) / mDivergenceComputeJob->getThreadsPerGroupX(),
+					(res[1] + mDivergenceComputeJob->getThreadsPerGroupY() - 1u) / mDivergenceComputeJob->getThreadsPerGroupY(),
+					1u);
+
+				mJacobiPressureComputeJob->setNumThreadGroups(
+					(res[0] + mJacobiPressureComputeJob->getThreadsPerGroupX() - 1u) / mJacobiPressureComputeJob->getThreadsPerGroupX(),
+					(res[1] + mJacobiPressureComputeJob->getThreadsPerGroupY() - 1u) / mJacobiPressureComputeJob->getThreadsPerGroupY(),
+					1u);
+
+				mSubtractPressureGradientComputeJob->setNumThreadGroups(
+					(res[0] + mSubtractPressureGradientComputeJob->getThreadsPerGroupX() - 1u) / mSubtractPressureGradientComputeJob->getThreadsPerGroupX(),
+					(res[1] + mSubtractPressureGradientComputeJob->getThreadsPerGroupY() - 1u) / mSubtractPressureGradientComputeJob->getThreadsPerGroupY(),
 					1u);
 
 				////Update the pass that draws the UAV Buffer into the RTT (we could
@@ -584,8 +837,88 @@ namespace MyThirdOgre
 
 				psParams->setNamedConstant("texResolution", res, 1u, 2u);
 
-				mHaveSetShaderParamsOnce = true;
+				if (this->getVelocityStagingTexture())
+				{
+					this->getVelocityStagingTexture()->startMapRegion();
 
+					auto tBox = this->getVelocityStagingTexture()->mapRegion(
+						this->getBufferResolutionWidth(),
+						this->getBufferResolutionHeight(),
+						this->getBufferResolutionDepth(),
+						1u,
+						this->getPixelFormat3D());
+
+					for (size_t z = 0; z < this->getBufferResolutionDepth(); ++z)
+					{
+						for (size_t y = 0; y < this->getBufferResolutionHeight(); ++y)
+						{
+							for (size_t x = 0; x < this->getBufferResolutionWidth(); ++x)
+							{
+								float* data = reinterpret_cast<float*>(tBox.at(x, y, z));
+								data[0] = 0.0f;
+								data[1] = 0.0f;
+								data[2] = 0.0f;
+							}
+						}
+					}
+
+					this->getVelocityStagingTexture()->stopMapRegion();
+
+					this->getVelocityStagingTexture()->upload(tBox, this->getVelocityTexture(), 0, 0, 0);
+
+					this->mGameEntityManager->mLogicSystem->queueSendMessage(
+						this->mGameEntityManager->mGraphicsSystem,
+						Mq::REMOVE_STAGING_TEXTURE,
+						mVelocityStagingTexture);
+
+					mVelocityStagingTexture = 0;
+				}
+
+				if (this->getInkStagingTexture())
+				{
+					this->getInkStagingTexture()->startMapRegion();
+
+					auto tBox = this->getInkStagingTexture()->mapRegion(
+						this->getBufferResolutionWidth(),
+						this->getBufferResolutionHeight(),
+						this->getBufferResolutionDepth(),
+						1u,
+						this->getPixelFormat3D());
+
+					for (size_t z = 0; z < this->getBufferResolutionDepth(); ++z)
+					{
+						for (size_t y = 0; y < this->getBufferResolutionHeight(); ++y)
+						{
+							for (size_t x = 0; x < this->getBufferResolutionWidth(); ++x)
+							{
+								float* data = reinterpret_cast<float*>(tBox.at(x, y, z));
+								data[0] = 0.0f;
+								data[1] = 0.0f;
+								data[2] = 0.0f;
+							}
+						}
+					}
+
+					this->getInkStagingTexture()->stopMapRegion();
+
+					this->getInkStagingTexture()->upload(tBox, this->getInkTexture(), 0, 0, 0);
+
+					this->mGameEntityManager->mLogicSystem->queueSendMessage(
+						this->mGameEntityManager->mGraphicsSystem,
+						Mq::REMOVE_STAGING_TEXTURE,
+						mInkStagingTexture);
+
+					mInkStagingTexture = 0;
+				}
+
+				mHaveSetTestComputeShaderParameters = true;
+
+			}
+			else {
+				Ogre::ShaderParams& shaderParams = mTestComputeJob->getShaderParams("default");
+				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
+				tsl->setManualValue(timeSinceLast);
+				shaderParams.setDirty();
 			}
 
 			//if (mDownloadingTextureViaTicket && mTextureTicket->queryIsTransferDone()) 
@@ -601,7 +934,7 @@ namespace MyThirdOgre
 			//	mTextureTicket->unmap();
 			//}
 			
-			auto c = Ogre::ColourValue(0.0f, 0.0f, 0.0f, 1.0f);
+			auto c = Ogre::ColourValue(0.0f, 0.32f, 0.12f, 1.0f);
 
 			/*for (auto& leaf : mLeaves) {
 				if (leaf.second->mLeafVisible) {
@@ -610,9 +943,9 @@ namespace MyThirdOgre
 				}
 			}*/
 
-			for (auto& iter : mOtherBuffer) {
-				if (iter.b > 0)
-					iter.b *= 0.996f;
+			for (auto& iter : mInkInputBuffer) {
+				if (iter.colour.b > 0)
+					iter.colour.b *= 0.996f;
 			}
 
 			if (mHand && mFieldBoundingHierarchy.size())
@@ -645,7 +978,7 @@ namespace MyThirdOgre
 
 					Ogre::Vector3 vHandPos = mHand->getBoundingSphere()->getCenter();
 
-					for (const auto& l : leaves) {
+					for (auto& l : leaves) {
 
 						float x = l.mAaBb.getMinimum().x;
 						float z = l.mAaBb.getMinimum().z;
@@ -674,50 +1007,13 @@ namespace MyThirdOgre
 
 							if (distLen < rHandSphereSquared) {
 
-								mOtherBuffer[index.mIndex].r = 0.0f;
-								mOtherBuffer[index.mIndex].g = 0.0f;
-								mOtherBuffer[index.mIndex].b = 0.34f;
-								mOtherBuffer[index.mIndex].a = 1.0f;
+								mInkInputBuffer[index.mIndex].colour.r = 0.0f;
+								mInkInputBuffer[index.mIndex].colour.g = 0.0f;
+								mInkInputBuffer[index.mIndex].colour.b = 0.86f;
+								mInkInputBuffer[index.mIndex].colour.a = 1.0f;
 
-								//// intersecting
-
-								////// thanks https://forums.ogre3d.org/viewtopic.php?t=96286
-								//auto mCpuInstanceBuffer = reinterpret_cast<float*>(OGRE_MALLOC_SIMD(
-								//	1 * sizeof(Ogre::ColourValue), Ogre::MEMCATEGORY_GENERAL));
-
-								//float* RESTRICT_ALIAS instanceBuffer = reinterpret_cast<float*>(mCpuInstanceBuffer);
-
-								//const float* instanceBufferStart = instanceBuffer;
-
-								//*instanceBuffer++ = c.r;
-								//*instanceBuffer++ = c.g;
-								//*instanceBuffer++ = 0.34f;
-								//*instanceBuffer++ = c.a;
-
-								//getUavBuffer(0)->upload(mCpuInstanceBuffer, index.mIndex, 1);
+								mInkInputBuffer[index.mIndex].velocity = mHand->getState().vVel;
 							}
-							//else {
-
-							//	mOtherBuffer[index.mIndex].r = 0.0f;
-							//	mOtherBuffer[index.mIndex].g = 0.0f;
-							//	mOtherBuffer[index.mIndex].b = 0.0f;
-							//	mOtherBuffer[index.mIndex].a = 1.0f;
-
-
-							//	// not intersecting
-							//	//auto mCpuInstanceBuffer = reinterpret_cast<float*>(OGRE_MALLOC_SIMD(
-							//	//	1 * sizeof(Ogre::ColourValue), Ogre::MEMCATEGORY_GENERAL));
-
-							//	//float* RESTRICT_ALIAS instanceBuffer = reinterpret_cast<float*>(mCpuInstanceBuffer);
-
-							//	//const float* instanceBufferStart = instanceBuffer;
-
-							//	//*instanceBuffer++ = c.r;
-							//	//*instanceBuffer++ = c.g;
-							//	//*instanceBuffer++ = c.b;
-							//	//*instanceBuffer++ = c.a;// (float)sin(mTimeAccumulator);
-							//	//getUavBuffer(0)->upload(mCpuInstanceBuffer, index.mIndex, 1);
-							//}
 						}
 					}
 				}
@@ -729,18 +1025,24 @@ namespace MyThirdOgre
 			auto buffer = getUavBuffer(0);
 			auto uavBufferNumElements = buffer->getNumElements();
 			
-			auto s = sizeof(size_t);
-			auto f = sizeof(float);
-			auto co = sizeof(Ogre::ColourValue);
-
 			float* instanceBuffer = const_cast<float*>(mInstanceBufferStart);
 
-			for (const auto &iter : mOtherBuffer) {
+			for (const auto &iter : mInkInputBuffer) {
 			
-				*instanceBuffer++ = iter.r;
-				*instanceBuffer++ = iter.g;
-				*instanceBuffer++ = iter.b;
-				*instanceBuffer++ = iter.a;// (float)sin(mTimeAccumulator);
+				*instanceBuffer++ = iter.colour.r;
+				*instanceBuffer++ = iter.colour.g;
+				*instanceBuffer++ = iter.colour.b;
+				*instanceBuffer++ = iter.colour.a;// (float)sin(mTimeAccumulator);
+
+				*instanceBuffer++ = iter.velocity.x;
+				*instanceBuffer++ = iter.velocity.y;
+				*instanceBuffer++ = iter.velocity.z;
+
+				*instanceBuffer++ = 0.0f; // pressure
+
+				*instanceBuffer++ = 0.0f; // pressureGradient.x
+				*instanceBuffer++ = 0.0f; // pressureGradient.y
+				*instanceBuffer++ = 0.0f; // pressureGradient.z
 			}
 
 			auto tsb = buffer->getTotalSizeBytes();
@@ -757,8 +1059,7 @@ namespace MyThirdOgre
 		const std::vector<FieldComputeSystem_BoundingHierarchyBox>* leaves,
 		int& aabbIntersectionCount)
 	{
-		//if (mHand->getBoundingSphere()->intersects(level.mAaBb)) {
-		if (level.mAaBb.intersects(*mHand->getBoundingSphere())) {
+		if (level.mAaBb.intersects(*mHand->getOuterBoundingSphere())) {
 			if (level.mChildren.size()) {
 				for (const auto& iter : level.mChildren)
 					traverseBoundingHierarchy(iter, leaves, aabbIntersectionCount);
@@ -777,7 +1078,7 @@ namespace MyThirdOgre
 
 	void FieldComputeSystem::writeDebugImages(float timeSinceLast) 
 	{
-		if (mComputeJob) 
+		if (mTestComputeJob) 
 		{
 			mGameEntityManager->mLogicSystem->queueSendMessage(
 				mGameEntityManager->mGraphicsSystem,
@@ -786,3 +1087,50 @@ namespace MyThirdOgre
 		}
 	}
 }
+
+
+
+
+
+
+//if (mStagingTexture) 
+//{
+//	mStagingTexture->startMapRegion();
+
+//	auto tBox = mStagingTexture->mapRegion(
+//		mBufferResolutionWidth,
+//		mBufferResolutionHeight,
+//		mBufferResolutionDepth,
+//		1u,
+//		getPixelFormat3D());
+
+//	for (size_t z = 0; z < mBufferResolutionDepth; ++z)
+//	{
+//		for (size_t y = 0; y < mBufferResolutionHeight; ++y)
+//		{
+//			for (size_t x = 0; x < mBufferResolutionWidth; ++x)
+//			{
+//				float* data = reinterpret_cast<float*>(tBox.at(x, y, z));
+//				data[0] = 0.0f;
+//				data[1] = 0.75f;
+//				data[2] = 0.0f;
+//			}
+//		}
+//	}
+
+//	mStagingTexture->stopMapRegion();
+//	mStagingTexture->upload(tBox, mVelocityTexture, 0, 0, 0);
+
+
+//	// this works nicely because the message wrapper retains the pointer
+//	// the object is destroyed correctly on the graphics thread
+//	this->mGameEntityManager->mLogicSystem->queueSendMessage(
+//		this->mGameEntityManager->mGraphicsSystem,
+//		Mq::REMOVE_STAGING_TEXTURE,
+//		mStagingTexture);
+//	// it's safe - and probably best - to set the pointer to 0 here
+//	// even if the graphics thread hasn't yet destroyed the object
+//	// because it will prevent us from messing with it further here when it was 
+//	// already marked for destruction
+//	mStagingTexture = 0;
+//}

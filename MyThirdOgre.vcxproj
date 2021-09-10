@@ -405,6 +405,43 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <FileType>Document</FileType>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="src\MyMaterials\compute\HLSL\Advection.hlsl">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </DeploymentContent>
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\MyMaterials\compute\HLSL\AddImpulses.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="src\MyMaterials\compute\HLSL\BoundaryConditions.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="src\MyMaterials\compute\HLSL\Divergence.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="src\MyMaterials\compute\HLSL\JacobiDiffusion.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="src\MyMaterials\compute\HLSL\JacobiPressure.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="src\MyMaterials\compute\HLSL\SubtractPressureGradient.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\MyMaterials\compute\HLSL\CopyFromTexture_ps.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\MyMaterials\compute\HLSL\AdvectionCopy.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

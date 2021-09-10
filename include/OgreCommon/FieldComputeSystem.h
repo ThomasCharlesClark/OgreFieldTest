@@ -19,6 +19,13 @@
 
 namespace MyThirdOgre
 {
+	struct Particle {
+		Ogre::ColourValue colour;
+		Ogre::Vector3 velocity;
+		float pressure;
+		Ogre::Vector3 pressureGradient;
+	};
+
 	struct FieldComputeSystem_StagingTextureMessage
 	{
 		Ogre::StagingTexture* mStagingTexture;
@@ -42,17 +49,11 @@ namespace MyThirdOgre
 
 		FieldComputeSystem_BufferIndexPosition(
 			size_t i,
-			Ogre::Vector3 p,
-			Ogre::Vector3* fC
+			Ogre::Vector3 p
 		) : mIndex(i),
-			mPosition(p),
-			mFieldCenter(fC)
+			mPosition(p)
 		{
 
-		}
-
-		Ogre::Vector3 getPosition(void) {
-			return *mFieldCenter + mPosition;
 		}
 	};
 
@@ -132,7 +133,13 @@ namespace MyThirdOgre
 			int							mLeafCountZ;
 			float						mBufferResolutionDepth;
 			bool						mDownloadingTextureViaTicket;
-			bool						mHaveSetShaderParamsOnce;
+			bool						mHaveSetTestComputeShaderParameters;
+			bool						mHaveSetAdvectionCopyComputeShaderParameters;
+			bool						mHaveSetAdvectionComputeShaderParameters;
+			bool						mHaveSetAddImpulsesComputeShaderParameters;
+			bool						mHaveSetDivergenceComputeShaderParameters;
+			bool						mHaveSetJacobiPressureComputeShaderParameters;
+			bool						mHaveSetSubtractPressureGradientComputeShaderParameters;
 
 			MovableObjectDefinition*	mPlaneMoDef;
 			MovableObjectDefinition*	mDebugPlaneMoDef;
@@ -141,14 +148,31 @@ namespace MyThirdOgre
 
 		protected:
 			GameEntityManager*					mGameEntityManager;
-			Ogre::TextureTypes::TextureTypes	mTextureType;
-			Ogre::PixelFormatGpu				mPixelFormat;
+			Ogre::TextureTypes::TextureTypes	mTextureType2D;
+			Ogre::TextureTypes::TextureTypes	mTextureType3D;
+			Ogre::PixelFormatGpu				mPixelFormat2D;
+			Ogre::PixelFormatGpu				mPixelFormat3D;
 			Ogre::MaterialPtr					mDrawFromUavBufferMat;
-			Ogre::StagingTexture*				mLeapMotionStagingTexture;
+			Ogre::StagingTexture*				mVelocityStagingTexture;
+			Ogre::StagingTexture*				mInkStagingTexture;
 			Ogre::TextureGpu*					mRenderTargetTexture;
+			Ogre::TextureGpu*					mVelocityTexture;
+			Ogre::TextureGpu*					mPreviousVelocityTexture;
+			Ogre::TextureGpu*					mPressureTexture;
+			Ogre::TextureGpu*					mPressureGradientTexture;
+			Ogre::TextureGpu*					mDivergenceTexture;
+			Ogre::TextureGpu*					mInkTexture;
+			Ogre::TextureGpu*					mPreviousInkTexture;
 			Ogre::UavBufferPackedVec*			mUavBuffers;
-			Ogre::AsyncTextureTicket*			mTextureTicket;
-			Ogre::HlmsComputeJob*				mComputeJob;
+			Ogre::AsyncTextureTicket*			mTextureTicket2D;
+			Ogre::AsyncTextureTicket*			mTextureTicket3D;
+			Ogre::HlmsComputeJob*				mTestComputeJob;
+			Ogre::HlmsComputeJob*				mAdvectionCopyComputeJob;
+			Ogre::HlmsComputeJob*				mAdvectionComputeJob;
+			Ogre::HlmsComputeJob*				mAddImpulsesComputeJob;
+			Ogre::HlmsComputeJob*				mDivergenceComputeJob;
+			Ogre::HlmsComputeJob*				mJacobiPressureComputeJob;
+			Ogre::HlmsComputeJob*				mSubtractPressureGradientComputeJob;
 			float								mTimeAccumulator;
 			Hand*								mHand;
 
@@ -156,7 +180,7 @@ namespace MyThirdOgre
 			std::map<CellCoord, FieldComputeSystem_BoundingHierarchyBox*> mLeaves;
 			bool													mDebugFieldBoundingHierarchy;
 
-			std::vector<Ogre::ColourValue>		mOtherBuffer;
+			std::vector<Particle>				mInkInputBuffer;
 
 			float* mCpuInstanceBuffer;
 			float* RESTRICT_ALIAS mInstanceBuffer;
@@ -176,27 +200,60 @@ namespace MyThirdOgre
 
 			virtual void update(float timeSinceLast);
 
-			virtual void setComputeJob(Ogre::HlmsComputeJob* job);
+			virtual void setTestComputeJob(Ogre::HlmsComputeJob* job);
+			virtual void setAdvectionCopyComputeJob(Ogre::HlmsComputeJob* job);
+			virtual void setAdvectionComputeJob(Ogre::HlmsComputeJob* job);
+			virtual void setAddImpulsesComputeJob(Ogre::HlmsComputeJob* job);
+			virtual void setDivergenceComputeJob(Ogre::HlmsComputeJob* job);
+			virtual void setJabobiPressureComputeJob(Ogre::HlmsComputeJob* job);
+			virtual void setSubtractPressureGradientComputeJob(Ogre::HlmsComputeJob* job);
 			virtual void setMaterial(Ogre::MaterialPtr mat);
-			virtual void setLeapMotionStagingTexture(Ogre::StagingTexture* tex);
-			virtual void setTexture(Ogre::TextureGpu* texture);
-			virtual void setAsyncTextureTicket(Ogre::AsyncTextureTicket* tex);
+			virtual void setVelocityStagingTexture(Ogre::StagingTexture* tex);
+			virtual void setInkStagingTexture(Ogre::StagingTexture* tex);
+			virtual void setRenderTargetTexture(Ogre::TextureGpu* texture);
+			virtual void setVelocityTexture(Ogre::TextureGpu* texture);
+			virtual void setPreviousVelocityTexture(Ogre::TextureGpu* texture);
+			virtual void setPressureTexture(Ogre::TextureGpu* texture);
+			virtual void setPressureGradientTexture(Ogre::TextureGpu* texture);
+			virtual void setDivergenceTexture(Ogre::TextureGpu* texture);
+			virtual void setInkTexture(Ogre::TextureGpu* texture);
+			virtual void setPreviousInkTexture(Ogre::TextureGpu* texture);
+			virtual void setAsyncTextureTicket2D(Ogre::AsyncTextureTicket* tex);
+			virtual void setAsyncTextureTicket3D(Ogre::AsyncTextureTicket* tex);
 			virtual void setDownloadingTextureViaTicket(bool val) { mDownloadingTextureViaTicket = val; };
 
 			virtual void addUavBuffer(Ogre::UavBufferPacked* b);
 
-			Ogre::TextureTypes::TextureTypes getTextureType(void) { return mTextureType; };
-			Ogre::PixelFormatGpu getPixelFormat(void) { return mPixelFormat; };
+			Ogre::TextureTypes::TextureTypes getTextureType2D(void) { return mTextureType2D; };
+			Ogre::TextureTypes::TextureTypes getTextureType3D(void) { return mTextureType3D; };
+			Ogre::PixelFormatGpu getPixelFormat2D(void) { return mPixelFormat2D; };
+			Ogre::PixelFormatGpu getPixelFormat3D(void) { return mPixelFormat3D; };
+			Ogre::StagingTexture* getVelocityStagingTexture(void) { return mVelocityStagingTexture; };
+			Ogre::StagingTexture* getInkStagingTexture(void) { return mInkStagingTexture; };
 			float getBufferResolutionWidth(void) { return mBufferResolutionWidth; };
 			float getBufferResolutionHeight(void) { return mBufferResolutionHeight; };
+			float getBufferResolutionDepth(void) { return mBufferResolutionDepth; };
 			float getDepth(void) { return mBufferResolutionDepth; };
 			GameEntity* getPlane(void) { return mPlaneEntity; };
 			bool getDownloadingTextureViaTicket(void) { return mDownloadingTextureViaTicket; };
-			Ogre::HlmsComputeJob* getComputeJob(void) { return mComputeJob; };
+			Ogre::HlmsComputeJob* getTestComputeJob(void) { return mTestComputeJob; };
+			Ogre::HlmsComputeJob* getAdvectionCopyComputeJob(void) { return mAdvectionCopyComputeJob; };
+			Ogre::HlmsComputeJob* getAdvectionComputeJob(void) { return mAdvectionComputeJob; };
+			Ogre::HlmsComputeJob* getAddImpulsesComputeJob(void) { return mAddImpulsesComputeJob; };
+			Ogre::HlmsComputeJob* getDivergenceComputeJob(void) { return mDivergenceComputeJob; };
+			Ogre::HlmsComputeJob* getJacobiPressureComputeJob(void) { return mJacobiPressureComputeJob; };
+			Ogre::HlmsComputeJob* getSubtractPressureGradientComputeJob(void) { return mSubtractPressureGradientComputeJob; };
 			Ogre::TextureGpu* getRenderTargetTexture(void) { return mRenderTargetTexture; };
+			Ogre::TextureGpu* getVelocityTexture(void) { return mVelocityTexture; };
+			Ogre::TextureGpu* getPreviousVelocityTexture(void) { return mPreviousVelocityTexture; };
+			Ogre::TextureGpu* getPressureTexture(void) { return mPressureTexture; };
+			Ogre::TextureGpu* getPressureGradientTexture(void) { return mPressureGradientTexture; };
+			Ogre::TextureGpu* getDivergenceTexture(void) { return mDivergenceTexture; };
+			Ogre::TextureGpu* getInkTexture(void) { return mInkTexture; };
+			Ogre::TextureGpu* getPreviousInkTexture(void) { return mPreviousInkTexture; };
 			Ogre::UavBufferPackedVec* getUavBuffers(void) { return mUavBuffers; };
 			Ogre::UavBufferPacked* getUavBuffer(int idx) { return mUavBuffers->at(idx); };
-			Ogre::AsyncTextureTicket* getTextureTicket(void) { return mTextureTicket; };
+			Ogre::AsyncTextureTicket* getTextureTicket(void) { return mTextureTicket2D; };
 
 			void _notifyHand(Hand* hand) { mHand = hand; };
 

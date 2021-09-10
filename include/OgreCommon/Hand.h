@@ -86,6 +86,7 @@ namespace MyThirdOgre
 
 		// bounding sphere
 		Ogre::Sphere				*mSphere;
+		Ogre::Sphere				*mOuterSphere;
 
 	public:
 		Hand(
@@ -97,6 +98,7 @@ namespace MyThirdOgre
 
 
 		Ogre::Sphere* getBoundingSphere(void) { return mSphere; };
+		Ogre::Sphere* getOuterBoundingSphere(void) { return mOuterSphere; };
 
 		HandState getState(void) { return mState; };
 

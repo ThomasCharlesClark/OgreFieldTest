@@ -68,14 +68,10 @@
 //#include "OgreTextureGpuManager.h"
 //
 //#include "Compositor/OgreCompositorWorkspace.h"
-//#include "Compositor/OgreCompositorWorkspaceDef.h"
+#include "Compositor/OgreCompositorWorkspaceDef.h"
 
 #include "OgreRenderSystem.h"
 #include "OgreWireAabb.h"
-
-struct Particle {
-    Ogre::ColourValue colour;
-};
 
 //
 //
@@ -1427,7 +1423,13 @@ namespace MyThirdOgre
 
                 Ogre::HlmsCompute* hlmsCompute = root->getHlmsManager()->getComputeHlms();
 
-                fieldComputeSystem->setComputeJob(hlmsCompute->findComputeJob("TestJob"));
+                fieldComputeSystem->setTestComputeJob(hlmsCompute->findComputeJob("TestJob"));
+                fieldComputeSystem->setAdvectionCopyComputeJob(hlmsCompute->findComputeJob("AdvectionCopy"));
+                fieldComputeSystem->setAdvectionComputeJob(hlmsCompute->findComputeJob("Advection"));
+                fieldComputeSystem->setAddImpulsesComputeJob(hlmsCompute->findComputeJob("AddImpulses"));
+                fieldComputeSystem->setDivergenceComputeJob(hlmsCompute->findComputeJob("Divergence"));
+                fieldComputeSystem->setJabobiPressureComputeJob(hlmsCompute->findComputeJob("JacobiPressure"));
+                fieldComputeSystem->setSubtractPressureGradientComputeJob(hlmsCompute->findComputeJob("SubtractPressureGradient"));
 
                 fieldComputeSystem->setMaterial(Ogre::MaterialManager::getSingleton().load(
                     "DrawFromUavBuffer", Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME).
@@ -1438,59 +1440,175 @@ namespace MyThirdOgre
 
                 Ogre::TextureGpuManager* texMgr = root->getRenderSystem()->getTextureGpuManager();
 
-                fieldComputeSystem->setLeapMotionStagingTexture(texMgr->getStagingTexture(
+                fieldComputeSystem->setVelocityStagingTexture(texMgr->getStagingTexture(
                     fieldComputeSystem->getBufferResolutionWidth(),
                     fieldComputeSystem->getBufferResolutionHeight(),
                     fieldComputeSystem->getDepth(),
                     fieldComputeSystem->getDepth(),
-                    fieldComputeSystem->getPixelFormat()));
+                    fieldComputeSystem->getPixelFormat3D()));
 
-                fieldComputeSystem->setAsyncTextureTicket(texMgr->createAsyncTextureTicket(
+                fieldComputeSystem->setInkStagingTexture(texMgr->getStagingTexture(
                     fieldComputeSystem->getBufferResolutionWidth(),
                     fieldComputeSystem->getBufferResolutionHeight(),
                     fieldComputeSystem->getDepth(),
-                    fieldComputeSystem->getTextureType(),
-                    fieldComputeSystem->getPixelFormat()));
+                    fieldComputeSystem->getDepth(),
+                    fieldComputeSystem->getPixelFormat3D()));
 
-                Ogre::TextureGpu* textures[1];
+                fieldComputeSystem->setAsyncTextureTicket2D(texMgr->createAsyncTextureTicket(
+                    fieldComputeSystem->getBufferResolutionWidth(),
+                    fieldComputeSystem->getBufferResolutionHeight(),
+                    fieldComputeSystem->getDepth(),
+                    fieldComputeSystem->getTextureType2D(),
+                    fieldComputeSystem->getPixelFormat2D()));
+
+                fieldComputeSystem->setAsyncTextureTicket3D(texMgr->createAsyncTextureTicket(
+                    fieldComputeSystem->getBufferResolutionWidth(),
+                    fieldComputeSystem->getBufferResolutionHeight(),
+                    fieldComputeSystem->getDepth(),
+                    fieldComputeSystem->getTextureType3D(),
+                    fieldComputeSystem->getPixelFormat2D()));
+
+                Ogre::TextureGpu* textures[8];
+
                 textures[0] =
                     texMgr->createTexture(
-                        "velocityTexture",
-                        "velocityTexture",
+                        "renderTexture",
+                        "renderTexture",
                         Ogre::GpuPageOutStrategy::Discard,
-                        Ogre::TextureFlags::Uav | Ogre::TextureFlags::RenderToTexture,
-                        fieldComputeSystem->getTextureType(),
+                        Ogre::TextureFlags::RenderToTexture,
+                        fieldComputeSystem->getTextureType2D(),
                         Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME,
                         0u,
                         0u);
 
-                fieldComputeSystem->setTexture(textures[0]);
+                textures[1] =
+                    texMgr->createTexture(
+                        "velocityTexture",
+                        "velocityTexture",
+                        Ogre::GpuPageOutStrategy::Discard,
+                        Ogre::TextureFlags::ManualTexture | Ogre::TextureFlags::Uav,
+                        fieldComputeSystem->getTextureType3D(),
+                        Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME,
+                        0u,
+                        0u);
+
+                textures[2] =
+                    texMgr->createTexture(
+                        "prevVelocityTexture",
+                        "prevVelocityTexture",
+                        Ogre::GpuPageOutStrategy::Discard,
+                        Ogre::TextureFlags::ManualTexture | Ogre::TextureFlags::Uav,
+                        fieldComputeSystem->getTextureType3D(),
+                        Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME,
+                        0u,
+                        0u);
+
+                textures[3] =
+                    texMgr->createTexture(
+                        "pressureTexture",
+                        "pressureTexture",
+                        Ogre::GpuPageOutStrategy::Discard,
+                        Ogre::TextureFlags::ManualTexture | Ogre::TextureFlags::Uav,
+                        fieldComputeSystem->getTextureType3D(),
+                        Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME,
+                        0u,
+                        0u);
+
+                textures[4] =
+                    texMgr->createTexture(
+                        "pressureGradientTexture",
+                        "pressureGradientTexture",
+                        Ogre::GpuPageOutStrategy::Discard,
+                        Ogre::TextureFlags::ManualTexture | Ogre::TextureFlags::Uav,
+                        fieldComputeSystem->getTextureType3D(),
+                        Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME,
+                        0u,
+                        0u);
+
+                textures[5] =
+                    texMgr->createTexture(
+                        "divergenceTexture",
+                        "divergenceTexture",
+                        Ogre::GpuPageOutStrategy::Discard,
+                        Ogre::TextureFlags::ManualTexture | Ogre::TextureFlags::Uav,
+                        fieldComputeSystem->getTextureType3D(),
+                        Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME,
+                        0u,
+                        0u);
+
+                textures[6] =
+                    texMgr->createTexture(
+                        "inkTexture",
+                        "inkTexture",
+                        Ogre::GpuPageOutStrategy::Discard,
+                        Ogre::TextureFlags::ManualTexture | Ogre::TextureFlags::Uav,
+                        fieldComputeSystem->getTextureType3D(),
+                        Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME,
+                        0u,
+                        0u);
+
+                textures[7] =
+                    texMgr->createTexture(
+                        "prevInkTexture",
+                        "prevInkTexture",
+                        Ogre::GpuPageOutStrategy::Discard,
+                        Ogre::TextureFlags::ManualTexture | Ogre::TextureFlags::Uav,
+                        fieldComputeSystem->getTextureType3D(),
+                        Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME,
+                        0u,
+                        0u);
+
+                fieldComputeSystem->setRenderTargetTexture(textures[0]);
+
+                fieldComputeSystem->setVelocityTexture(textures[1]);
+
+                fieldComputeSystem->setPreviousVelocityTexture(textures[2]);
+
+                fieldComputeSystem->setPressureTexture(textures[3]);
+
+                fieldComputeSystem->setPressureGradientTexture(textures[4]);
+
+                fieldComputeSystem->setDivergenceTexture(textures[5]);
+
+                fieldComputeSystem->setInkTexture(textures[6]);
+
+                fieldComputeSystem->setPreviousInkTexture(textures[7]);
 
                 size_t uavBufferNumElements = fieldComputeSystem->getBufferResolutionWidth() * fieldComputeSystem->getBufferResolutionHeight();
 
                 auto buffer = vaoManager->createUavBuffer(
                     uavBufferNumElements, 
-                    sizeof(Ogre::ColourValue), 
+                    sizeof(Particle), 
                     Ogre::BufferBindFlags::BB_FLAG_UAV | Ogre::BufferBindFlags::BB_FLAG_TEX,
                     0, 
                     false);
 
                 // thanks https://forums.ogre3d.org/viewtopic.php?t=96286
                 auto mCpuInstanceBuffer = reinterpret_cast<float*>(OGRE_MALLOC_SIMD(
-                    uavBufferNumElements * sizeof(Ogre::ColourValue), Ogre::MEMCATEGORY_GENERAL));
+                    uavBufferNumElements * sizeof(Particle), Ogre::MEMCATEGORY_GENERAL));
                 
                 float* RESTRICT_ALIAS instanceBuffer = reinterpret_cast<float*>(mCpuInstanceBuffer);
 
                 const float* instanceBufferStart = instanceBuffer;
 
-                for (auto i = 0; i < uavBufferNumElements; ++i) {
+                auto c = Ogre::ColourValue(0.0f, 0.0f, 0.0f, 1.0f);
 
-                    auto c = Ogre::ColourValue(0.0f, 0.0f, 0.0f, 1.0f);
+                for (auto i = 0; i < uavBufferNumElements; ++i) {
 
                     *instanceBuffer++ = c.r;
                     *instanceBuffer++ = c.g;
                     *instanceBuffer++ = c.b;
                     *instanceBuffer++ = c.a;
+
+                    *instanceBuffer++ = 0.0f; // velocity.x
+                    *instanceBuffer++ = 0.0f; // velocity.y
+                    *instanceBuffer++ = 0.0f; // velocity.z
+
+                    *instanceBuffer++ = 0.0f; // pressure
+
+                    *instanceBuffer++ = 0.0f; // pressureGradient.x
+                    *instanceBuffer++ = 0.0f; // pressureGradient.y
+                    *instanceBuffer++ = 0.0f; // pressureGradient.z
                 }
 
                 OGRE_ASSERT_LOW((size_t)(instanceBuffer - instanceBufferStart) * sizeof(float) <=
@@ -1506,23 +1624,143 @@ namespace MyThirdOgre
 
                 fieldComputeSystem->getRenderTargetTexture()->setNumMipmaps(1);
                 fieldComputeSystem->getRenderTargetTexture()->setResolution(fieldComputeSystem->getBufferResolutionWidth(), fieldComputeSystem->getBufferResolutionHeight());
-                fieldComputeSystem->getRenderTargetTexture()->setPixelFormat(fieldComputeSystem->getPixelFormat());
+                fieldComputeSystem->getRenderTargetTexture()->setPixelFormat(fieldComputeSystem->getPixelFormat2D());
+
+                fieldComputeSystem->getVelocityTexture()->setNumMipmaps(1);
+                fieldComputeSystem->getVelocityTexture()->setResolution(fieldComputeSystem->getBufferResolutionWidth(), fieldComputeSystem->getBufferResolutionHeight());
+                fieldComputeSystem->getVelocityTexture()->setPixelFormat(fieldComputeSystem->getPixelFormat3D());
+
+                fieldComputeSystem->getPreviousVelocityTexture()->setNumMipmaps(1);
+                fieldComputeSystem->getPreviousVelocityTexture()->setResolution(fieldComputeSystem->getBufferResolutionWidth(), fieldComputeSystem->getBufferResolutionHeight());
+                fieldComputeSystem->getPreviousVelocityTexture()->setPixelFormat(fieldComputeSystem->getPixelFormat3D());
+
+                fieldComputeSystem->getPressureTexture()->setNumMipmaps(1);
+                fieldComputeSystem->getPressureTexture()->setResolution(fieldComputeSystem->getBufferResolutionWidth(), fieldComputeSystem->getBufferResolutionHeight());
+                fieldComputeSystem->getPressureTexture()->setPixelFormat(fieldComputeSystem->getPixelFormat3D());
+
+                fieldComputeSystem->getPressureGradientTexture()->setNumMipmaps(1);
+                fieldComputeSystem->getPressureGradientTexture()->setResolution(fieldComputeSystem->getBufferResolutionWidth(), fieldComputeSystem->getBufferResolutionHeight());
+                fieldComputeSystem->getPressureGradientTexture()->setPixelFormat(fieldComputeSystem->getPixelFormat3D());
+
+                fieldComputeSystem->getDivergenceTexture()->setNumMipmaps(1);
+                fieldComputeSystem->getDivergenceTexture()->setResolution(fieldComputeSystem->getBufferResolutionWidth(), fieldComputeSystem->getBufferResolutionHeight());
+                fieldComputeSystem->getDivergenceTexture()->setPixelFormat(fieldComputeSystem->getPixelFormat3D());
+
+                fieldComputeSystem->getInkTexture()->setNumMipmaps(1);
+                fieldComputeSystem->getInkTexture()->setResolution(fieldComputeSystem->getBufferResolutionWidth(), fieldComputeSystem->getBufferResolutionHeight());
+                fieldComputeSystem->getInkTexture()->setPixelFormat(fieldComputeSystem->getPixelFormat3D());
+
+                fieldComputeSystem->getPreviousInkTexture()->setNumMipmaps(1);
+                fieldComputeSystem->getPreviousInkTexture()->setResolution(fieldComputeSystem->getBufferResolutionWidth(), fieldComputeSystem->getBufferResolutionHeight());
+                fieldComputeSystem->getPreviousInkTexture()->setPixelFormat(fieldComputeSystem->getPixelFormat3D());
 
                 Ogre::DescriptorSetUav::TextureSlot uavSlot(Ogre::DescriptorSetUav::TextureSlot::makeEmpty());
-                uavSlot.access = Ogre::ResourceAccess::ReadWrite;
-                uavSlot.pixelFormat = fieldComputeSystem->getPixelFormat();
 
+                uavSlot.access = Ogre::ResourceAccess::ReadWrite;
+                uavSlot.pixelFormat = fieldComputeSystem->getPixelFormat2D();
                 uavSlot.texture = fieldComputeSystem->getRenderTargetTexture();
-                fieldComputeSystem->getComputeJob()->_setUavTexture(0, uavSlot);
 
                 Ogre::DescriptorSetUav::BufferSlot bufferSlot(Ogre::DescriptorSetUav::BufferSlot::makeEmpty());
+
                 bufferSlot.access = Ogre::ResourceAccess::ReadWrite;
-                  
                 bufferSlot.buffer = fieldComputeSystem->getUavBuffer(0);
                 bufferSlot.sizeBytes = uavBufferNumElements * 4;
                 bufferSlot.offset = 0;
-                
-                fieldComputeSystem->getComputeJob()->_setUavBuffer(1, bufferSlot);
+
+                fieldComputeSystem->getTestComputeJob()->_setUavTexture(0, uavSlot);
+
+                fieldComputeSystem->getTestComputeJob()->_setUavBuffer(1, bufferSlot);
+
+                uavSlot.pixelFormat = fieldComputeSystem->getPixelFormat3D();
+
+                uavSlot.texture = fieldComputeSystem->getVelocityTexture();
+                fieldComputeSystem->getTestComputeJob()->_setUavTexture(2, uavSlot);
+
+                uavSlot.texture = fieldComputeSystem->getPressureTexture();
+                fieldComputeSystem->getTestComputeJob()->_setUavTexture(3, uavSlot);
+
+                uavSlot.texture = fieldComputeSystem->getPressureGradientTexture();
+                fieldComputeSystem->getTestComputeJob()->_setUavTexture(4, uavSlot);
+
+                uavSlot.texture = fieldComputeSystem->getDivergenceTexture();
+                fieldComputeSystem->getTestComputeJob()->_setUavTexture(5, uavSlot);
+
+                uavSlot.texture = fieldComputeSystem->getInkTexture();
+                fieldComputeSystem->getTestComputeJob()->_setUavTexture(6, uavSlot);
+
+
+                Ogre::DescriptorSetTexture2::TextureSlot textureSlot(Ogre::DescriptorSetTexture2::TextureSlot::makeEmpty());
+                textureSlot.generalReadWrite = true;// Ogre::ResourceAccess::ReadWrite;
+                textureSlot.pixelFormat = fieldComputeSystem->getPixelFormat3D();
+
+
+
+                uavSlot.texture = fieldComputeSystem->getPreviousVelocityTexture();
+                fieldComputeSystem->getAdvectionCopyComputeJob()->_setUavTexture(0, uavSlot);
+
+                textureSlot.texture = fieldComputeSystem->getVelocityTexture();
+                fieldComputeSystem->getAdvectionCopyComputeJob()->setTexture(0, textureSlot);
+
+
+
+
+                uavSlot.texture = fieldComputeSystem->getVelocityTexture();
+                fieldComputeSystem->getAdvectionComputeJob()->_setUavTexture(0, uavSlot);
+
+                uavSlot.texture = fieldComputeSystem->getInkTexture();
+                fieldComputeSystem->getAdvectionComputeJob()->_setUavTexture(1, uavSlot);
+
+                textureSlot.texture = fieldComputeSystem->getPreviousVelocityTexture();
+                fieldComputeSystem->getAdvectionComputeJob()->setTexture(0, textureSlot);
+
+                textureSlot.texture = fieldComputeSystem->getPreviousInkTexture();
+                fieldComputeSystem->getAdvectionComputeJob()->setTexture(1, textureSlot);
+
+                //uavSlot.texture = fieldComputeSystem->getDivergenceTexture();
+                //fieldComputeSystem->getAdvectionComputeJob()->_setUavTexture(2, uavSlot);
+
+                //uavSlot.texture = fieldComputeSystem->getPressureTexture();
+                //fieldComputeSystem->getAdvectionComputeJob()->_setUavTexture(3, uavSlot);
+
+
+
+                uavSlot.texture = fieldComputeSystem->getVelocityTexture();
+                fieldComputeSystem->getAddImpulsesComputeJob()->_setUavTexture(0, uavSlot);
+
+                uavSlot.texture = fieldComputeSystem->getInkTexture();
+                fieldComputeSystem->getAddImpulsesComputeJob()->_setUavTexture(1, uavSlot);
+
+
+
+
+                uavSlot.texture = fieldComputeSystem->getDivergenceTexture();
+                fieldComputeSystem->getDivergenceComputeJob()->_setUavTexture(0, uavSlot);
+
+                textureSlot.texture = fieldComputeSystem->getVelocityTexture();
+                fieldComputeSystem->getDivergenceComputeJob()->setTexture(0, textureSlot);
+
+
+
+
+
+
+                uavSlot.texture = fieldComputeSystem->getPressureTexture();
+                fieldComputeSystem->getJacobiPressureComputeJob()->_setUavTexture(0, uavSlot);
+
+                textureSlot.texture = fieldComputeSystem->getDivergenceTexture();
+                fieldComputeSystem->getJacobiPressureComputeJob()->setTexture(0, textureSlot);
+
+
+
+
+                uavSlot.texture = fieldComputeSystem->getVelocityTexture();
+                fieldComputeSystem->getSubtractPressureGradientComputeJob()->_setUavTexture(0, uavSlot);
+
+                textureSlot.texture = fieldComputeSystem->getPressureTexture();
+                fieldComputeSystem->getSubtractPressureGradientComputeJob()->setTexture(0, textureSlot);
+
+
+
 
                 bool canUseSynchronousUpload = fieldComputeSystem
                     ->getRenderTargetTexture()
@@ -1536,15 +1774,134 @@ namespace MyThirdOgre
                 fieldComputeSystem
                     ->getRenderTargetTexture()
                     ->scheduleTransitionTo(Ogre::GpuResidency::Resident, 0, true);
-                
+
+
+                canUseSynchronousUpload = fieldComputeSystem
+                    ->getVelocityTexture()
+                    ->getNextResidencyStatus() == Ogre::GpuResidency::Resident
+                    && fieldComputeSystem->getVelocityTexture()->isDataReady();
+
+                if (!canUseSynchronousUpload) {
+                    fieldComputeSystem->getVelocityTexture()->waitForData();
+                }
+
+                fieldComputeSystem
+                    ->getVelocityTexture()
+                    ->scheduleTransitionTo(Ogre::GpuResidency::Resident, 0, true);
+
+
+                canUseSynchronousUpload = fieldComputeSystem
+                    ->getPreviousVelocityTexture()
+                    ->getNextResidencyStatus() == Ogre::GpuResidency::Resident
+                    && fieldComputeSystem->getPreviousVelocityTexture()->isDataReady();
+
+                if (!canUseSynchronousUpload) {
+                    fieldComputeSystem->getPreviousVelocityTexture()->waitForData();
+                }
+
+                fieldComputeSystem
+                    ->getPreviousVelocityTexture()
+                    ->scheduleTransitionTo(Ogre::GpuResidency::Resident, 0, true);
+
+
+                canUseSynchronousUpload = fieldComputeSystem
+                    ->getPressureTexture()
+                    ->getNextResidencyStatus() == Ogre::GpuResidency::Resident
+                    && fieldComputeSystem->getPressureTexture()->isDataReady();
+
+                if (!canUseSynchronousUpload) {
+                    fieldComputeSystem->getPressureTexture()->waitForData();
+                }
+
+                fieldComputeSystem
+                    ->getPressureTexture()
+                    ->scheduleTransitionTo(Ogre::GpuResidency::Resident, 0, true);
+
+
+                canUseSynchronousUpload = fieldComputeSystem
+                    ->getPressureGradientTexture()
+                    ->getNextResidencyStatus() == Ogre::GpuResidency::Resident
+                    && fieldComputeSystem->getPressureGradientTexture()->isDataReady();
+
+                if (!canUseSynchronousUpload) {
+                    fieldComputeSystem->getPressureGradientTexture()->waitForData();
+                }
+
+                fieldComputeSystem
+                    ->getPressureGradientTexture()
+                    ->scheduleTransitionTo(Ogre::GpuResidency::Resident, 0, true);
+
+                canUseSynchronousUpload = fieldComputeSystem
+                    ->getDivergenceTexture()
+                    ->getNextResidencyStatus() == Ogre::GpuResidency::Resident
+                    && fieldComputeSystem->getDivergenceTexture()->isDataReady();
+
+                if (!canUseSynchronousUpload) {
+                    fieldComputeSystem->getDivergenceTexture()->waitForData();
+                }
+
+                fieldComputeSystem
+                    ->getDivergenceTexture()
+                    ->scheduleTransitionTo(Ogre::GpuResidency::Resident, 0, true);
+
+
+                canUseSynchronousUpload = fieldComputeSystem
+                    ->getInkTexture()
+                    ->getNextResidencyStatus() == Ogre::GpuResidency::Resident
+                    && fieldComputeSystem->getInkTexture()->isDataReady();
+
+                if (!canUseSynchronousUpload) {
+                    fieldComputeSystem->getInkTexture()->waitForData();
+                }
+
+                fieldComputeSystem
+                    ->getInkTexture()
+                    ->scheduleTransitionTo(Ogre::GpuResidency::Resident, 0, true);
+
+
+                canUseSynchronousUpload = fieldComputeSystem
+                    ->getPreviousInkTexture()
+                    ->getNextResidencyStatus() == Ogre::GpuResidency::Resident
+                    && fieldComputeSystem->getPreviousInkTexture()->isDataReady();
+
+                if (!canUseSynchronousUpload) {
+                    fieldComputeSystem->getPreviousInkTexture()->waitForData();
+                }
+
+                fieldComputeSystem
+                    ->getPreviousInkTexture()
+                    ->scheduleTransitionTo(Ogre::GpuResidency::Resident, 0, true);
+
+
+
+
+
+
+
+
+
+                auto tVec = Ogre::CompositorChannelVec({
+                        fieldComputeSystem->getRenderTargetTexture(),
+                        fieldComputeSystem->getVelocityTexture(),
+                        fieldComputeSystem->getPreviousVelocityTexture(),
+                        fieldComputeSystem->getPressureTexture(),
+                        fieldComputeSystem->getPressureGradientTexture(),
+                        fieldComputeSystem->getDivergenceTexture(),
+                        fieldComputeSystem->getInkTexture(),
+                        fieldComputeSystem->getPreviousInkTexture()
+                    });
+
                 auto workspace = compositorManager->addWorkspace(
                     mSceneManager,
-                    fieldComputeSystem->getRenderTargetTexture(),
+                    tVec,
                     mCamera,
                     workspaceName,
                     true,
                     -1,
                     fieldComputeSystem->getUavBuffers());
+            
+                auto seq = workspace->getNodeSequence();
+
 
                 //auto v = workspace->isValid();
 

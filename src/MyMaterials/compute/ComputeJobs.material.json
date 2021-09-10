@@ -1,22 +1,165 @@
 {
-    "compute" :
-    {
-        "TestJob" :
-        {
-            "threads_per_group" : [8, 8, 1],
-            "thread_groups" : [4, 4, 1],
-
-            "source" : "ComputeTest",
-
-            "uav_units": 2,
-
-          "params": [
-            [
-              "texResolution",
-              [ 256, 256 ],
-              "uint"
-            ]
-          ]
-        }
+  "compute": {
+    "TestJob": {
+      "threads_per_group": [ 8, 8, 1 ],
+      "thread_groups": [ 4, 4, 1 ],
+      "source": "ComputeTest",
+      "uav_units": 7,
+      "params": [
+        [
+          "texResolution",
+          [ 256, 256 ],
+          "uint"
+        ],
+        [
+          "timeSinceLast",
+          [ 0 ],
+          "float"
+        ]
+      ]
+    },
+    "AdvectionCopy": {
+      "threads_per_group": [ 8, 8, 1 ],
+      "thread_groups": [ 4, 4, 1 ],
+      "source": "AdvectionCopy",
+      "uav_units": 1,
+      "textures": [
+        {}
+      ],
+      "params": [
+        [
+          "texResolution",
+          [ 256, 256 ],
+          "uint"
+        ],
+        [
+          "timeSinceLast",
+          [ 0 ],
+          "float"
+        ],
+        [
+          "reciprocalDeltaX",
+          [ 0 ],
+          "float"
+        ]
+      ]
+    },
+    "Advection": {
+      "threads_per_group": [ 8, 8, 1 ],
+      "thread_groups": [ 4, 4, 1 ],
+      "source": "Advection",
+      "uav_units": 2,
+      "textures": [
+        {},
+        {}
+      ],
+      "params": [
+        [
+          "texResolution",
+          [ 256, 256 ],
+          "uint"
+        ],
+        [
+          "timeSinceLast",
+          [ 0 ],
+          "float"
+        ],
+        [
+          "reciprocalDeltaX",
+          [ 0 ],
+          "float"
+        ]
+      ]
+    },
+    "AddImpulses": {
+      "threads_per_group": [ 8, 8, 1 ],
+      "thread_groups": [ 4, 4, 1 ],
+      "source": "AddImpulses",
+      "uav_units": 3,
+      "textures": [
+        {},
+        {}
+      ],
+      "params": [
+        [
+          "texResolution",
+          [ 256, 256 ],
+          "uint"
+        ],
+        [
+          "timeSinceLast",
+          [ 0 ],
+          "float"
+        ],
+        [
+          "reciprocalDeltaX",
+          [ 0 ],
+          "float"
+        ]
+      ]
+    },
+    "Divergence": {
+      "threads_per_group": [ 8, 8, 1 ],
+      "thread_groups": [ 4, 4, 1 ],
+      "source": "Divergence",
+      "uav_units": 1,
+      "textures": [
+        {}
+      ],
+      "params": [
+        [
+          "texResolution",
+          [ 256, 256 ],
+          "uint"
+        ],
+        [
+          "halfDeltaX",
+          [ 0.5 ],
+          "float"
+        ]
+      ]
+    },
+    "JacobiPressure": {
+      "threads_per_group": [ 8, 8, 1 ],
+      "thread_groups": [ 4, 4, 1 ],
+      "source": "JacobiPressure",
+      "uav_units": 1,
+      "textures": [
+        {}
+      ],
+      "params": [
+        [
+          "texResolution",
+          [ 256, 256 ],
+          "uint"
+        ],
+        [
+          "halfDeltaX",
+          [ 0.5 ],
+          "float"
+        ]
+      ]
+    },
+    "SubtractPressureGradient": {
+      "threads_per_group": [ 8, 8, 1 ],
+      "thread_groups": [ 4, 4, 1 ],
+      "source": "SubtractPressureGradient",
+      "uav_units": 1,
+      "textures": [
+        {}
+      ],
+      "params": [
+        [
+          "texResolution",
+          [ 256, 256 ],
+          "uint"
+        ],
+        [
+          "halfDeltaX",
+          [ 0 ],
+          "float"
+        ]
+      ]
     }
+  }
 }
