@@ -37,6 +37,7 @@
 
 #include "OgreEntity.h"
 
+#include "OgreHlmsDatablock.h"
 #include "OgreHlmsPbsDatablock.h"
 #include "OgreHlmsUnlitDatablock.h"
 #include "OgreHlmsSamplerblock.h"
@@ -1145,14 +1146,17 @@ namespace MyThirdOgre
 
                     if (datablock)
                     {
-                        //Ogre::HlmsSamplerblock diffuseBlock(*datablock->getSamplerblock(Ogre::PBSM_DIFFUSE));
-                        //diffuseBlock.mU = Ogre::TAM_WRAP;
-                        //diffuseBlock.mV = Ogre::TAM_WRAP;
-                        //diffuseBlock.mW = Ogre::TAM_WRAP;
-                        //datablock->setSamplerblock(Ogre::PBSM_DIFFUSE, diffuseBlock);
-                        datablock->setTransparency(cge->gameEntity->mTransparency, Ogre::HlmsPbsDatablock::Transparent, true);
+                        datablock->setTransparency(cge->gameEntity->mTransparency, Ogre::HlmsPbsDatablock::Transparent, false);
+
+                        //Ogre::HlmsMacroblock macroBlock = Ogre::HlmsMacroblock();
+                        //macroBlock.mDepthWrite = true;
+                        //macroBlock.mDepthCheck = true;
+
+                        //datablock->setMacroblock(macroBlock);
                     }
                 }
+
+                item->setRenderQueueGroup(49u);
 
                 cge->gameEntity->mMovableObject = item;
             }
@@ -1247,7 +1251,7 @@ namespace MyThirdOgre
                     personalDatablock->setSamplerblock(Ogre::PBSM_DIFFUSE, diffuseBlock);
 
                     if (cge->useAlpha)
-                        personalDatablock->setTransparency(cge->gameEntity->mTransparency, Ogre::HlmsPbsDatablock::Transparent, true);
+                        personalDatablock->setTransparency(cge->gameEntity->mTransparency, Ogre::HlmsPbsDatablock::Transparent, false);
 
                     if (cge->vColour != Ogre::Vector3::ZERO)
                         personalDatablock->setDiffuse(cge->vColour);
@@ -1280,6 +1284,12 @@ namespace MyThirdOgre
                     personalDatablock->setSamplerblock(Ogre::PBSM_DIFFUSE, diffuseBlock);
 
                     personalDatablock->setTransparency(1.0f, Ogre::HlmsPbsDatablock::TransparencyModes::Transparent, true, true);
+
+                    //Ogre::HlmsMacroblock macroBlock = Ogre::HlmsMacroblock();
+                    //macroBlock.mDepthWrite = true;
+                    //macroBlock.mDepthCheck = true;
+
+                    //personalDatablock->setMacroblock(macroBlock);
 
                     mo->getSection(0)->setDatablock(personalDatablock);
                 }
@@ -1676,17 +1686,17 @@ namespace MyThirdOgre
                 uavSlot.texture = fieldComputeSystem->getVelocityTexture();
                 fieldComputeSystem->getTestComputeJob()->_setUavTexture(2, uavSlot);
 
-                uavSlot.texture = fieldComputeSystem->getPressureTexture();
-                fieldComputeSystem->getTestComputeJob()->_setUavTexture(3, uavSlot);
+                //uavSlot.texture = fieldComputeSystem->getPressureTexture();
+                //fieldComputeSystem->getTestComputeJob()->_setUavTexture(3, uavSlot);
 
-                uavSlot.texture = fieldComputeSystem->getPressureGradientTexture();
-                fieldComputeSystem->getTestComputeJob()->_setUavTexture(4, uavSlot);
+                //uavSlot.texture = fieldComputeSystem->getPressureGradientTexture();
+                //fieldComputeSystem->getTestComputeJob()->_setUavTexture(4, uavSlot);
 
-                uavSlot.texture = fieldComputeSystem->getDivergenceTexture();
-                fieldComputeSystem->getTestComputeJob()->_setUavTexture(5, uavSlot);
+                //uavSlot.texture = fieldComputeSystem->getDivergenceTexture();
+                //fieldComputeSystem->getTestComputeJob()->_setUavTexture(5, uavSlot);
 
                 uavSlot.texture = fieldComputeSystem->getInkTexture();
-                fieldComputeSystem->getTestComputeJob()->_setUavTexture(6, uavSlot);
+                fieldComputeSystem->getTestComputeJob()->_setUavTexture(3, uavSlot);
 
 
                 Ogre::DescriptorSetTexture2::TextureSlot textureSlot(Ogre::DescriptorSetTexture2::TextureSlot::makeEmpty());
@@ -1698,8 +1708,14 @@ namespace MyThirdOgre
                 uavSlot.texture = fieldComputeSystem->getPreviousVelocityTexture();
                 fieldComputeSystem->getAdvectionCopyComputeJob()->_setUavTexture(0, uavSlot);
 
+                uavSlot.texture = fieldComputeSystem->getPreviousInkTexture();
+                fieldComputeSystem->getAdvectionCopyComputeJob()->_setUavTexture(1, uavSlot);
+
                 textureSlot.texture = fieldComputeSystem->getVelocityTexture();
                 fieldComputeSystem->getAdvectionCopyComputeJob()->setTexture(0, textureSlot);
+
+                textureSlot.texture = fieldComputeSystem->getInkTexture();
+                fieldComputeSystem->getAdvectionCopyComputeJob()->setTexture(1, textureSlot);
 
 
 
@@ -1715,12 +1731,6 @@ namespace MyThirdOgre
 
                 textureSlot.texture = fieldComputeSystem->getPreviousInkTexture();
                 fieldComputeSystem->getAdvectionComputeJob()->setTexture(1, textureSlot);
-
-                //uavSlot.texture = fieldComputeSystem->getDivergenceTexture();
-                //fieldComputeSystem->getAdvectionComputeJob()->_setUavTexture(2, uavSlot);
-
-                //uavSlot.texture = fieldComputeSystem->getPressureTexture();
-                //fieldComputeSystem->getAdvectionComputeJob()->_setUavTexture(3, uavSlot);
 
 
 

@@ -14,6 +14,8 @@ uniform uint2 texResolution;
 
 uniform float timeSinceLast;
 uniform float reciprocalDeltaX;
+uniform float velocityDissipationConstant;
+uniform float inkDissipationConstant;
 
 [numthreads(@value( threads_per_group_x ), @value( threads_per_group_y ), @value( threads_per_group_z ))]
 void main
@@ -28,20 +30,14 @@ void main
 
 		float width = texResolution.x;
 
-		float3 velocity = velocityTextureRead.SampleLevel(TextureSampler, idx / width, 0);
+		float4 velocity = velocityTextureRead.SampleLevel(TextureSampler, idx / width, 0);
 		
-		float3 idxBackInTime = idx - (timeSinceLast * reciprocalDeltaX * velocity);
+		float3 idxBackInTime = idx - timeSinceLast * reciprocalDeltaX * velocity.xyz;
 
-		float3 v = velocityTextureWrite[idx];
-		float3 i = inkTextureWrite[idx];
+		float4 v = float4(float3(velocityTextureRead.SampleLevel(TextureSampler, idxBackInTime / width, 0).xyz) * velocityDissipationConstant, 1.0);
+		float4 i = float4(float3(inkTextureRead.SampleLevel(TextureSampler, idxBackInTime / width, 0).xyz) * inkDissipationConstant, 1.0);
 
-		// RWTexture3D objects do not expose the Sampling functions :(
-		// Fortunately I seem to be able to both read and write using the same texture but through different registers
-		// Which... sounds wrong and bad but whatever
-
-		velocityTextureWrite[idx] = velocityTextureRead.SampleLevel(TextureSampler, idxBackInTime / width, 0);
-		inkTextureWrite[idx] = inkTextureRead.SampleLevel(TextureSampler, idxBackInTime / width, 0);
-
-		//velocityTexture[idx] = float3(i.x, v.y, v.z);
+		velocityTextureWrite[idx] = v;
+		inkTextureWrite[idx] = i;
 	}
 }

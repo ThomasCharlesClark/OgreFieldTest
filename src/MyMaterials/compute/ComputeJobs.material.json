@@ -4,7 +4,7 @@
       "threads_per_group": [ 8, 8, 1 ],
       "thread_groups": [ 4, 4, 1 ],
       "source": "ComputeTest",
-      "uav_units": 7,
+      "uav_units": 4,
       "params": [
         [
           "texResolution",
@@ -22,8 +22,9 @@
       "threads_per_group": [ 8, 8, 1 ],
       "thread_groups": [ 4, 4, 1 ],
       "source": "AdvectionCopy",
-      "uav_units": 1,
+      "uav_units": 2,
       "textures": [
+        {},
         {}
       ],
       "params": [
@@ -33,13 +34,8 @@
           "uint"
         ],
         [
-          "timeSinceLast",
-          [ 0 ],
-          "float"
-        ],
-        [
           "reciprocalDeltaX",
-          [ 0 ],
+          [ 1.0 ],
           "float"
         ]
       ]
@@ -67,6 +63,16 @@
         [
           "reciprocalDeltaX",
           [ 0 ],
+          "float"
+        ],
+        [
+          "velocityDissipationConstant",
+          [ 0.97 ],
+          "float"
+        ],
+        [
+          "inkDissipationConstant",
+          [ 0.97 ],
           "float"
         ]
       ]

@@ -131,7 +131,7 @@ unsigned long renderThreadApp(Ogre::ThreadHandle* threadHandle)
     LeapSystem* leapSystem = threadData->leapSystem;
     Ogre::Barrier* barrier = threadData->barrier;
 
-    graphicsSystem->initialize("Tutorial 06: Multithreading");
+    graphicsSystem->initialize("Fluid Dynamics");
 
     barrier->sync();
 

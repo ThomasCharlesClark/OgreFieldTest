@@ -19,7 +19,7 @@
 	DONE DUMPING PIECES
 #endif
 RWTexture3D<float3> velocityTexture : register(u0);
-Texture2D<float3> pressureRead : register(t1);
+Texture3D<float3> pressureRead : register(t0);
 
 SamplerState TextureSampler
 {
@@ -40,12 +40,14 @@ void main
 {
 	if( gl_GlobalInvocationID.x < texResolution.x && gl_GlobalInvocationID.y < texResolution.y)
 	{
-		float3 idx = float3(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, 0);
+		float3 idx = float3(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, gl_GlobalInvocationID.z);
 
-		float3 a = pressureRead.SampleLevel(TextureSampler, float3(idx.x - 1, idx.z, 0), 0);
-		float3 b = pressureRead.SampleLevel(TextureSampler, float3(idx.x + 1, idx.z, 0), 0);
-		float3 c = pressureRead.SampleLevel(TextureSampler, float3(idx.x, idx.z - 1, 0), 0);
-		float3 d = pressureRead.SampleLevel(TextureSampler, float3(idx.x, idx.z + 1, 0), 0);
+		float width = texResolution.x;
+
+		float3 a = pressureRead.SampleLevel(TextureSampler, float3(idx.x - 1, idx.y, idx.z) / width, 0);
+		float3 b = pressureRead.SampleLevel(TextureSampler, float3(idx.x + 1, idx.y, idx.z) / width, 0);
+		float3 c = pressureRead.SampleLevel(TextureSampler, float3(idx.x, idx.y - 1, idx.z) / width, 0);
+		float3 d = pressureRead.SampleLevel(TextureSampler, float3(idx.x, idx.y + 1, idx.z) / width, 0);
 
 		float3 grad = float3(a.x - b.x, c.y - d.y, 0) * halfDeltaX;
 

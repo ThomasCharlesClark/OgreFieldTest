@@ -66,8 +66,13 @@ namespace MyThirdOgre
 		mDebugPlaneMoDef->moType = MoTypeDynamicTriangleList;
 		mDebugPlaneMoDef->resourceGroup = Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME;
 
+#if OGRE_DEBUG_MODE
 		mBufferResolutionWidth = 256.0f;
 		mBufferResolutionHeight = 256.0f;
+#else
+		mBufferResolutionWidth = 512.0f;
+		mBufferResolutionHeight = 512.0f;
+#endif
 
 		mBufferResolutionDepth = 1.0f;
 
@@ -167,7 +172,7 @@ namespace MyThirdOgre
 			Ogre::Quaternion::IDENTITY,
 			Ogre::Vector3::UNIT_SCALE,
 			true,
-			1.0f,
+			0.9f,
 			true,
 			Ogre::Vector3::ZERO,
 			mRenderTargetTexture);
@@ -655,21 +660,16 @@ namespace MyThirdOgre
 				res[1] = mBufferResolutionHeight;
 
 				Ogre::ShaderParams& shaderParams = mAdvectionCopyComputeJob->getShaderParams("default");
-				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
 				Ogre::ShaderParams::Param* texResolution = shaderParams.findParameter("texResolution");
 				Ogre::ShaderParams::Param* reciprocalDeltaX = shaderParams.findParameter("reciprocalDeltaX");
-				tsl->setManualValue(timeSinceLast);
+
 				texResolution->setManualValue(res, sizeof(res) / sizeof(Ogre::uint32));
+
 				reciprocalDeltaX->setManualValue(1.0f);
+				
 				shaderParams.setDirty();
 
 				mHaveSetAdvectionCopyComputeShaderParameters = true;
-			}
-			else {
-				Ogre::ShaderParams& shaderParams = mAdvectionCopyComputeJob->getShaderParams("default");
-				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
-				tsl->setManualValue(timeSinceLast);
-				shaderParams.setDirty();
 			}
 		}
 
@@ -684,9 +684,14 @@ namespace MyThirdOgre
 				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
 				Ogre::ShaderParams::Param* texResolution = shaderParams.findParameter("texResolution");
 				Ogre::ShaderParams::Param* reciprocalDeltaX = shaderParams.findParameter("reciprocalDeltaX");
+				Ogre::ShaderParams::Param* velocityDissipationConstant = shaderParams.findParameter("velocityDissipationConstant");
+				Ogre::ShaderParams::Param* inkDissipationConstant = shaderParams.findParameter("inkDissipationConstant");
 				tsl->setManualValue(timeSinceLast);
 				texResolution->setManualValue(res, sizeof(res) / sizeof(Ogre::uint32));
 				reciprocalDeltaX->setManualValue(1.0f);
+				velocityDissipationConstant->setManualValue(0.75f);
+				inkDissipationConstant->setManualValue(0.997f);
+				//inkDissipationConstant->setManualValue(1.0f);
 				shaderParams.setDirty();
 
 				mHaveSetAdvectionComputeShaderParameters = true;
@@ -788,11 +793,9 @@ namespace MyThirdOgre
 
 				//Update the compute shader's
 				Ogre::ShaderParams& shaderParams = mTestComputeJob->getShaderParams("default");
-				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
 				Ogre::ShaderParams::Param* texResolution = shaderParams.findParameter("texResolution");
 				auto pb = shaderParams.findParameter("pixelBuffer");
 				texResolution->setManualValue(res, sizeof(res) / sizeof(Ogre::uint32));
-				tsl->setManualValue(timeSinceLast);
 				shaderParams.setDirty();
 
 				mTestComputeJob->setNumThreadGroups(
@@ -858,6 +861,7 @@ namespace MyThirdOgre
 								data[0] = 0.0f;
 								data[1] = 0.0f;
 								data[2] = 0.0f;
+								data[3] = 0.0f;
 							}
 						}
 					}
@@ -893,8 +897,9 @@ namespace MyThirdOgre
 							{
 								float* data = reinterpret_cast<float*>(tBox.at(x, y, z));
 								data[0] = 0.0f;
-								data[1] = 0.0f;
+								data[1] = 0.0f; // x < mBufferResolutionWidth / 2 ? 0.85f : 0.0f;
 								data[2] = 0.0f;
+								data[3] = 0.0f;
 							}
 						}
 					}
@@ -913,12 +918,6 @@ namespace MyThirdOgre
 
 				mHaveSetTestComputeShaderParameters = true;
 
-			}
-			else {
-				Ogre::ShaderParams& shaderParams = mTestComputeJob->getShaderParams("default");
-				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
-				tsl->setManualValue(timeSinceLast);
-				shaderParams.setDirty();
 			}
 
 			//if (mDownloadingTextureViaTicket && mTextureTicket->queryIsTransferDone()) 
@@ -944,82 +943,85 @@ namespace MyThirdOgre
 			}*/
 
 			for (auto& iter : mInkInputBuffer) {
-				if (iter.colour.b > 0)
-					iter.colour.b *= 0.996f;
+				/*if (iter.colour.b > 0)
+					iter.colour.b *= 0.996f;*/
+				iter.colour = Ogre::ColourValue(0, 0, 0, 1.0f);
+				iter.velocity = Ogre::Vector3::ZERO;// *= 0.996f;
 			}
 
-			if (mHand && mFieldBoundingHierarchy.size())
+			if (true)
 			{
-				auto leaves = std::vector<FieldComputeSystem_BoundingHierarchyBox>({});
 
-				int aabbIntersectionCount = 0;
+				if (mHand && mFieldBoundingHierarchy.size())
+				{
+					auto leaves = std::vector<FieldComputeSystem_BoundingHierarchyBox>({});
 
-				traverseBoundingHierarchy(mFieldBoundingHierarchy[0], &leaves, aabbIntersectionCount);
+					int aabbIntersectionCount = 0;
 
-				if (mGraphicsSystem) {
-					mGraphicsSystem->setAdditionalDebugText(
-						Ogre::String("\nIntersecting: ") + Ogre::StringConverter::toString(aabbIntersectionCount) + Ogre::String(" Leaf AaBbs"));
-				}
-
-				if (leaves.size()) {
-
-					int f = 0;
+					traverseBoundingHierarchy(mFieldBoundingHierarchy[0], &leaves, aabbIntersectionCount);
 
 					if (mGraphicsSystem) {
 						mGraphicsSystem->setAdditionalDebugText(
-							Ogre::String("\nIntersecting: ") + Ogre::StringConverter::toString(aabbIntersectionCount) + Ogre::String(" Leaf AaBbs") +
-							Ogre::String("\nSeeing: " + Ogre::StringConverter::toString(leaves.size() * mLeafResolutionX * mLeafResolutionZ) + Ogre::String(" buffer indices")));
+							Ogre::String("\nIntersecting: ") + Ogre::StringConverter::toString(aabbIntersectionCount) + Ogre::String(" Leaf AaBbs"));
 					}
 
-					//auto buffer = getUavBuffer(0);
-					//size_t uavBufferNumElements = buffer->getNumElements();
+					if (leaves.size()) {
 
-					Ogre::Real rHandSphereSquared = mHand->getBoundingSphere()->getRadius() * mHand->getBoundingSphere()->getRadius();
+						int f = 0;
 
-					Ogre::Vector3 vHandPos = mHand->getBoundingSphere()->getCenter();
+						if (mGraphicsSystem) {
+							mGraphicsSystem->setAdditionalDebugText(
+								Ogre::String("\nIntersecting: ") + Ogre::StringConverter::toString(aabbIntersectionCount) + Ogre::String(" Leaf AaBbs") +
+								Ogre::String("\nSeeing: " + Ogre::StringConverter::toString(leaves.size() * mLeafResolutionX * mLeafResolutionZ) + Ogre::String(" buffer indices")));
+						}
 
-					for (auto& l : leaves) {
+						Ogre::Real rHandSphereSquared = mHand->getBoundingSphere()->getRadius() * mHand->getBoundingSphere()->getRadius();
 
-						float x = l.mAaBb.getMinimum().x;
-						float z = l.mAaBb.getMinimum().z;
+						Ogre::Vector3 vHandPos = mHand->getBoundingSphere()->getCenter();
 
-						float zOffset = 0;
-						float xOffset = 0;
+						for (auto& l : leaves) {
 
-						for (size_t i = 0; i < l.mBufferIndices.size(); i++) {
+							float x = l.mAaBb.getMinimum().x;
+							float z = l.mAaBb.getMinimum().z;
 
-							auto& index = l.mBufferIndices[i];
+							float zOffset = 0;
+							float xOffset = 0;
 
-							float xPos = x + xOffset;
-							float yPos = 0;
-							float zPos = z + zOffset;
+							for (size_t i = 0; i < l.mBufferIndices.size(); i++) {
 
-							xOffset += 1 / mLeafResolutionX;
+								auto& index = l.mBufferIndices[i];
 
-							if (xOffset > mLeafResolutionX) {
-								xOffset = 0;
-								zOffset += 1 / mLeafResolutionZ;
-							}
+								float xPos = x + xOffset;
+								float yPos = 0;
+								float zPos = z + zOffset;
 
-							Ogre::Vector3 pos = index.mPosition;// Ogre::Vector3(xPos, yPos, zPos);
-							Ogre::Vector3 dist = vHandPos - pos;
-							Ogre::Real distLen = dist.length();
+								xOffset += 1 / mLeafResolutionX;
 
-							if (distLen < rHandSphereSquared) {
+								if (xOffset > mLeafResolutionX) {
+									xOffset = 0;
+									zOffset += 1 / mLeafResolutionZ;
+								}
 
-								mInkInputBuffer[index.mIndex].colour.r = 0.0f;
-								mInkInputBuffer[index.mIndex].colour.g = 0.0f;
-								mInkInputBuffer[index.mIndex].colour.b = 0.86f;
-								mInkInputBuffer[index.mIndex].colour.a = 1.0f;
+								Ogre::Vector3 pos = index.mPosition;// Ogre::Vector3(xPos, yPos, zPos);
+								Ogre::Vector3 dist = vHandPos - pos;
+								Ogre::Real distLen = dist.length();
 
-								mInkInputBuffer[index.mIndex].velocity = mHand->getState().vVel;
+								if (distLen < rHandSphereSquared) {
+
+									mInkInputBuffer[index.mIndex].colour.r = 0.0f;
+									mInkInputBuffer[index.mIndex].colour.g = 0.0f;
+									mInkInputBuffer[index.mIndex].colour.b = 0.86f; // mHand->getState().rInk;
+									mInkInputBuffer[index.mIndex].colour.a = 1.0f;
+
+									//mInkInputBuffer[index.mIndex].velocity = Ogre::Vector3::ZERO;
+									mInkInputBuffer[index.mIndex].velocity = mHand->getState().vVel;
+								}
 							}
 						}
 					}
 				}
+
 			}
-
-
 
 
 			auto buffer = getUavBuffer(0);

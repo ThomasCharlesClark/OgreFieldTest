@@ -1,5 +1,7 @@
 RWTexture3D<float4> previousVelocityWrite		: register(u0);
+RWTexture3D<float4> previousInkWrite			: register(u1);
 Texture3D<float4> velocityTextureRead			: register(t0);
+Texture3D<float4> inkTextureRead				: register(t1);
 
 SamplerState TextureSampler
 {
@@ -10,7 +12,6 @@ SamplerState TextureSampler
 
 uniform uint2 texResolution;
 
-uniform float timeSinceLast;
 uniform float reciprocalDeltaX;
 
 [numthreads(@value( threads_per_group_x ), @value( threads_per_group_y ), @value( threads_per_group_z ))]
@@ -20,16 +21,14 @@ void main
     uint3 gl_GlobalInvocationID : SV_DispatchThreadId
 )
 {
-	float tsl = timeSinceLast * 2;
-
 	if( gl_GlobalInvocationID.x < texResolution.x && gl_GlobalInvocationID.y < texResolution.y)
 	{
-		float3 idx = float3(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, 0);
+		int4 idx4 = int4(gl_GlobalInvocationID, 0);
 
-		float4 velocity = velocityTextureRead.Load(int4(idx, 0));
+		float4 velocity = velocityTextureRead.Load(idx4);
+		float4 ink = inkTextureRead.Load(idx4);
 
-		previousVelocityWrite[idx] = velocity;
-
-		//velocityTexture[idx] = float3(i.x, v.y, v.z);
+		previousVelocityWrite[gl_GlobalInvocationID] = velocity;
+		previousInkWrite[gl_GlobalInvocationID] = ink;
 	}
 }

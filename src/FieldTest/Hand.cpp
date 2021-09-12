@@ -16,7 +16,8 @@ namespace MyThirdOgre
         mState =
         {
             mState.bIsVisible = true,
-            mState.vPos = Ogre::Vector3(-16.0f, 0.0f, 16.0f),
+            //mState.vPos = Ogre::Vector3(-16.0f, 0.0f, 16.0f),
+            mState.vPos = Ogre::Vector3(0, 0, 0),
             mState.vVel = Ogre::Vector3::ZERO,
             mState.qRot = Ogre::Quaternion::IDENTITY,
             mState.rInk = 0.0f,
@@ -59,7 +60,7 @@ namespace MyThirdOgre
 
         mSphere = new Ogre::Sphere(mState.vPos, 1.5f);
 
-        mOuterSphere = new Ogre::Sphere(mState.vPos, 3.0f);
+        mOuterSphere = new Ogre::Sphere(mState.vPos, 5.0f);
     }
 
     void Hand::update(float timeSinceLast, Ogre::uint32 currIdx, Ogre::uint32 prevIdx) 

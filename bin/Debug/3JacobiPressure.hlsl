@@ -19,7 +19,7 @@
 	DONE DUMPING PIECES
 #endif
 RWTexture3D<float3> pressureTexture : register(u0);
-Texture2D<float3> divergenceRead : register(t0);
+Texture3D<float3> divergenceRead : register(t0);
 
 SamplerState TextureSampler
 {
@@ -38,22 +38,25 @@ void main
     uint3 gl_GlobalInvocationID : SV_DispatchThreadId
 )
 {
-	int3 idx = float3(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, 0);
-
-	float alpha = -halfDeltaX * halfDeltaX;
-	float rBeta = 0.25;
-	float beta = divergenceRead.Load(idx);
-
-	float3 a = pressureTexture.Load(int3(idx.x - 1, idx.z, 0));
-	float3 b = pressureTexture.Load(int3(idx.x + 1, idx.z, 0));
-	float3 c = pressureTexture.Load(int3(idx.x, idx.z - 1, 0));
-	float3 d = pressureTexture.Load(int3(idx.x, idx.z + 1, 0));
-
-	if( gl_GlobalInvocationID.x < texResolution.x && gl_GlobalInvocationID.y < texResolution.y)
+	if (gl_GlobalInvocationID.x < texResolution.x && gl_GlobalInvocationID.y < texResolution.y)
 	{
-		for (int i = 0; i < 20; ++i) 
-		{
-			pressureTexture[idx].xyz = float3((a.x + b.x + c.x + d.x + alpha * beta) * rBeta, 0, 0);
-		}
+		int3 idx = float3(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, gl_GlobalInvocationID.z);
+
+		float alpha = -halfDeltaX * halfDeltaX;
+		float rBeta = 0.25;
+		float width = texResolution.x;
+		float3 beta = divergenceRead.SampleLevel(TextureSampler, idx / width, 0);
+
+		float3 a = pressureTexture.Load(float3(idx.x - 1, idx.y, idx.z));
+		float3 b = pressureTexture.Load(float3(idx.x + 1, idx.y, idx.z));
+		float3 c = pressureTexture.Load(float3(idx.x, idx.y - 1, idx.z));
+		float3 d = pressureTexture.Load(float3(idx.x, idx.y + 1, idx.z));
+
+		float3 p = float3(
+			(a.x + b.x + c.x + d.x + alpha * beta.x) * rBeta, 
+			(a.x + b.x + c.x + d.x + alpha * beta.x) * rBeta, 
+			(a.x + b.x + c.x + d.x + alpha * beta.x) * rBeta);
+
+		pressureTexture[idx] = p; // float3(0.0, 0.4, 0.0);
 	}
 }

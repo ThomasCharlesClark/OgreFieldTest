@@ -26,8 +26,8 @@ struct Particle
 	float3 pressureGradient;
 };
 
-RWTexture3D<float3> velocityTexture : register(u0);
-RWTexture3D<float3> inkTexture : register(u1);
+RWTexture3D<float4> velocityTexture : register(u0);
+RWTexture3D<float4> inkTexture : register(u1);
 RWStructuredBuffer<Particle> otherBuffer : register(u2);
 
 SamplerState TextureSampler
@@ -52,11 +52,11 @@ void main
 
 	if( gl_GlobalInvocationID.x < texResolution.x && gl_GlobalInvocationID.y < texResolution.y)
 	{
-		float3 idx = float3(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, 0);
+		float3 idx = float3(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, gl_GlobalInvocationID.z);
 
 		uint rwIdx = gl_GlobalInvocationID.y * texResolution.x + gl_GlobalInvocationID.x;
 
-		velocityTexture[idx].xyz += otherBuffer[rwIdx].velocity;
+		velocityTexture[idx] += float4(otherBuffer[rwIdx].velocity, 1.0);
 		inkTexture[idx] += otherBuffer[rwIdx].colour;
 	}
 }
