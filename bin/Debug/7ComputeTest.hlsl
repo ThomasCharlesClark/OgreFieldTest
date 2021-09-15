@@ -1,12 +1,12 @@
 #if 0
-	***	threads_per_group_x	16
+	***	threads_per_group_x	8
 	***	fast_shader_build_hack	1
 	***	glsl	635204550
-	***	threads_per_group_y	16
+	***	threads_per_group_y	8
 	***	threads_per_group_z	1
 	***	hlms_high_quality	0
 	***	typed_uav_load	1
-	***	num_thread_groups_y	39
+	***	num_thread_groups_y	32
 	***	glsles	1070293233
 	***	hlslvk	1841745752
 	***	syntax	-334286542
@@ -14,14 +14,25 @@
 	***	num_thread_groups_z	1
 	***	glslvk	-338983575
 	***	hlsl	-334286542
-	***	num_thread_groups_x	81
+	***	num_thread_groups_x	32
 	DONE DUMPING PROPERTIES
 	DONE DUMPING PIECES
 #endif
+struct Particle 
+{
+	float4 colour;
+	float3 velocity;
+	float pressure;
+	float3 pressureGradient;
+};
 
 RWStructuredBuffer<uint> pixelBuffer : register(u0);
+RWTexture3D<float4> velocityRead : register(u1);
+RWTexture3D<float4> inkRead : register(u2);
 
 uniform uint2 texResolution;
+
+uniform float timeSinceLast;
 
 uint packUnorm4x8( float4 value )
 {
@@ -33,7 +44,7 @@ uint packUnorm4x8( float4 value )
 	return x | (y << 8u) | (z << 16u ) | (w << 24u);
 }
 
-[numthreads(16, 16, 1)]
+[numthreads(8, 8, 1)]
 void main
 (
     uint3 gl_LocalInvocationID : SV_GroupThreadID,
@@ -43,6 +54,15 @@ void main
 	if( gl_GlobalInvocationID.x < texResolution.x && gl_GlobalInvocationID.y < texResolution.y )
 	{
 		uint idx = gl_GlobalInvocationID.y * texResolution.x + gl_GlobalInvocationID.x;
-		pixelBuffer[idx] = packUnorm4x8( float4( float2(gl_LocalInvocationID.xy) / 16.0f, 0.0f, 1.0f ) );
+
+		float4 i = inkRead.Load(int4(gl_GlobalInvocationID, 1));
+
+		float4 v = velocityRead.Load(int4(gl_GlobalInvocationID, 1));
+
+		pixelBuffer[idx] = packUnorm4x8(i);
+
+		//pixelBuffer[idx] = packUnorm4x8(float4(v, 1.0f));
+
+		//pixelBuffer[idx] = packUnorm4x8(float4(i + v, 1.0f));
 	}
 }

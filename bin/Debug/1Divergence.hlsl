@@ -19,7 +19,7 @@
 	DONE DUMPING PIECES
 #endif
 RWTexture3D<float3> divergenceTexture : register(u0);
-Texture2D<float3> velocityRead : register(t0);
+Texture3D<float3> velocityRead : register(t0);
 
 SamplerState TextureSampler
 {
@@ -40,15 +40,22 @@ void main
 {
 	if( gl_GlobalInvocationID.x < texResolution.x && gl_GlobalInvocationID.y < texResolution.y)
 	{
-		float3 idx = float3(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, 0);
+		float3 idx = float3(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, gl_GlobalInvocationID.z);
 
-		float3 a = velocityRead.SampleLevel(TextureSampler, float2(idx.x - 1, idx.y), 0);
-		float3 b = velocityRead.SampleLevel(TextureSampler, float2(idx.x + 1, idx.y), 0);
-		float3 c = velocityRead.SampleLevel(TextureSampler, float2(idx.x, idx.y + 1), 0);
-		float3 d = velocityRead.SampleLevel(TextureSampler, float2(idx.x, idx.y - 1), 0);
+		float width = texResolution.x;
 
-		divergenceTexture[idx].xyz = float3(((a.x - b.x) + (c.y - d.y)) * halfDeltaX, 0.0, 0.0);
-			
-			//float3(((a.x - b.x) + (c.z - d.z)) * halfDeltaX, 0, 0);
+		float3 a = velocityRead.SampleLevel(TextureSampler, float3(idx.x - 1, idx.y,	 idx.z) / width, 0);
+		float3 b = velocityRead.SampleLevel(TextureSampler, float3(idx.x + 1, idx.y,	 idx.z) / width, 0);
+		float3 c = velocityRead.SampleLevel(TextureSampler, float3(idx.x,	  idx.y + 1, idx.z) / width, 0);
+		float3 d = velocityRead.SampleLevel(TextureSampler, float3(idx.x,	  idx.y - 1, idx.z) / width, 0);
+
+		float3 div = float3(
+			((a.x - b.x) + (c.y - d.y)) * halfDeltaX,
+			0,
+			0);
+			/*((a.x - b.x) + (c.y - d.y)) * halfDeltaX,
+			((a.x - b.x) + (c.y - d.y)) * halfDeltaX);*/
+
+		divergenceTexture[idx] = div;
 	}
 }

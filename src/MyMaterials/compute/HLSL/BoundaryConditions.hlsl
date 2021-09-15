@@ -1,5 +1,5 @@
-RWTexture3D<float3> velocityTexture : register(u0);
-RWTexture3D<float3> inkTexture : register(u1);
+RWTexture3D<float3> velocityWrite : register(u0);
+RWTexture3D<float3> inkWrite : register(u1);
 Texture2D<float3> velocityRead : register(t0);
 Texture2D<float3> inkRead : register(t1);
 

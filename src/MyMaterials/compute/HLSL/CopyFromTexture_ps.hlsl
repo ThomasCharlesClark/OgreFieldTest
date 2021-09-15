@@ -1,4 +1,4 @@
-Texture3D<float4> velocityTexture : register(t0);
+Texture3D<float4> inkRead : register(t0);
 SamplerState samplerState[2]: register(s0);
 
 struct PS_INPUT
@@ -30,7 +30,7 @@ float4 main( PS_INPUT inPs, float4 gl_FragCoord : SV_Position ) : SV_Target
 {
 	//uint idx = uint(gl_FragCoord.y) * texResolution.x + uint(gl_FragCoord.x);
 
-	float4 fragColour = velocityTexture.SampleLevel(TextureSampler, float3(gl_FragCoord.x, gl_FragCoord.y, gl_FragCoord.z), 0);
+	float4 fragColour = inkRead.SampleLevel(TextureSampler, float3(gl_FragCoord.xyz), 1.0);
 	
 	return fragColour;
 }

@@ -431,10 +431,6 @@ namespace MyThirdOgre
     {
         for (auto& iter : mFieldComputeSystems) {
             iter->update(timeSinceLast);
-
-            /*if (iter->getDownloadingTextureViaTicket() && iter->getTextureTicket()->queryIsTransferDone()) {
-                iter->setDownloadingTextureViaTicket(false);
-            }*/
         }
 
 
@@ -473,61 +469,6 @@ namespace MyThirdOgre
         /*SDL_Rect rect;
         SDL_GetDisplayBounds( 0, &rect );
         SDL_GetDisplayBounds( 0, &rect );*/
-
-
-        // We don't actually want to be doing this update *here*.
-        // We do want the computeJob to exist; we need the resources (various HLMS json + compute HLSLs) to have been read from file...
-        // but we actually want the various FieldComputeSystem instances to be "given"? the compute jobs, and to be able to 
-        // specify their own resources as parameters to the shader calls...
-
-        // Okay, but what does this prove. Bugger all. This LOADS the compute shader, but we want to be able to instance it (and multiple other shaders)
-        // and set their parameters from somewhere far, far away - on another thread.
-        // Hmmmm.
-
-        // And how does this all tie in with "workspaces"?
-
-
-
-
-        //if (mUseCompute && mComputeJob)
-        //{
-        //    Ogre::Window* renderWindow = this->getRenderWindow();
-
-        //    // currently just using this as a "write a new png" hack, silly but whatever
-        //    // I now have a compute job running, reading (?) a UAV input and writing back to it?
-
-        //    // holy cow, I'm going to be able to edit my compute shaders on-the-fly and reload the results while still running my program.
-        //    if (mLastWindowWidth != renderWindow->getWidth() ||
-        //        mLastWindowHeight != renderWindow->getHeight())
-        //    {
-        //        Ogre::uint32 res[2];
-        //        res[0] = 800;// renderWindow->getWidth();
-        //        res[1] = 600;// renderWindow->getHeight();
-
-        //        //Update the compute shader's
-        //        Ogre::ShaderParams& shaderParams = mComputeJob->getShaderParams("default");
-        //        Ogre::ShaderParams::Param* texResolution = shaderParams.findParameter("texResolution");
-        //        texResolution->setManualValue(res, sizeof(res) / sizeof(Ogre::uint32));
-        //        shaderParams.setDirty();
-
-        //        mComputeJob->setNumThreadGroups((res[0] + mComputeJob->getThreadsPerGroupX() - 1u) /
-        //            mComputeJob->getThreadsPerGroupX(),
-        //            (res[1] + mComputeJob->getThreadsPerGroupY() - 1u) /
-        //            mComputeJob->getThreadsPerGroupY(), 1u);
-
-        //        //Update the pass that draws the UAV Buffer into the RTT (we could
-        //        //use auto param viewport_size, but this more flexible)
-        //        Ogre::GpuProgramParametersSharedPtr psParams = mDrawFromUavBufferMat->getTechnique(0)->
-        //            getPass(0)->getFragmentProgramParameters();
-
-        //        psParams->setNamedConstant("texResolution", res, 1u, 2u);
-
-        //        mUavTextureGpu->writeContentsToFile("testing.png", 0, 1, true);
-
-        //        mLastWindowWidth = renderWindow->getWidth();
-        //        mLastWindowHeight = renderWindow->getHeight();
-        //    }
-        //}
     }
     //-----------------------------------------------------------------------------------
     #if OGRE_USE_SDL2
@@ -1436,6 +1377,7 @@ namespace MyThirdOgre
                 fieldComputeSystem->setTestComputeJob(hlmsCompute->findComputeJob("TestJob"));
                 fieldComputeSystem->setAdvectionCopyComputeJob(hlmsCompute->findComputeJob("AdvectionCopy"));
                 fieldComputeSystem->setAdvectionComputeJob(hlmsCompute->findComputeJob("Advection"));
+                fieldComputeSystem->setInkAdvectionComputeJob(hlmsCompute->findComputeJob("InkAdvection"));
                 fieldComputeSystem->setAddImpulsesComputeJob(hlmsCompute->findComputeJob("AddImpulses"));
                 fieldComputeSystem->setDivergenceComputeJob(hlmsCompute->findComputeJob("Divergence"));
                 fieldComputeSystem->setJabobiPressureComputeJob(hlmsCompute->findComputeJob("JacobiPressure"));
@@ -1476,7 +1418,7 @@ namespace MyThirdOgre
                     fieldComputeSystem->getBufferResolutionHeight(),
                     fieldComputeSystem->getDepth(),
                     fieldComputeSystem->getTextureType3D(),
-                    fieldComputeSystem->getPixelFormat2D()));
+                    fieldComputeSystem->getPixelFormat3D()));
 
                 Ogre::TextureGpu* textures[8];
 
@@ -1493,8 +1435,8 @@ namespace MyThirdOgre
 
                 textures[1] =
                     texMgr->createTexture(
-                        "velocityTexture",
-                        "velocityTexture",
+                        "primaryVelocityTexture",
+                        "primaryVelocityTexture",
                         Ogre::GpuPageOutStrategy::Discard,
                         Ogre::TextureFlags::ManualTexture | Ogre::TextureFlags::Uav,
                         fieldComputeSystem->getTextureType3D(),
@@ -1504,8 +1446,8 @@ namespace MyThirdOgre
 
                 textures[2] =
                     texMgr->createTexture(
-                        "prevVelocityTexture",
-                        "prevVelocityTexture",
+                        "secondaryVelocityTexture",
+                        "secondaryVelocityTexture",
                         Ogre::GpuPageOutStrategy::Discard,
                         Ogre::TextureFlags::ManualTexture | Ogre::TextureFlags::Uav,
                         fieldComputeSystem->getTextureType3D(),
@@ -1548,8 +1490,8 @@ namespace MyThirdOgre
 
                 textures[6] =
                     texMgr->createTexture(
-                        "inkTexture",
-                        "inkTexture",
+                        "primaryInkTexture",
+                        "primaryInkTexture",
                         Ogre::GpuPageOutStrategy::Discard,
                         Ogre::TextureFlags::ManualTexture | Ogre::TextureFlags::Uav,
                         fieldComputeSystem->getTextureType3D(),
@@ -1559,8 +1501,8 @@ namespace MyThirdOgre
 
                 textures[7] =
                     texMgr->createTexture(
-                        "prevInkTexture",
-                        "prevInkTexture",
+                        "secondaryInkTexture",
+                        "secondaryInkTexture",
                         Ogre::GpuPageOutStrategy::Discard,
                         Ogre::TextureFlags::ManualTexture | Ogre::TextureFlags::Uav,
                         fieldComputeSystem->getTextureType3D(),
@@ -1572,7 +1514,7 @@ namespace MyThirdOgre
 
                 fieldComputeSystem->setVelocityTexture(textures[1]);
 
-                fieldComputeSystem->setPreviousVelocityTexture(textures[2]);
+                fieldComputeSystem->setSecondaryVelocityTexture(textures[2]);
 
                 fieldComputeSystem->setPressureTexture(textures[3]);
 
@@ -1582,7 +1524,7 @@ namespace MyThirdOgre
 
                 fieldComputeSystem->setInkTexture(textures[6]);
 
-                fieldComputeSystem->setPreviousInkTexture(textures[7]);
+                fieldComputeSystem->setSecondaryInkTexture(textures[7]);
 
                 size_t uavBufferNumElements = fieldComputeSystem->getBufferResolutionWidth() * fieldComputeSystem->getBufferResolutionHeight();
 
@@ -1636,13 +1578,13 @@ namespace MyThirdOgre
                 fieldComputeSystem->getRenderTargetTexture()->setResolution(fieldComputeSystem->getBufferResolutionWidth(), fieldComputeSystem->getBufferResolutionHeight());
                 fieldComputeSystem->getRenderTargetTexture()->setPixelFormat(fieldComputeSystem->getPixelFormat2D());
 
-                fieldComputeSystem->getVelocityTexture()->setNumMipmaps(1);
-                fieldComputeSystem->getVelocityTexture()->setResolution(fieldComputeSystem->getBufferResolutionWidth(), fieldComputeSystem->getBufferResolutionHeight());
-                fieldComputeSystem->getVelocityTexture()->setPixelFormat(fieldComputeSystem->getPixelFormat3D());
+                fieldComputeSystem->getPrimaryVelocityTexture()->setNumMipmaps(1);
+                fieldComputeSystem->getPrimaryVelocityTexture()->setResolution(fieldComputeSystem->getBufferResolutionWidth(), fieldComputeSystem->getBufferResolutionHeight());
+                fieldComputeSystem->getPrimaryVelocityTexture()->setPixelFormat(fieldComputeSystem->getPixelFormat3D());
 
-                fieldComputeSystem->getPreviousVelocityTexture()->setNumMipmaps(1);
-                fieldComputeSystem->getPreviousVelocityTexture()->setResolution(fieldComputeSystem->getBufferResolutionWidth(), fieldComputeSystem->getBufferResolutionHeight());
-                fieldComputeSystem->getPreviousVelocityTexture()->setPixelFormat(fieldComputeSystem->getPixelFormat3D());
+                fieldComputeSystem->getSecondaryVelocityTexture()->setNumMipmaps(1);
+                fieldComputeSystem->getSecondaryVelocityTexture()->setResolution(fieldComputeSystem->getBufferResolutionWidth(), fieldComputeSystem->getBufferResolutionHeight());
+                fieldComputeSystem->getSecondaryVelocityTexture()->setPixelFormat(fieldComputeSystem->getPixelFormat3D());
 
                 fieldComputeSystem->getPressureTexture()->setNumMipmaps(1);
                 fieldComputeSystem->getPressureTexture()->setResolution(fieldComputeSystem->getBufferResolutionWidth(), fieldComputeSystem->getBufferResolutionHeight());
@@ -1656,13 +1598,13 @@ namespace MyThirdOgre
                 fieldComputeSystem->getDivergenceTexture()->setResolution(fieldComputeSystem->getBufferResolutionWidth(), fieldComputeSystem->getBufferResolutionHeight());
                 fieldComputeSystem->getDivergenceTexture()->setPixelFormat(fieldComputeSystem->getPixelFormat3D());
 
-                fieldComputeSystem->getInkTexture()->setNumMipmaps(1);
-                fieldComputeSystem->getInkTexture()->setResolution(fieldComputeSystem->getBufferResolutionWidth(), fieldComputeSystem->getBufferResolutionHeight());
-                fieldComputeSystem->getInkTexture()->setPixelFormat(fieldComputeSystem->getPixelFormat3D());
+                fieldComputeSystem->getPrimaryInkTexture()->setNumMipmaps(1);
+                fieldComputeSystem->getPrimaryInkTexture()->setResolution(fieldComputeSystem->getBufferResolutionWidth(), fieldComputeSystem->getBufferResolutionHeight());
+                fieldComputeSystem->getPrimaryInkTexture()->setPixelFormat(fieldComputeSystem->getPixelFormat3D());
 
-                fieldComputeSystem->getPreviousInkTexture()->setNumMipmaps(1);
-                fieldComputeSystem->getPreviousInkTexture()->setResolution(fieldComputeSystem->getBufferResolutionWidth(), fieldComputeSystem->getBufferResolutionHeight());
-                fieldComputeSystem->getPreviousInkTexture()->setPixelFormat(fieldComputeSystem->getPixelFormat3D());
+                fieldComputeSystem->getSecondaryInkTexture()->setNumMipmaps(1);
+                fieldComputeSystem->getSecondaryInkTexture()->setResolution(fieldComputeSystem->getBufferResolutionWidth(), fieldComputeSystem->getBufferResolutionHeight());
+                fieldComputeSystem->getSecondaryInkTexture()->setPixelFormat(fieldComputeSystem->getPixelFormat3D());
 
                 Ogre::DescriptorSetUav::TextureSlot uavSlot(Ogre::DescriptorSetUav::TextureSlot::makeEmpty());
 
@@ -1679,24 +1621,13 @@ namespace MyThirdOgre
 
                 fieldComputeSystem->getTestComputeJob()->_setUavTexture(0, uavSlot);
 
-                fieldComputeSystem->getTestComputeJob()->_setUavBuffer(1, bufferSlot);
-
                 uavSlot.pixelFormat = fieldComputeSystem->getPixelFormat3D();
 
-                uavSlot.texture = fieldComputeSystem->getVelocityTexture();
+                uavSlot.texture = fieldComputeSystem->getPrimaryVelocityTexture();
+                fieldComputeSystem->getTestComputeJob()->_setUavTexture(1, uavSlot);
+
+                uavSlot.texture = fieldComputeSystem->getPrimaryInkTexture();
                 fieldComputeSystem->getTestComputeJob()->_setUavTexture(2, uavSlot);
-
-                //uavSlot.texture = fieldComputeSystem->getPressureTexture();
-                //fieldComputeSystem->getTestComputeJob()->_setUavTexture(3, uavSlot);
-
-                //uavSlot.texture = fieldComputeSystem->getPressureGradientTexture();
-                //fieldComputeSystem->getTestComputeJob()->_setUavTexture(4, uavSlot);
-
-                //uavSlot.texture = fieldComputeSystem->getDivergenceTexture();
-                //fieldComputeSystem->getTestComputeJob()->_setUavTexture(5, uavSlot);
-
-                uavSlot.texture = fieldComputeSystem->getInkTexture();
-                fieldComputeSystem->getTestComputeJob()->_setUavTexture(3, uavSlot);
 
 
                 Ogre::DescriptorSetTexture2::TextureSlot textureSlot(Ogre::DescriptorSetTexture2::TextureSlot::makeEmpty());
@@ -1704,41 +1635,58 @@ namespace MyThirdOgre
                 textureSlot.pixelFormat = fieldComputeSystem->getPixelFormat3D();
 
 
+                // Impulses are added to the primaries
 
-                uavSlot.texture = fieldComputeSystem->getPreviousVelocityTexture();
+                uavSlot.texture = fieldComputeSystem->getPrimaryVelocityTexture();
+                fieldComputeSystem->getAddImpulsesComputeJob()->_setUavTexture(0, uavSlot);
+
+                uavSlot.texture = fieldComputeSystem->getPrimaryInkTexture();
+                fieldComputeSystem->getAddImpulsesComputeJob()->_setUavTexture(1, uavSlot);
+
+
+                // Copy writes the primaries directly to the secondaries
+
+                uavSlot.texture = fieldComputeSystem->getSecondaryVelocityTexture();
                 fieldComputeSystem->getAdvectionCopyComputeJob()->_setUavTexture(0, uavSlot);
 
-                uavSlot.texture = fieldComputeSystem->getPreviousInkTexture();
+                uavSlot.texture = fieldComputeSystem->getSecondaryInkTexture();
                 fieldComputeSystem->getAdvectionCopyComputeJob()->_setUavTexture(1, uavSlot);
 
-                textureSlot.texture = fieldComputeSystem->getVelocityTexture();
+                textureSlot.texture = fieldComputeSystem->getPrimaryVelocityTexture();
                 fieldComputeSystem->getAdvectionCopyComputeJob()->setTexture(0, textureSlot);
 
-                textureSlot.texture = fieldComputeSystem->getInkTexture();
+                textureSlot.texture = fieldComputeSystem->getPrimaryInkTexture();
                 fieldComputeSystem->getAdvectionCopyComputeJob()->setTexture(1, textureSlot);
 
+                 
+                // Advection reads the secondaries and advects those onto to the primaries
 
-
-
-                uavSlot.texture = fieldComputeSystem->getVelocityTexture();
+                uavSlot.texture = fieldComputeSystem->getPrimaryVelocityTexture();
                 fieldComputeSystem->getAdvectionComputeJob()->_setUavTexture(0, uavSlot);
 
-                uavSlot.texture = fieldComputeSystem->getInkTexture();
+                uavSlot.texture = fieldComputeSystem->getPrimaryInkTexture();
                 fieldComputeSystem->getAdvectionComputeJob()->_setUavTexture(1, uavSlot);
 
-                textureSlot.texture = fieldComputeSystem->getPreviousVelocityTexture();
+                textureSlot.texture = fieldComputeSystem->getSecondaryVelocityTexture();
                 fieldComputeSystem->getAdvectionComputeJob()->setTexture(0, textureSlot);
 
-                textureSlot.texture = fieldComputeSystem->getPreviousInkTexture();
+                textureSlot.texture = fieldComputeSystem->getSecondaryInkTexture();
                 fieldComputeSystem->getAdvectionComputeJob()->setTexture(1, textureSlot);
 
 
+                // Advection reads the secondaries and advects those onto to the primaries
 
-                uavSlot.texture = fieldComputeSystem->getVelocityTexture();
-                fieldComputeSystem->getAddImpulsesComputeJob()->_setUavTexture(0, uavSlot);
+                uavSlot.texture = fieldComputeSystem->getPrimaryVelocityTexture();
+                fieldComputeSystem->getInkAdvectionComputeJob()->_setUavTexture(0, uavSlot);
 
-                uavSlot.texture = fieldComputeSystem->getInkTexture();
-                fieldComputeSystem->getAddImpulsesComputeJob()->_setUavTexture(1, uavSlot);
+                uavSlot.texture = fieldComputeSystem->getPrimaryInkTexture();
+                fieldComputeSystem->getInkAdvectionComputeJob()->_setUavTexture(1, uavSlot);
+
+                textureSlot.texture = fieldComputeSystem->getSecondaryVelocityTexture();
+                fieldComputeSystem->getInkAdvectionComputeJob()->setTexture(0, textureSlot);
+
+                textureSlot.texture = fieldComputeSystem->getSecondaryInkTexture();
+                fieldComputeSystem->getInkAdvectionComputeJob()->setTexture(1, textureSlot);
 
 
 
@@ -1746,7 +1694,7 @@ namespace MyThirdOgre
                 uavSlot.texture = fieldComputeSystem->getDivergenceTexture();
                 fieldComputeSystem->getDivergenceComputeJob()->_setUavTexture(0, uavSlot);
 
-                textureSlot.texture = fieldComputeSystem->getVelocityTexture();
+                textureSlot.texture = fieldComputeSystem->getPrimaryVelocityTexture();
                 fieldComputeSystem->getDivergenceComputeJob()->setTexture(0, textureSlot);
 
 
@@ -1763,7 +1711,7 @@ namespace MyThirdOgre
 
 
 
-                uavSlot.texture = fieldComputeSystem->getVelocityTexture();
+                uavSlot.texture = fieldComputeSystem->getPrimaryVelocityTexture();
                 fieldComputeSystem->getSubtractPressureGradientComputeJob()->_setUavTexture(0, uavSlot);
 
                 textureSlot.texture = fieldComputeSystem->getPressureTexture();
@@ -1787,30 +1735,30 @@ namespace MyThirdOgre
 
 
                 canUseSynchronousUpload = fieldComputeSystem
-                    ->getVelocityTexture()
+                    ->getPrimaryVelocityTexture()
                     ->getNextResidencyStatus() == Ogre::GpuResidency::Resident
-                    && fieldComputeSystem->getVelocityTexture()->isDataReady();
+                    && fieldComputeSystem->getPrimaryVelocityTexture()->isDataReady();
 
                 if (!canUseSynchronousUpload) {
-                    fieldComputeSystem->getVelocityTexture()->waitForData();
+                    fieldComputeSystem->getPrimaryVelocityTexture()->waitForData();
                 }
 
                 fieldComputeSystem
-                    ->getVelocityTexture()
+                    ->getPrimaryVelocityTexture()
                     ->scheduleTransitionTo(Ogre::GpuResidency::Resident, 0, true);
 
 
                 canUseSynchronousUpload = fieldComputeSystem
-                    ->getPreviousVelocityTexture()
+                    ->getSecondaryVelocityTexture()
                     ->getNextResidencyStatus() == Ogre::GpuResidency::Resident
-                    && fieldComputeSystem->getPreviousVelocityTexture()->isDataReady();
+                    && fieldComputeSystem->getSecondaryVelocityTexture()->isDataReady();
 
                 if (!canUseSynchronousUpload) {
-                    fieldComputeSystem->getPreviousVelocityTexture()->waitForData();
+                    fieldComputeSystem->getSecondaryVelocityTexture()->waitForData();
                 }
 
                 fieldComputeSystem
-                    ->getPreviousVelocityTexture()
+                    ->getSecondaryVelocityTexture()
                     ->scheduleTransitionTo(Ogre::GpuResidency::Resident, 0, true);
 
 
@@ -1856,30 +1804,30 @@ namespace MyThirdOgre
 
 
                 canUseSynchronousUpload = fieldComputeSystem
-                    ->getInkTexture()
+                    ->getPrimaryInkTexture()
                     ->getNextResidencyStatus() == Ogre::GpuResidency::Resident
-                    && fieldComputeSystem->getInkTexture()->isDataReady();
+                    && fieldComputeSystem->getPrimaryInkTexture()->isDataReady();
 
                 if (!canUseSynchronousUpload) {
-                    fieldComputeSystem->getInkTexture()->waitForData();
+                    fieldComputeSystem->getPrimaryInkTexture()->waitForData();
                 }
 
                 fieldComputeSystem
-                    ->getInkTexture()
+                    ->getPrimaryInkTexture()
                     ->scheduleTransitionTo(Ogre::GpuResidency::Resident, 0, true);
 
 
                 canUseSynchronousUpload = fieldComputeSystem
-                    ->getPreviousInkTexture()
+                    ->getSecondaryInkTexture()
                     ->getNextResidencyStatus() == Ogre::GpuResidency::Resident
-                    && fieldComputeSystem->getPreviousInkTexture()->isDataReady();
+                    && fieldComputeSystem->getSecondaryInkTexture()->isDataReady();
 
                 if (!canUseSynchronousUpload) {
-                    fieldComputeSystem->getPreviousInkTexture()->waitForData();
+                    fieldComputeSystem->getSecondaryInkTexture()->waitForData();
                 }
 
                 fieldComputeSystem
-                    ->getPreviousInkTexture()
+                    ->getSecondaryInkTexture()
                     ->scheduleTransitionTo(Ogre::GpuResidency::Resident, 0, true);
 
 
@@ -1892,13 +1840,13 @@ namespace MyThirdOgre
 
                 auto tVec = Ogre::CompositorChannelVec({
                         fieldComputeSystem->getRenderTargetTexture(),
-                        fieldComputeSystem->getVelocityTexture(),
-                        fieldComputeSystem->getPreviousVelocityTexture(),
+                        fieldComputeSystem->getPrimaryVelocityTexture(),
+                        fieldComputeSystem->getSecondaryVelocityTexture(),
                         fieldComputeSystem->getPressureTexture(),
                         fieldComputeSystem->getPressureGradientTexture(),
                         fieldComputeSystem->getDivergenceTexture(),
-                        fieldComputeSystem->getInkTexture(),
-                        fieldComputeSystem->getPreviousInkTexture()
+                        fieldComputeSystem->getPrimaryInkTexture(),
+                        fieldComputeSystem->getSecondaryInkTexture()
                     });
 
                 auto workspace = compositorManager->addWorkspace(

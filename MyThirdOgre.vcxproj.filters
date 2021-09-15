@@ -275,9 +275,6 @@
       <Filter>ComputeShaders</Filter>
     </None>
     <None Include="src\MyMaterials\MainWorkspace.compositor" />
-    <None Include="src\MyMaterials\compute\HLSL\Advection.hlsl">
-      <Filter>ComputeShaders</Filter>
-    </None>
     <None Include="src\MyMaterials\compute\HLSL\AddImpulses.hlsl">
       <Filter>ComputeShaders</Filter>
     </None>
@@ -300,6 +297,12 @@
       <Filter>ComputeShaders</Filter>
     </None>
     <None Include="src\MyMaterials\compute\HLSL\AdvectionCopy.hlsl">
+      <Filter>ComputeShaders</Filter>
+    </None>
+    <None Include="src\MyMaterials\compute\HLSL\Advection.hlsl">
+      <Filter>ComputeShaders</Filter>
+    </None>
+    <None Include="src\MyMaterials\compute\HLSL\InkAdvection.hlsl">
       <Filter>ComputeShaders</Filter>
     </None>
   </ItemGroup>

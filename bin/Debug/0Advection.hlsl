@@ -51,7 +51,7 @@ void main
 		float width = texResolution.x;
 
 		float4 velocity = velocityTextureRead.SampleLevel(TextureSampler, idx / width, 0);
-		
+
 		float3 idxBackInTime = idx - timeSinceLast * reciprocalDeltaX * velocity.xyz;
 
 		float4 v = float4(float3(velocityTextureRead.SampleLevel(TextureSampler, idxBackInTime / width, 0).xyz) * velocityDissipationConstant, 1.0);

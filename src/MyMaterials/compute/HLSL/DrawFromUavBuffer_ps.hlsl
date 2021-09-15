@@ -15,8 +15,21 @@ float4 unpackUnorm4x8( uint value )
 	retVal.z = float((value >> 16u) & 0xFF);
 	retVal.w = float((value >> 24u) & 0xFF);
 
-	return retVal * 0.0039215687f; // 1.0 / 255.0f;
+	return retVal * 0.0039215687f;
 }
+
+// for crazy funtimes!
+//float4 unpackUnorm4x8(uint value)
+//{
+//	float4 retVal;
+//	retVal.x = float(value & 0xFF);
+//	retVal.y = float((value >> 4u) & 0xFF);
+//	retVal.z = float((value >> 12u) & 0xFF);
+//	retVal.w = float((value >> 24u) & 0xFF);
+//
+//	//return retVal * 0.0039215687f; // 1.0 / 255.0f;
+//	return retVal * (1.0 / 105.0f);
+//}
 
 float4 main( PS_INPUT inPs, float4 gl_FragCoord : SV_Position ) : SV_Target
 {

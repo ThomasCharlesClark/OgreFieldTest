@@ -241,9 +241,9 @@ namespace MyThirdOgre
 				}
 			}
 
-			advect(timeSinceLast, state);
-
 			addImpulses(timeSinceLast, state);
+
+			advect(timeSinceLast, state);
 
 			if (mViscosity > 0)
 				jacobiDiffusion(timeSinceLast, state);

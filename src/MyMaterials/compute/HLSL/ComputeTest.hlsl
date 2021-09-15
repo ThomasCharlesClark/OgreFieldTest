@@ -7,9 +7,8 @@ struct Particle
 };
 
 RWStructuredBuffer<uint> pixelBuffer : register(u0);
-RWStructuredBuffer<Particle> otherBuffer : register(u1);
-RWTexture3D<float4> velocityTexture : register(u2);
-RWTexture3D<float4> inkTexture : register(u3);
+RWTexture3D<float4> velocityRead : register(u1);
+RWTexture3D<float4> inkRead : register(u2);
 
 uniform uint2 texResolution;
 
@@ -20,7 +19,6 @@ uint packUnorm4x8( float4 value )
 	uint x = uint(saturate(value.x) * 255.0f);
 	uint y = uint(saturate(value.y) * 255.0f);
 	uint z = uint(saturate(value.z) * 255.0f);
-	//uint z = uint(value.z);
 	uint w = uint(saturate(value.w) * 255.0f);
 	
 	return x | (y << 8u) | (z << 16u ) | (w << 24u);
@@ -37,14 +35,14 @@ void main
 	{
 		uint idx = gl_GlobalInvocationID.y * texResolution.x + gl_GlobalInvocationID.x;
 
-		float3 i = inkTexture.Load(gl_GlobalInvocationID);
+		float4 i = inkRead.Load(int4(gl_GlobalInvocationID, 1));
 
-		float3 v = velocityTexture.Load(gl_GlobalInvocationID);
+		float4 v = velocityRead.Load(int4(gl_GlobalInvocationID, 1));
 
-		//pixelBuffer[idx] = packUnorm4x8(float4(i, 1.0f));
+		pixelBuffer[idx] = packUnorm4x8(i);
 
 		//pixelBuffer[idx] = packUnorm4x8(float4(v, 1.0f));
 
-		pixelBuffer[idx] = packUnorm4x8(float4(i + v, 1.0f));
+		//pixelBuffer[idx] = packUnorm4x8(float4(i + v, 1.0f));
 	}
 }

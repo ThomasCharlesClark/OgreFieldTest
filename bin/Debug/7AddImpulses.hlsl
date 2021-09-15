@@ -18,10 +18,17 @@
 	DONE DUMPING PROPERTIES
 	DONE DUMPING PIECES
 #endif
-RWTexture3D<float4> velocityWrite	: register(u0);
-RWTexture3D<float4> inkWrite		: register(u1);
-Texture3D<float4> velocityRead		: register(t0);
-Texture3D<float4> inkRead			: register(t1);
+struct Particle
+{
+	float4 colour;
+	float3 velocity;
+	float pressure;
+	float3 pressureGradient;
+};
+
+RWTexture3D<float4> velocityWrite : register(u0);
+RWTexture3D<float4> inkWrite : register(u1);
+RWStructuredBuffer<Particle> handInputBuffer : register(u2);
 
 SamplerState TextureSampler
 {
@@ -31,11 +38,6 @@ SamplerState TextureSampler
 };
 
 uniform uint2 texResolution;
-
-uniform float timeSinceLast;
-uniform float reciprocalDeltaX;
-uniform float velocityDissipationConstant;
-uniform float inkDissipationConstant;
 
 [numthreads(8, 8, 1)]
 void main
@@ -48,16 +50,11 @@ void main
 	{
 		float3 idx = float3(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, gl_GlobalInvocationID.z);
 
-		float width = texResolution.x;
+		uint rwIdx = gl_GlobalInvocationID.y * texResolution.x + gl_GlobalInvocationID.x;
 
-		float4 velocity = velocityRead.SampleLevel(TextureSampler, idx / width, 1.0);
+		velocityWrite[idx] = float4(handInputBuffer[rwIdx].velocity, 1.0);
 
-		float3 idxBackInTime = (idx - (timeSinceLast * reciprocalDeltaX * velocity.xyz)) / width;
-
-		float4 v = float4(float3(velocityRead.SampleLevel(TextureSampler, idxBackInTime, 1.0).xyz) * velocityDissipationConstant, 1.0);
-		float4 i = float4(float3(inkRead.SampleLevel(TextureSampler, idxBackInTime, 1.0).xyz) * inkDissipationConstant, 1.0);
-
-		velocityWrite[idx] = v;
-		inkWrite[idx] = i;
+		inkWrite[idx] = handInputBuffer[rwIdx].colour;
+		//inkWrite[idx] = float4(inkWrite[idx].xyz, handInputBuffer[rwIdx].colour.w);
 	}
 }

@@ -50,14 +50,14 @@ void main
 
 		float width = texResolution.x;
 
-		float4 velocity = velocityRead.SampleLevel(TextureSampler, idx / width, 1.0);
+		float4 velocity = velocityRead.SampleLevel(TextureSampler, idx / width, 0);
 
 		float3 idxBackInTime = (idx - (timeSinceLast * reciprocalDeltaX * velocity.xyz)) / width;
 
-		float4 v = float4(float3(velocityRead.SampleLevel(TextureSampler, idxBackInTime, 1.0).xyz) * velocityDissipationConstant, 1.0);
-		float4 i = float4(float3(inkRead.SampleLevel(TextureSampler, idxBackInTime, 1.0).xyz) * inkDissipationConstant, 1.0);
+		//float4 v = float4(float3(velocityRead.SampleLevel(TextureSampler, idxBackInTime, 0).xyz) * velocityDissipationConstant, 1.0);
+		float4 i = float4(float3(inkRead.SampleLevel(TextureSampler, idxBackInTime, 0).xyz) * inkDissipationConstant, 1.0);
 
-		velocityWrite[idx] = v;
-		inkWrite[idx] = i;
+		//velocityWrite[idx] = v;
+		//inkWrite[idx] = i;
 	}
 }

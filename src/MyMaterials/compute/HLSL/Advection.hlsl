@@ -1,7 +1,7 @@
-RWTexture3D<float4> velocityTextureWrite	: register(u0);
-RWTexture3D<float4> inkTextureWrite			: register(u1);
-Texture3D<float4> velocityTextureRead		: register(t0);
-Texture3D<float4> inkTextureRead			: register(t1);
+RWTexture3D<float4> velocityWrite	: register(u0);
+RWTexture3D<float4> inkWrite		: register(u1);
+Texture3D<float4> velocityRead		: register(t0);
+Texture3D<float4> inkRead			: register(t1);
 
 SamplerState TextureSampler
 {
@@ -30,14 +30,15 @@ void main
 
 		float width = texResolution.x;
 
-		float4 velocity = velocityTextureRead.SampleLevel(TextureSampler, idx / width, 0);
-		
-		float3 idxBackInTime = idx - timeSinceLast * reciprocalDeltaX * velocity.xyz;
+		float4 velocity = velocityRead.SampleLevel(TextureSampler, idx / width, 1.0);
+		float4 ink = velocityRead.SampleLevel(TextureSampler, idx / width, 1.0);
 
-		float4 v = float4(float3(velocityTextureRead.SampleLevel(TextureSampler, idxBackInTime / width, 0).xyz) * velocityDissipationConstant, 1.0);
-		float4 i = float4(float3(inkTextureRead.SampleLevel(TextureSampler, idxBackInTime / width, 0).xyz) * inkDissipationConstant, 1.0);
+		float3 idxBackInTime = (idx - (timeSinceLast * reciprocalDeltaX * velocity.xyz)) / width;
 
-		velocityTextureWrite[idx] = v;
-		inkTextureWrite[idx] = i;
+		float4 v = float4(float3(velocityRead.SampleLevel(TextureSampler, idxBackInTime, 1.0).xyz) * velocityDissipationConstant, 1.0);
+		float4 i = float4(float3(inkRead.SampleLevel(TextureSampler, idxBackInTime, 1.0).xyz), 1.0);
+
+		velocityWrite[idx] = v;
+		inkWrite[idx] = i * inkDissipationConstant;
 	}
 }
