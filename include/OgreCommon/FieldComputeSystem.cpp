@@ -695,8 +695,8 @@ namespace MyThirdOgre
 				tsl->setManualValue(timeSinceLast);
 				texResolution->setManualValue(res, sizeof(res) / sizeof(Ogre::uint32));
 				reciprocalDeltaX->setManualValue(1.0f);
-				velocityDissipationConstant->setManualValue(0.95f);
-				inkDissipationConstant->setManualValue(0.95f);
+				velocityDissipationConstant->setManualValue(0.995f);
+				inkDissipationConstant->setManualValue(0.995f);
 				//inkDissipationConstant->setManualValue(1.0f);
 				shaderParams.setDirty();
 
@@ -728,7 +728,7 @@ namespace MyThirdOgre
 				texResolution->setManualValue(res, sizeof(res) / sizeof(Ogre::uint32));
 				reciprocalDeltaX->setManualValue(1.0f);
 				velocityDissipationConstant->setManualValue(0.95f);
-				inkDissipationConstant->setManualValue(0.95f);
+				inkDissipationConstant->setManualValue(0.45f);
 				//inkDissipationConstant->setManualValue(1.0f);
 				shaderParams.setDirty();
 
@@ -737,7 +737,9 @@ namespace MyThirdOgre
 			else {
 				Ogre::ShaderParams& shaderParams = mInkAdvectionComputeJob->getShaderParams("default");
 				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
+				Ogre::ShaderParams::Param* reciprocalDeltaX = shaderParams.findParameter("reciprocalDeltaX");
 				tsl->setManualValue(timeSinceLast);
+				reciprocalDeltaX->setManualValue(1.0f);
 				shaderParams.setDirty();
 			}
 		}
@@ -892,9 +894,9 @@ namespace MyThirdOgre
 							{
 								float* data = reinterpret_cast<float*>(tBox.at(x, y, z));
 								data[0] = 0.0f;
-								data[1] = 0.0f; // x < mBufferResolutionWidth / 2 ? 0.85f : 0.0f;
+								data[1] = (x > 56 && x < 66) ? 0.85f : 0.0f;
 								data[2] = 0.0f;
-								data[3] = 0.0f;
+								data[3] = 1.0f;
 							}
 						}
 					}
@@ -924,94 +926,130 @@ namespace MyThirdOgre
 				}
 			}*/
 
+
+
+
+
+
 			for (auto& iter : mInkInputBuffer) {
-				iter.colour = Ogre::ColourValue(0.0f, 0.0f, 0.0f, 1.0f);
+				iter.colour = Ogre::ColourValue(0.0f, 0.0f, 0.0f, 1.0f); // the ink field is always green and invisible
 				iter.velocity = Ogre::Vector3::ZERO;
 			}
 
-			if (true)
+			if (mHand && mFieldBoundingHierarchy.size())
 			{
+				auto leaves = std::vector<FieldComputeSystem_BoundingHierarchyBox>({});
 
-				if (mHand && mFieldBoundingHierarchy.size())
-				{
-					auto leaves = std::vector<FieldComputeSystem_BoundingHierarchyBox>({});
+				int aabbIntersectionCount = 0;
 
-					int aabbIntersectionCount = 0;
+				traverseBoundingHierarchy(mFieldBoundingHierarchy[0], &leaves, aabbIntersectionCount);
 
-					traverseBoundingHierarchy(mFieldBoundingHierarchy[0], &leaves, aabbIntersectionCount);
+				if (mGraphicsSystem) {
+					mGraphicsSystem->setAdditionalDebugText(
+						Ogre::String("\nIntersecting: ") + Ogre::StringConverter::toString(aabbIntersectionCount) + Ogre::String(" Leaf AaBbs"));
+				}
+
+				if (leaves.size()) {
+
+					int f = 0;
 
 					if (mGraphicsSystem) {
 						mGraphicsSystem->setAdditionalDebugText(
-							Ogre::String("\nIntersecting: ") + Ogre::StringConverter::toString(aabbIntersectionCount) + Ogre::String(" Leaf AaBbs"));
+							Ogre::String("\nIntersecting: ") + Ogre::StringConverter::toString(aabbIntersectionCount) + Ogre::String(" Leaf AaBbs") +
+							Ogre::String("\nSeeing: " + Ogre::StringConverter::toString(leaves.size() * mLeafResolutionX * mLeafResolutionZ) + Ogre::String(" buffer indices")));
 					}
 
-					if (leaves.size()) {
+					Ogre::Real rHandSphereSquared = mHand->getBoundingSphere()->getRadius() * mHand->getBoundingSphere()->getRadius();
 
-						int f = 0;
+					Ogre::Vector3 vHandPos = mHand->getBoundingSphere()->getCenter();
 
-						if (mGraphicsSystem) {
-							mGraphicsSystem->setAdditionalDebugText(
-								Ogre::String("\nIntersecting: ") + Ogre::StringConverter::toString(aabbIntersectionCount) + Ogre::String(" Leaf AaBbs") +
-								Ogre::String("\nSeeing: " + Ogre::StringConverter::toString(leaves.size() * mLeafResolutionX * mLeafResolutionZ) + Ogre::String(" buffer indices")));
-						}
+					for (auto& l : leaves) {
 
-						Ogre::Real rHandSphereSquared = mHand->getBoundingSphere()->getRadius() * mHand->getBoundingSphere()->getRadius();
+						float x = l.mAaBb.getMinimum().x;
+						float z = l.mAaBb.getMinimum().z;
 
-						Ogre::Vector3 vHandPos = mHand->getBoundingSphere()->getCenter();
+						float zOffset = 0;
+						float xOffset = 0;
 
-						for (auto& l : leaves) {
+						for (size_t i = 0; i < l.mBufferIndices.size(); i++) {
 
-							float x = l.mAaBb.getMinimum().x;
-							float z = l.mAaBb.getMinimum().z;
+							auto& index = l.mBufferIndices[i];
 
-							float zOffset = 0;
-							float xOffset = 0;
+							Ogre::Vector3 pos = index.mPosition;
+							Ogre::Vector3 dist = vHandPos - pos;
+							Ogre::Real distLen = dist.length();
 
-							for (size_t i = 0; i < l.mBufferIndices.size(); i++) {
+							if (distLen < rHandSphereSquared) {
 
-								auto& index = l.mBufferIndices[i];
+								//mInkInputBuffer[index.mIndex].colour.r = 0.0f;
+								mInkInputBuffer[index.mIndex].colour.g = 0.0f;
+								mInkInputBuffer[index.mIndex].colour.b = 0.85f; // mHand->getState().rInk;
 
-								Ogre::Vector3 pos = index.mPosition;
-								Ogre::Vector3 dist = vHandPos - pos;
-								Ogre::Real distLen = dist.length();
+																				// the ink field is always green and invisible
+								mInkInputBuffer[index.mIndex].colour.a = 1.0f; // except when the hand influences the alpha
 
-								if (distLen < rHandSphereSquared) {
+								// how do I indicate that I want to upload ONLY THESE indices?
+								// is that even what I want to do?
 
-									mInkInputBuffer[index.mIndex].colour.r = 0.0f;
-									mInkInputBuffer[index.mIndex].colour.g = 0.0f;
-									mInkInputBuffer[index.mIndex].colour.b = 0.85f; // mHand->getState().rInk;
-									mInkInputBuffer[index.mIndex].colour.a = 1.0f;
+								//mInkInputBuffer[index.mIndex].velocity = Ogre::Vector3::ZERO;
 
-									//mInkInputBuffer[index.mIndex].velocity = Ogre::Vector3::ZERO;
+								//mInkInputBuffer[index.mIndex].velocity = mHand->getState().vVel * 200;
 
-									//mInkInputBuffer[index.mIndex].velocity = Ogre::Vector3(0.0f, 0.0, -800.0f);
+								mInkInputBuffer[index.mIndex].velocity = mHand->getState().vVel;// +Ogre::Vector3(-800, 0, 0);
 
-									mInkInputBuffer[index.mIndex].velocity = mHand->getState().vVel;
+								//mInkInputBuffer[index.mIndex].velocity += mHand->getState().vVel;
+							
 
-									//mInkInputBuffer[index.mIndex].velocity += mHand->getState().vVel;
-								}
+								//auto m_CpuInstanceBuffer = reinterpret_cast<float*>(OGRE_MALLOC_SIMD(sizeof(Particle), Ogre::MEMCATEGORY_GENERAL));
+
+								//auto m_InstanceBuffer = reinterpret_cast<float*>(m_CpuInstanceBuffer);
+								//
+								//auto m_InstanceBufferStart = m_InstanceBuffer;
+
+								//memset(m_InstanceBuffer, 0, (sizeof(Particle)) -
+								//	(static_cast<size_t>(m_InstanceBuffer - m_InstanceBufferStart) * sizeof(float)));
+
+								//auto buffer = getUavBuffer(0);
+								//
+								//float* instanceBuffer = const_cast<float*>(m_InstanceBufferStart);
+
+								//*instanceBuffer++ = mInkInputBuffer[index.mIndex].colour.r;
+								//*instanceBuffer++ = mInkInputBuffer[index.mIndex].colour.g;
+								//*instanceBuffer++ = mInkInputBuffer[index.mIndex].colour.b;
+								//*instanceBuffer++ = mInkInputBuffer[index.mIndex].colour.a;
+
+								//*instanceBuffer++ = mInkInputBuffer[index.mIndex].velocity.x;
+								//*instanceBuffer++ = mInkInputBuffer[index.mIndex].velocity.y;
+								//*instanceBuffer++ = mInkInputBuffer[index.mIndex].velocity.z;
+
+								//*instanceBuffer++ = 0.0f; // pressure
+
+								//*instanceBuffer++ = 0.0f; // pressureGradient.x
+								//*instanceBuffer++ = 0.0f; // pressureGradient.y
+								//*instanceBuffer++ = 0.0f; // pressureGradient.z
+
+								//buffer->upload(m_CpuInstanceBuffer, index.mIndex, 1);
 							}
 						}
 					}
 				}
 			}
-
-
+			
 			auto buffer = getUavBuffer(0);
 			auto uavBufferNumElements = buffer->getNumElements();
-			
+
 			float* instanceBuffer = const_cast<float*>(mInstanceBufferStart);
 
-			for (const auto &iter : mInkInputBuffer) {
-			
+			for (const auto& iter : mInkInputBuffer) {
+
 				*instanceBuffer++ = iter.colour.r;
 				*instanceBuffer++ = iter.colour.g;
 				*instanceBuffer++ = iter.colour.b;
-				*instanceBuffer++ = 1.0f;// iter.colour.a;// (float)sin(mTimeAccumulator);
-
+				*instanceBuffer++ = iter.colour.a;// iter.colour.a;// (float)sin(mTimeAccumulator);
+				
 				*instanceBuffer++ = iter.velocity.x;
-				*instanceBuffer++ = iter.velocity.z;
 				*instanceBuffer++ = iter.velocity.y;
+				*instanceBuffer++ = iter.velocity.z;
 
 				*instanceBuffer++ = 0.0f; // pressure
 
@@ -1026,7 +1064,14 @@ namespace MyThirdOgre
 			OGRE_ASSERT_LOW(calc <= tsb);
 
 			buffer->upload(mCpuInstanceBuffer, 0u, buffer->getNumElements());
-		
+
+
+
+
+
+
+			
+
 			// my advection copy might be BS: copy the inkTexture to the previousInkTexture here?
 
 

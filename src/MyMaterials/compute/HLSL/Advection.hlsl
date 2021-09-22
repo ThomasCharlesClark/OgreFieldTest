@@ -1,7 +1,7 @@
-RWTexture3D<float4> velocityWrite	: register(u0);
-RWTexture3D<float4> inkWrite		: register(u1);
-Texture3D<float4> velocityRead		: register(t0);
-Texture3D<float4> inkRead			: register(t1);
+RWTexture3D<float4> velocityWrite			: register(u0); // primaryVelocityTexture
+RWTexture3D<float4> inkWrite				: register(u1); // primaryInkTexture
+Texture3D<float4> velocityRead				: register(t0); // secondaryVelocityTexture
+Texture3D<float4> inkRead					: register(t1); // secondaryInkTexture
 
 SamplerState TextureSampler
 {
@@ -9,6 +9,16 @@ SamplerState TextureSampler
 	AddressU = Clamp;
 	AddressV = Clamp;
 };
+
+uint packUnorm4x8(float4 value)
+{
+	uint x = uint(saturate(value.x) * 255.0f);
+	uint y = uint(saturate(value.y) * 255.0f);
+	uint z = uint(saturate(value.z) * 255.0f);
+	uint w = uint(saturate(value.w) * 255.0f);
+
+	return x | (y << 8u) | (z << 16u) | (w << 24u);
+}
 
 uniform uint2 texResolution;
 
@@ -28,17 +38,20 @@ void main
 	{
 		float3 idx = float3(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, gl_GlobalInvocationID.z);
 
+		uint rwIdx = gl_GlobalInvocationID.y * texResolution.x + gl_GlobalInvocationID.x;
+
 		float width = texResolution.x;
 
-		float4 velocity = velocityRead.SampleLevel(TextureSampler, idx / width, 1.0);
-		float4 ink = velocityRead.SampleLevel(TextureSampler, idx / width, 1.0);
+		float4 velocity = velocityRead.SampleLevel(TextureSampler, idx / width, 0);
+		float4 ink = inkRead.SampleLevel(TextureSampler, idx / width, 0);
 
-		float3 idxBackInTime = (idx - (timeSinceLast * reciprocalDeltaX * velocity.xyz)) / width;
+		float3 idxBackInTime = (idx - (timeSinceLast * reciprocalDeltaX * velocity.xyz));
 
-		float4 v = float4(float3(velocityRead.SampleLevel(TextureSampler, idxBackInTime, 1.0).xyz) * velocityDissipationConstant, 1.0);
-		float4 i = float4(float3(inkRead.SampleLevel(TextureSampler, idxBackInTime, 1.0).xyz), 1.0);
+		float4 v = float4(float3(velocityRead.SampleLevel(TextureSampler, idxBackInTime / width, 0).xyz) * velocityDissipationConstant, 0);
+		//float4 i = float4(float3(inkRead.SampleLevel(TextureSampler, idxBackInTime / width, 1.0).xyz) * inkDissipationConstant, 0);
+		float4 i = inkRead.SampleLevel(TextureSampler, idxBackInTime / width, 0) * inkDissipationConstant;
 
 		velocityWrite[idx] = v;
-		inkWrite[idx] = i * inkDissipationConstant;
+		//inkWrite[idx] = float4(i.xyz, 1.0);
 	}
 }

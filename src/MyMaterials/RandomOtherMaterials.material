@@ -88,3 +88,8 @@ hlms Transparent pbs
 {	
 	diffuse_map		transparent10x10.png
 }
+
+hlms primaryInkTexture pbs
+{	
+	diffuse_map		primaryInkTexture.png
+}

@@ -24,10 +24,10 @@ void main
 
 		float width = texResolution.x;
 
-		float3 a = pressureRead.SampleLevel(TextureSampler, float3(idx.x - 1, idx.y, idx.z) / width, 1.0);
-		float3 b = pressureRead.SampleLevel(TextureSampler, float3(idx.x + 1, idx.y, idx.z) / width, 1.0);
-		float3 c = pressureRead.SampleLevel(TextureSampler, float3(idx.x, idx.y - 1, idx.z) / width, 1.0);
-		float3 d = pressureRead.SampleLevel(TextureSampler, float3(idx.x, idx.y + 1, idx.z) / width, 1.0);
+		float3 a = pressureRead.SampleLevel(TextureSampler, float3(idx.x - 1, idx.y, idx.z) / width, 0);
+		float3 b = pressureRead.SampleLevel(TextureSampler, float3(idx.x + 1, idx.y, idx.z) / width, 0);
+		float3 c = pressureRead.SampleLevel(TextureSampler, float3(idx.x, idx.y - 1, idx.z) / width, 0);
+		float3 d = pressureRead.SampleLevel(TextureSampler, float3(idx.x, idx.y + 1, idx.z) / width, 0);
 
 		float3 grad = float3(a.x - b.x, c.y - d.y, 0) * halfDeltaX;
 

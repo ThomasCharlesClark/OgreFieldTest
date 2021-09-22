@@ -1,3 +1,47 @@
+compositor_node NodeOne 
+{
+
+}
+
+compositor_node NodeTwo 
+{
+
+}
+
+compositor_node ImpulsesNode 
+{
+	in 0 velocityTexture
+	in 1 inkTexture
+	in_buffer 0 inputUavBuffer
+
+	texture nullDummy target_width target_height PFG_NULL
+
+	target nullDummy
+	{
+		//The bindings made by pass bind_uav PERSIST even after we're out of renderTarget.
+		pass bind_uav
+		{
+			starting_slot 1
+			uav_buffer 0 inputUavBuffer read
+		}
+
+		pass compute
+		{
+			job	AddImpulses
+			input 0 velocityTexture write
+			input 1 inkTexture write
+			uav_buffer 2 inputUavBuffer read
+		}
+
+		pass bind_uav 
+		{
+			keep_previous_uavs false
+		}
+	}
+
+	out 0 velocityTexture
+	out 1 inkTexture
+}
 
 compositor_node TestComputeNode
 {
@@ -17,6 +61,12 @@ compositor_node TestComputeNode
 
 	buffer temporaryBuffer 1 4 target_width target_height
 	
+	texture nullDummy target_width target_height PFG_NULL
+
+	target nullDummy
+	{
+	}
+
 	target
 	{
 		pass compute
@@ -27,15 +77,15 @@ compositor_node TestComputeNode
 			input 1 inkTexture write
 			uav_buffer 2 inputUavBuffer read
 		}
-		
+
 		pass compute
 		{
-			job AdvectionCopy
+			job AdvectionCopy 
 		}
 
 		pass compute
 		{
-			job	Advection
+			job Advection
 		}
 
 		pass compute
@@ -151,10 +201,10 @@ compositor_node TestComputeNode
 			job SubtractPressureGradient
 		}
 		
-		/*pass compute
+		pass compute
 		{
 			job	InkAdvection
-		}*/s
+		}
 
 		pass compute
 		{
@@ -163,6 +213,14 @@ compositor_node TestComputeNode
 			uav_buffer 0 temporaryBuffer write
 		}
 	}
+	
+	/*target previousInkTexture 0
+	{
+		pass render_quad
+		{
+			material CopyFromTexture
+		}
+	}*/
 
 	target renderTarget 
 	{
@@ -196,15 +254,24 @@ compositor_node TestComputeNode
 workspace "Test Compute Workspace"
 {
 	connect_buffer_external 0 TestComputeNode 0
+
+	/*
+
+	connect_buffer_external 0 ImpulsesNode 0
+	connect_external 1 ImpulsesNode 0
+	connect_external 6 ImpulsesNode 1
+
+	connect ImpulsesNode 0 1 TestComputeNode 1 6
+	*/
 	
-	/*connect_external 0 TestComputeNode 0
+	connect_external 0 TestComputeNode 0
 	connect_external 1 TestComputeNode 1
 	connect_external 2 TestComputeNode 2
 	connect_external 3 TestComputeNode 3
 	connect_external 4 TestComputeNode 4
 	connect_external 5 TestComputeNode 5
 	connect_external 6 TestComputeNode 6
-	connect_external 7 TestComputeNode 7*/
+	connect_external 7 TestComputeNode 7
 
 	connect_output TestComputeNode 0
 	connect_output TestComputeNode 1

@@ -44,6 +44,17 @@ uint packUnorm4x8( float4 value )
 	return x | (y << 8u) | (z << 16u ) | (w << 24u);
 }
 
+float4 unpackUnorm4x8(uint value)
+{
+	float4 retVal;
+	retVal.x = float(value & 0xFF);
+	retVal.y = float((value >> 8u) & 0xFF);
+	retVal.z = float((value >> 16u) & 0xFF);
+	retVal.w = float((value >> 24u) & 0xFF);
+	 
+	return retVal * 0.0039215687f;
+}
+
 [numthreads(8, 8, 1)]
 void main
 (
@@ -58,11 +69,10 @@ void main
 		float4 i = inkRead.Load(int4(gl_GlobalInvocationID, 1));
 
 		float4 v = velocityRead.Load(int4(gl_GlobalInvocationID, 1));
-
+		
 		pixelBuffer[idx] = packUnorm4x8(i);
 
-		//pixelBuffer[idx] = packUnorm4x8(float4(v, 1.0f));
-
-		//pixelBuffer[idx] = packUnorm4x8(float4(i + v, 1.0f));
+		//pixelBuffer[idx] = packUnorm4x8(float4(v.xyz + i.xyz, 1.0f));
+		//pixelBuffer[idx] = packUnorm4x8(float4(v.xyz, 1.0f));
 	}
 }

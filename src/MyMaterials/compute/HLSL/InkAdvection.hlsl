@@ -10,6 +10,17 @@ SamplerState TextureSampler
 	AddressV = Clamp;
 };
 
+float4 unpackUnorm4x8(uint value)
+{
+	float4 retVal;
+	retVal.x = float(value & 0xFF);
+	retVal.y = float((value >> 8u) & 0xFF);
+	retVal.z = float((value >> 16u) & 0xFF);
+	retVal.w = float((value >> 24u) & 0xFF);
+
+	return retVal * 0.0039215687f;
+}
+
 uniform uint2 texResolution;
 
 uniform float timeSinceLast;
@@ -30,15 +41,13 @@ void main
 
 		float width = texResolution.x;
 
-		float4 velocity = velocityRead.SampleLevel(TextureSampler, idx / width, 1.0);
-		float4 ink = velocityRead.SampleLevel(TextureSampler, idx / width, 1.0);
+		float4 velocity = velocityRead.Load(float4(idx, 0));
 
-		float3 idxBackInTime = (idx - (timeSinceLast * reciprocalDeltaX * velocity.xyz)) / width;
+		float3 idxBackInTime = (idx - (timeSinceLast * reciprocalDeltaX * velocity.xyz));
+		
+		//float4 i = inkWrite[idxBackInTime];// inkRead.Load(float4(idxBackInTime, 0));
+		float4 i = inkRead.Load(float4(idxBackInTime, 0));
 
-		float4 v = float4(float3(velocityRead.SampleLevel(TextureSampler, idxBackInTime, 1.0).xyz) * velocityDissipationConstant, 1.0);
-		float4 i = float4(float3(inkRead.SampleLevel(TextureSampler, idxBackInTime, 1.0).xyz), 1.0);
-
-		//velocityWrite[idx] = v;
-		inkWrite[idx] = i;// *inkDissipationConstant;
+		inkWrite[idx] = float4(i.xyz * inkDissipationConstant, 1.0);
 	}
 }
