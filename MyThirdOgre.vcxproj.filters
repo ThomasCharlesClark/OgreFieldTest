@@ -299,11 +299,16 @@
     <None Include="src\MyMaterials\compute\HLSL\AdvectionCopy.hlsl">
       <Filter>ComputeShaders</Filter>
     </None>
-    <None Include="src\MyMaterials\compute\HLSL\Advection.hlsl">
-      <Filter>ComputeShaders</Filter>
-    </None>
     <None Include="src\MyMaterials\compute\HLSL\InkAdvection.hlsl">
       <Filter>ComputeShaders</Filter>
     </None>
+    <None Include="src\MyMaterials\compute\HLSL\VelocityAdvection.hlsl">
+      <Filter>ComputeShaders</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="src\MyMaterials\compute\HLSL\ClearBuffer.hlsl">
+      <Filter>ComputeShaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

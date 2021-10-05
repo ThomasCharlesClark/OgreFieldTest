@@ -25,7 +25,7 @@ namespace MyThirdOgre
 	{
 		mTestComputeJob = 0;
 		mAdvectionCopyComputeJob = 0;
-		mAdvectionComputeJob = 0;
+		mVelocityAdvectionComputeJob = 0;
 		mInkAdvectionComputeJob = 0;
 		mAddImpulsesComputeJob = 0;
 		mDivergenceComputeJob = 0;
@@ -93,7 +93,7 @@ namespace MyThirdOgre
 		mInkInputBuffer = std::vector<Particle>({});
 
 		for (auto i = 0; i < mBufferResolutionWidth * mBufferResolutionHeight; i++) {
-			mInkInputBuffer.push_back({ Ogre::ColourValue(0.0f, 0.0f, 0.0f, 1.0f), Ogre::Vector3::ZERO });
+			mInkInputBuffer.push_back({ Ogre::Vector4(0.0f, 0.0f, 0.0f, 1.0f), Ogre::Vector3::ZERO });
 		}
 			
 		mDrawFromUavBufferMat = Ogre::MaterialPtr();
@@ -106,7 +106,7 @@ namespace MyThirdOgre
 
 		mHaveSetTestComputeShaderParameters = false;
 		mHaveSetAdvectionCopyComputeShaderParameters = false;
-		mHaveSetAdvectionComputeShaderParameters = false;
+		mHaveSetVelocityAdvectionComputeShaderParameters = false;
 		mHaveSetAddImpulsesComputeShaderParameters = false;
 		mHaveSetDivergenceComputeShaderParameters = false;
 		mHaveSetJacobiPressureComputeShaderParameters = false;
@@ -559,9 +559,9 @@ namespace MyThirdOgre
 		mAdvectionCopyComputeJob = job;
 	}
 
-	void FieldComputeSystem::setAdvectionComputeJob(Ogre::HlmsComputeJob* job)
+	void FieldComputeSystem::setVelocityAdvectionComputeJob(Ogre::HlmsComputeJob* job)
 	{
-		mAdvectionComputeJob = job;
+		mVelocityAdvectionComputeJob = job;
 	}
 
 	void FieldComputeSystem::setInkAdvectionComputeJob(Ogre::HlmsComputeJob* job)
@@ -679,14 +679,14 @@ namespace MyThirdOgre
 			}
 		}
 
-		if (mAdvectionComputeJob) {
+		if (mVelocityAdvectionComputeJob) {
 
-			if (!mHaveSetAdvectionComputeShaderParameters) {
+			if (!mHaveSetVelocityAdvectionComputeShaderParameters) {
 				Ogre::uint32 res[2];
 				res[0] = mBufferResolutionWidth;
 				res[1] = mBufferResolutionHeight;
 
-				Ogre::ShaderParams& shaderParams = mAdvectionComputeJob->getShaderParams("default");
+				Ogre::ShaderParams& shaderParams = mVelocityAdvectionComputeJob->getShaderParams("default");
 				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
 				Ogre::ShaderParams::Param* texResolution = shaderParams.findParameter("texResolution");
 				Ogre::ShaderParams::Param* reciprocalDeltaX = shaderParams.findParameter("reciprocalDeltaX");
@@ -695,15 +695,15 @@ namespace MyThirdOgre
 				tsl->setManualValue(timeSinceLast);
 				texResolution->setManualValue(res, sizeof(res) / sizeof(Ogre::uint32));
 				reciprocalDeltaX->setManualValue(1.0f);
-				velocityDissipationConstant->setManualValue(0.995f);
-				inkDissipationConstant->setManualValue(0.995f);
+				velocityDissipationConstant->setManualValue(0.997f);
+				inkDissipationConstant->setManualValue(0.997f);
 				//inkDissipationConstant->setManualValue(1.0f);
 				shaderParams.setDirty();
 
-				mHaveSetAdvectionComputeShaderParameters = true;
+				mHaveSetVelocityAdvectionComputeShaderParameters = true;
 			}
 			else {
-				Ogre::ShaderParams& shaderParams = mAdvectionComputeJob->getShaderParams("default");
+				Ogre::ShaderParams& shaderParams = mVelocityAdvectionComputeJob->getShaderParams("default");
 				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
 				tsl->setManualValue(timeSinceLast);
 				shaderParams.setDirty();
@@ -727,8 +727,8 @@ namespace MyThirdOgre
 				tsl->setManualValue(timeSinceLast);
 				texResolution->setManualValue(res, sizeof(res) / sizeof(Ogre::uint32));
 				reciprocalDeltaX->setManualValue(1.0f);
-				velocityDissipationConstant->setManualValue(0.95f);
-				inkDissipationConstant->setManualValue(0.45f);
+				velocityDissipationConstant->setManualValue(0.997f);
+				inkDissipationConstant->setManualValue(0.997f);
 				//inkDissipationConstant->setManualValue(1.0f);
 				shaderParams.setDirty();
 
@@ -838,9 +838,9 @@ namespace MyThirdOgre
 					(res[1] + mAdvectionCopyComputeJob->getThreadsPerGroupY() - 1u) / mAdvectionCopyComputeJob->getThreadsPerGroupY(),
 					1u);
 
-				mAdvectionComputeJob->setNumThreadGroups(
-					(res[0] + mAdvectionComputeJob->getThreadsPerGroupX() - 1u) / mAdvectionComputeJob->getThreadsPerGroupX(),
-					(res[1] + mAdvectionComputeJob->getThreadsPerGroupY() - 1u) / mAdvectionComputeJob->getThreadsPerGroupY(),
+				mVelocityAdvectionComputeJob->setNumThreadGroups(
+					(res[0] + mVelocityAdvectionComputeJob->getThreadsPerGroupX() - 1u) / mVelocityAdvectionComputeJob->getThreadsPerGroupX(),
+					(res[1] + mVelocityAdvectionComputeJob->getThreadsPerGroupY() - 1u) / mVelocityAdvectionComputeJob->getThreadsPerGroupY(),
 					1u);
 
 				mInkAdvectionComputeJob->setNumThreadGroups(
@@ -932,7 +932,8 @@ namespace MyThirdOgre
 
 
 			for (auto& iter : mInkInputBuffer) {
-				iter.colour = Ogre::ColourValue(0.0f, 0.0f, 0.0f, 1.0f); // the ink field is always green and invisible
+				// the input buffer MUST be cleared as often as possible
+				iter.colour = Ogre::Vector4(0.0f, 0.0f, 0.0f, 1.0f); // the ink field is always green and invisible
 				iter.velocity = Ogre::Vector3::ZERO;
 			}
 
@@ -981,21 +982,23 @@ namespace MyThirdOgre
 
 							if (distLen < rHandSphereSquared) {
 
-								//mInkInputBuffer[index.mIndex].colour.r = 0.0f;
-								mInkInputBuffer[index.mIndex].colour.g = 0.0f;
-								mInkInputBuffer[index.mIndex].colour.b = 0.85f; // mHand->getState().rInk;
+								//mInkInputBuffer[index.mIndex].colour.x = 0.0f;
+								//mInkInputBuffer[index.mIndex].colour.y = 0.0f;
+								mInkInputBuffer[index.mIndex].colour.z = 1000.0f; // mHand->getState().rInk;
 
 																				// the ink field is always green and invisible
-								mInkInputBuffer[index.mIndex].colour.a = 1.0f; // except when the hand influences the alpha
+								//mInkInputBuffer[index.mIndex].colour.w = 1.0f; // except when the hand influences the alpha
 
 								// how do I indicate that I want to upload ONLY THESE indices?
 								// is that even what I want to do?
 
 								//mInkInputBuffer[index.mIndex].velocity = Ogre::Vector3::ZERO;
 
-								//mInkInputBuffer[index.mIndex].velocity = mHand->getState().vVel * 200;
+								//mInkInputBuffer[index.mIndex].velocity = mHand->getState().vVel * 100;
 
-								mInkInputBuffer[index.mIndex].velocity = mHand->getState().vVel;// +Ogre::Vector3(-800, 0, 0);
+								//mInkInputBuffer[index.mIndex].velocity = mHand->getState().vVel * 100;
+
+								mInkInputBuffer[index.mIndex].velocity = mHand->getState().vVel * 100;
 
 								//mInkInputBuffer[index.mIndex].velocity += mHand->getState().vVel;
 							
@@ -1034,7 +1037,7 @@ namespace MyThirdOgre
 					}
 				}
 			}
-			
+			//
 			auto buffer = getUavBuffer(0);
 			auto uavBufferNumElements = buffer->getNumElements();
 
@@ -1042,10 +1045,10 @@ namespace MyThirdOgre
 
 			for (const auto& iter : mInkInputBuffer) {
 
-				*instanceBuffer++ = iter.colour.r;
-				*instanceBuffer++ = iter.colour.g;
-				*instanceBuffer++ = iter.colour.b;
-				*instanceBuffer++ = iter.colour.a;// iter.colour.a;// (float)sin(mTimeAccumulator);
+				*instanceBuffer++ = iter.colour.x;
+				*instanceBuffer++ = iter.colour.y;
+				*instanceBuffer++ = iter.colour.z;
+				*instanceBuffer++ = iter.colour.w;// iter.colour.a;// (float)sin(mTimeAccumulator);
 				
 				*instanceBuffer++ = iter.velocity.x;
 				*instanceBuffer++ = iter.velocity.y;

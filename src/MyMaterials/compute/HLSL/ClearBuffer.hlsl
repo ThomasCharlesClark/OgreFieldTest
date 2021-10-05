@@ -6,9 +6,8 @@ struct Particle
 	float3 pressureGradient;
 };
 
-RWTexture3D<float4> velocityWrite				: register(u0);	// primaryVelocityTexture
-RWTexture3D<float4> inkWrite					: register(u1); // primaryInkTexture
-RWStructuredBuffer<Particle> handInputBuffer	: register(u2); // inputUavBuffer (leapMotion input)
+RWStructuredBuffer<Particle> handInputBuffer	: register(u0); // inputUavBuffer (leapMotion input)
+RWTexture3D<float4> inkWrite					: register(u1); // secondaryInkTexture
 
 SamplerState TextureSampler
 {
@@ -28,9 +27,12 @@ void main
 {
 	if( gl_GlobalInvocationID.x < texResolution.x && gl_GlobalInvocationID.y < texResolution.y)
 	{
+		float3 idx = float3(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, gl_GlobalInvocationID.z);
+
 		uint rwIdx = gl_GlobalInvocationID.y * texResolution.x + gl_GlobalInvocationID.x;
 
-		velocityWrite[gl_GlobalInvocationID] = float4(handInputBuffer[rwIdx].velocity, 1.0);
-		inkWrite[gl_GlobalInvocationID] = handInputBuffer[rwIdx].colour;
+		handInputBuffer[rwIdx].colour = float4(0, 0, 0, 1.0);
+
+		//inkWrite[gl_GlobalInvocationID] = float4(0, 0, 0, 1.0);
 	}
 }

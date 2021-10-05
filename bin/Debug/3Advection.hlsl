@@ -68,10 +68,10 @@ void main
 		float3 idxBackInTime = (idx - (timeSinceLast * reciprocalDeltaX * velocity.xyz));
 
 		float4 v = float4(float3(velocityRead.SampleLevel(TextureSampler, idxBackInTime / width, 0).xyz) * velocityDissipationConstant, 0);
-		float4 i = float4(float3(inkRead.SampleLevel(TextureSampler, idxBackInTime / width, 1.0).xyz) * inkDissipationConstant, 0);
+		//float4 i = float4(float3(inkRead.SampleLevel(TextureSampler, idxBackInTime / width, 1.0).xyz) * inkDissipationConstant, 0);
 		//float4 i = inkRead.SampleLevel(TextureSampler, idxBackInTime / width, 0) * inkDissipationConstant;
 
 		velocityWrite[idx] = v;
-		inkWrite[idx] = i;// float4(i.xyz, 1.0);
+		//inkWrite[idx] = float4(i.xyz, 1.0);
 	}
 }

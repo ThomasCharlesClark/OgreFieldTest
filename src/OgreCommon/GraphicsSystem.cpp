@@ -1376,7 +1376,7 @@ namespace MyThirdOgre
 
                 fieldComputeSystem->setTestComputeJob(hlmsCompute->findComputeJob("TestJob"));
                 fieldComputeSystem->setAdvectionCopyComputeJob(hlmsCompute->findComputeJob("AdvectionCopy"));
-                fieldComputeSystem->setAdvectionComputeJob(hlmsCompute->findComputeJob("Advection"));
+                fieldComputeSystem->setVelocityAdvectionComputeJob(hlmsCompute->findComputeJob("VelocityAdvection"));
                 fieldComputeSystem->setInkAdvectionComputeJob(hlmsCompute->findComputeJob("InkAdvection"));
                 fieldComputeSystem->setAddImpulsesComputeJob(hlmsCompute->findComputeJob("AddImpulses"));
                 fieldComputeSystem->setDivergenceComputeJob(hlmsCompute->findComputeJob("Divergence"));
@@ -1626,7 +1626,7 @@ namespace MyThirdOgre
                 uavSlot.texture = fieldComputeSystem->getPrimaryVelocityTexture();
                 fieldComputeSystem->getTestComputeJob()->_setUavTexture(1, uavSlot);
 
-                uavSlot.texture = fieldComputeSystem->getSecondaryInkTexture();
+                uavSlot.texture = fieldComputeSystem->getPrimaryInkTexture();
                 fieldComputeSystem->getTestComputeJob()->_setUavTexture(2, uavSlot);
 
 
@@ -1635,19 +1635,18 @@ namespace MyThirdOgre
                 textureSlot.pixelFormat = fieldComputeSystem->getPixelFormat3D();
 
 
-                // Impulses are added to the primaries
-
+                // Inputs are added to the primaries
                 uavSlot.texture = fieldComputeSystem->getPrimaryVelocityTexture();
                 fieldComputeSystem->getAddImpulsesComputeJob()->_setUavTexture(0, uavSlot);
 
                 uavSlot.texture = fieldComputeSystem->getPrimaryInkTexture();
                 fieldComputeSystem->getAddImpulsesComputeJob()->_setUavTexture(1, uavSlot);
 
+                fieldComputeSystem->getAddImpulsesComputeJob()->_setUavBuffer(2, bufferSlot);
 
-                //fieldComputeSystem->getAddImpulsesComputeJob()->_setUavBuffer(2, bufferSlot);
+
 
                 // Copy writes the primaries directly to the secondaries
-
                 uavSlot.texture = fieldComputeSystem->getSecondaryVelocityTexture();
                 fieldComputeSystem->getAdvectionCopyComputeJob()->_setUavTexture(0, uavSlot);
 
@@ -1662,23 +1661,16 @@ namespace MyThirdOgre
 
                  
                 // Advection reads the secondaries and advects those onto to the primaries
-
                 uavSlot.texture = fieldComputeSystem->getPrimaryVelocityTexture();
                 fieldComputeSystem->getAdvectionComputeJob()->_setUavTexture(0, uavSlot);
-
-                uavSlot.texture = fieldComputeSystem->getPrimaryInkTexture();
-                fieldComputeSystem->getAdvectionComputeJob()->_setUavTexture(1, uavSlot);
 
                 textureSlot.texture = fieldComputeSystem->getSecondaryVelocityTexture();
                 fieldComputeSystem->getAdvectionComputeJob()->setTexture(0, textureSlot);
 
-                textureSlot.texture = fieldComputeSystem->getSecondaryInkTexture();
-                fieldComputeSystem->getAdvectionComputeJob()->setTexture(1, textureSlot);
-
 
                 // Advection reads the secondaries and advects those onto to the primaries
 
-                uavSlot.texture = fieldComputeSystem->getSecondaryVelocityTexture();
+                uavSlot.texture = fieldComputeSystem->getPrimaryInkTexture();
                 fieldComputeSystem->getInkAdvectionComputeJob()->_setUavTexture(0, uavSlot);
 
                 uavSlot.texture = fieldComputeSystem->getSecondaryInkTexture();
@@ -1686,9 +1678,6 @@ namespace MyThirdOgre
 
                 textureSlot.texture = fieldComputeSystem->getPrimaryVelocityTexture();
                 fieldComputeSystem->getInkAdvectionComputeJob()->setTexture(0, textureSlot);
-
-                textureSlot.texture = fieldComputeSystem->getPrimaryInkTexture();
-                fieldComputeSystem->getInkAdvectionComputeJob()->setTexture(1, textureSlot);
 
 
 
@@ -1719,6 +1708,12 @@ namespace MyThirdOgre
                 textureSlot.texture = fieldComputeSystem->getPressureTexture();
                 fieldComputeSystem->getSubtractPressureGradientComputeJob()->setTexture(0, textureSlot);
 
+
+                // this just ensures the input buffer is cleared on the GPU 
+
+                hlmsCompute->findComputeJob("ClearBuffer")->_setUavBuffer(0, bufferSlot);
+                uavSlot.texture = fieldComputeSystem->getPrimaryInkTexture();
+                hlmsCompute->findComputeJob("ClearBuffer")->_setUavTexture(1, uavSlot);
 
 
 

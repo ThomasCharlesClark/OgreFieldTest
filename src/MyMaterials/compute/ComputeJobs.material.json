@@ -40,13 +40,12 @@
         ]
       ]
     },
-    "Advection": {
+    "VelocityAdvection": {
       "threads_per_group": [ 8, 8, 1 ],
       "thread_groups": [ 4, 4, 1 ],
-      "source": "Advection",
-      "uav_units": 2,
+      "source": "VelocityAdvection",
+      "uav_units": 1,
       "textures": [
-        {},
         {}
       ],
       "params": [
@@ -67,12 +66,12 @@
         ],
         [
           "velocityDissipationConstant",
-          [ 0.97 ],
+          [ 0.46 ],
           "float"
         ],
         [
           "inkDissipationConstant",
-          [ 0.97 ],
+          [ 0.45 ],
           "float"
         ]
       ]
@@ -83,7 +82,6 @@
       "source": "InkAdvection",
       "uav_units": 2,
       "textures": [
-        {},
         {}
       ],
       "params": [
@@ -109,7 +107,7 @@
         ],
         [
           "inkDissipationConstant",
-          [ 0.97 ],
+          [ 0.96 ],
           "float"
         ]
       ]
@@ -120,8 +118,7 @@
       "source": "AddImpulses",
       "uav_units": 3,
       "textures": [
-        {},
-        {}
+
       ],
       "params": [
         [
@@ -141,9 +138,22 @@
         ]
       ]
     },
+    "ClearBuffer": {
+      "threads_per_group": [ 8, 8, 1 ],
+      "thread_groups": [ 32, 32, 1 ],
+      "source": "ClearBuffer",
+      "uav_units": 2,
+      "params": [
+        [
+          "texResolution",
+          [ 256, 256 ],
+          "uint"
+        ]
+      ]
+    },
     "Divergence": {
       "threads_per_group": [ 8, 8, 1 ],
-      "thread_groups": [ 4, 4, 1 ],
+      "thread_groups": [ 32, 32, 1 ],
       "source": "Divergence",
       "uav_units": 1,
       "textures": [

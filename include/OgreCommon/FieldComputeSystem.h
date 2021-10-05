@@ -20,7 +20,7 @@
 namespace MyThirdOgre
 {
 	struct Particle {
-		Ogre::ColourValue colour;
+		Ogre::Vector4 colour;
 		Ogre::Vector3 velocity;
 		float pressure;
 		Ogre::Vector3 pressureGradient;
@@ -135,7 +135,7 @@ namespace MyThirdOgre
 			bool						mDownloadingTextureViaTicket;
 			bool						mHaveSetTestComputeShaderParameters;
 			bool						mHaveSetAdvectionCopyComputeShaderParameters;
-			bool						mHaveSetAdvectionComputeShaderParameters;
+			bool						mHaveSetVelocityAdvectionComputeShaderParameters;
 			bool						mHaveSetInkAdvectionComputeShaderParameters;
 			bool						mHaveSetAddImpulsesComputeShaderParameters;
 			bool						mHaveSetDivergenceComputeShaderParameters;
@@ -169,7 +169,7 @@ namespace MyThirdOgre
 			Ogre::AsyncTextureTicket*			mTextureTicket3D;
 			Ogre::HlmsComputeJob*				mTestComputeJob;
 			Ogre::HlmsComputeJob*				mAdvectionCopyComputeJob;
-			Ogre::HlmsComputeJob*				mAdvectionComputeJob;
+			Ogre::HlmsComputeJob*				mVelocityAdvectionComputeJob;
 			Ogre::HlmsComputeJob*				mInkAdvectionComputeJob;
 			Ogre::HlmsComputeJob*				mAddImpulsesComputeJob;
 			Ogre::HlmsComputeJob*				mDivergenceComputeJob;
@@ -204,7 +204,7 @@ namespace MyThirdOgre
 
 			virtual void setTestComputeJob(Ogre::HlmsComputeJob* job);
 			virtual void setAdvectionCopyComputeJob(Ogre::HlmsComputeJob* job);
-			virtual void setAdvectionComputeJob(Ogre::HlmsComputeJob* job);
+			virtual void setVelocityAdvectionComputeJob(Ogre::HlmsComputeJob* job);
 			virtual void setInkAdvectionComputeJob(Ogre::HlmsComputeJob* job);
 			virtual void setAddImpulsesComputeJob(Ogre::HlmsComputeJob* job);
 			virtual void setDivergenceComputeJob(Ogre::HlmsComputeJob* job);
@@ -241,7 +241,7 @@ namespace MyThirdOgre
 			bool getDownloadingTextureViaTicket(void) { return mDownloadingTextureViaTicket; };
 			Ogre::HlmsComputeJob* getTestComputeJob(void) { return mTestComputeJob; };
 			Ogre::HlmsComputeJob* getAdvectionCopyComputeJob(void) { return mAdvectionCopyComputeJob; };
-			Ogre::HlmsComputeJob* getAdvectionComputeJob(void) { return mAdvectionComputeJob; };
+			Ogre::HlmsComputeJob* getAdvectionComputeJob(void) { return mVelocityAdvectionComputeJob; };
 			Ogre::HlmsComputeJob* getInkAdvectionComputeJob(void) { return mInkAdvectionComputeJob; };
 			Ogre::HlmsComputeJob* getAddImpulsesComputeJob(void) { return mAddImpulsesComputeJob; };
 			Ogre::HlmsComputeJob* getDivergenceComputeJob(void) { return mDivergenceComputeJob; };

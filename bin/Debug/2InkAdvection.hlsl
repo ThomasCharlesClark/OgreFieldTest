@@ -19,7 +19,7 @@
 	DONE DUMPING PIECES
 #endif
 RWTexture3D<float4> velocityWrite	: register(u0);
-RWTexture2D<float4> inkWrite		: register(u1);
+RWTexture3D<float4> inkWrite		: register(u1);
 RWTexture2D<float4> inkRead			: register(u2);
 Texture3D<float4> velocityRead		: register(t0);
 
@@ -61,8 +61,8 @@ void main
 
 		float width = texResolution.x;
 
-		float4 velocity = velocityRead.Load(float4(idx, 0)) * 1000;
-		//float4 velocity = velocityRead.SampleLevel(TextureSampler, idx / width, 0);
+		//float4 velocity = velocityRead.Load(float4(idx, 0));
+		float4 velocity = velocityRead.SampleLevel(TextureSampler, idx / width, 0);
 
 		float3 idxBackInTime = (idx - (reciprocalDeltaX * velocity.xyz));
 		
@@ -70,10 +70,7 @@ void main
 		//float4 i = inkRead.Load(float4(idxBackInTime, 0));
 		float4 i = inkRead.Load(idxBackInTime.xy);
 
-		//inkWrite[idx.xy] = i;
-		//inkWrite[idx.xy] = float4(i.xyz * inkDissipationConstant, 1.0);
-
-		//inkRead[idx.xy] = float4(i.xyz * inkDissipationConstant, 1.0);
-		inkWrite[idx.xy] = float4(i.xyz, 1.0f);
+		//inkWrite[idx] += float4(i.xyz * inkDissipationConstant, 1.0);
+		inkWrite[idx] += float4(i.xyz, 1);// *inkDissipationConstant;
 	}
 }

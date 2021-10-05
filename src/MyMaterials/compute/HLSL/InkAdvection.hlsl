@@ -1,7 +1,6 @@
-RWTexture3D<float4> velocityWrite	: register(u0);
-RWTexture3D<float4> inkWrite		: register(u1);
-Texture3D<float4> velocityRead		: register(t0);
-Texture3D<float4> inkRead			: register(t1);
+RWTexture3D<float4> inkWrite		: register(u0); // primaryInkTexture
+RWTexture3D<float4> inkRead			: register(u1); // secondaryInkTexture
+Texture3D<float4> velocityRead		: register(t0); // primaryVelocityTexture
 
 SamplerState TextureSampler
 {
@@ -37,17 +36,18 @@ void main
 {
 	if( gl_GlobalInvocationID.x < texResolution.x && gl_GlobalInvocationID.y < texResolution.y)
 	{
-		float3 idx = float3(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, gl_GlobalInvocationID.z);
+		float3 idx3 = float3(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, gl_GlobalInvocationID.z);
 
 		float width = texResolution.x;
 
-		float4 velocity = velocityRead.Load(float4(idx, 0));
+		float4 velocity = velocityRead.SampleLevel(TextureSampler, idx3 / width, 0) * 100;
 
-		float3 idxBackInTime = (idx - (timeSinceLast * reciprocalDeltaX * velocity.xyz));
+		float3 idxBackInTime = (idx3 - (reciprocalDeltaX * velocity.xyz));
 		
-		//float4 i = inkWrite[idxBackInTime];// inkRead.Load(float4(idxBackInTime, 0));
-		float4 i = inkRead.Load(float4(idxBackInTime, 0));
+		float4 i = inkRead.Load(idxBackInTime);
 
-		inkWrite[idx] = float4(i.xyz * inkDissipationConstant, 1.0);
+		inkWrite[idx3] = float4(i.xyz * inkDissipationConstant, 1.0);
+
+		inkRead[idxBackInTime] = inkWrite[idx3];
 	}
 }

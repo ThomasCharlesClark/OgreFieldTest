@@ -46,13 +46,15 @@ void main
 	{
 		uint idx = gl_GlobalInvocationID.y * texResolution.x + gl_GlobalInvocationID.x;
 
+		//float4 i = inkRead.Load(int4(gl_GlobalInvocationID, 1));
 		float4 i = inkRead.Load(int4(gl_GlobalInvocationID, 1));
 
 		float4 v = velocityRead.Load(int4(gl_GlobalInvocationID, 1));
 		
 		//pixelBuffer[idx] = packUnorm4x8(i);
 
+		//pixelBuffer[idx] = packUnorm4x8(float4(i.xyz, 1.0f));
+
 		pixelBuffer[idx] = packUnorm4x8(float4(v.xyz + i.xyz, 1.0f));
-		//pixelBuffer[idx] = packUnorm4x8(float4(v.xyz, 1.0f));
 	}
 }

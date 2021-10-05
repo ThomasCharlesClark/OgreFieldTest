@@ -6,7 +6,7 @@
 	***	threads_per_group_z	1
 	***	hlms_high_quality	0
 	***	typed_uav_load	1
-	***	num_thread_groups_y	32
+	***	num_thread_groups_y	4
 	***	glsles	1070293233
 	***	hlslvk	1841745752
 	***	syntax	-334286542
@@ -14,7 +14,7 @@
 	***	num_thread_groups_z	1
 	***	glslvk	-338983575
 	***	hlsl	-334286542
-	***	num_thread_groups_x	32
+	***	num_thread_groups_x	4
 	DONE DUMPING PROPERTIES
 	DONE DUMPING PIECES
 #endif
@@ -26,9 +26,7 @@ struct Particle
 	float3 pressureGradient;
 };
 
-RWTexture3D<float4> velocityWrite				: register(u0);	// primaryVelocityTexture
-RWTexture3D<float4> inkWrite					: register(u1); // primaryInkTexture
-RWStructuredBuffer<Particle> handInputBuffer	: register(u2); // inputUavBuffer (leapMotion input)
+RWStructuredBuffer<Particle> handInputBuffer	: register(u1); // inputUavBuffer (leapMotion input)
 
 SamplerState TextureSampler
 {
@@ -48,9 +46,10 @@ void main
 {
 	if( gl_GlobalInvocationID.x < texResolution.x && gl_GlobalInvocationID.y < texResolution.y)
 	{
+		float3 idx = float3(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, gl_GlobalInvocationID.z);
+
 		uint rwIdx = gl_GlobalInvocationID.y * texResolution.x + gl_GlobalInvocationID.x;
 
-		velocityWrite[gl_GlobalInvocationID] = float4(handInputBuffer[rwIdx].velocity, 1.0);
-		inkWrite[gl_GlobalInvocationID] = handInputBuffer[rwIdx].colour;
+		handInputBuffer[rwIdx].colour = float4(0, 0, 0, 1.0);
 	}
 }

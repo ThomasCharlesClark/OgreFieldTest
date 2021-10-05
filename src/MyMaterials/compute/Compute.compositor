@@ -1,48 +1,3 @@
-compositor_node NodeOne 
-{
-
-}
-
-compositor_node NodeTwo 
-{
-
-}
-
-compositor_node ImpulsesNode 
-{
-	in 0 velocityTexture
-	in 1 inkTexture
-	in_buffer 0 inputUavBuffer
-
-	texture nullDummy target_width target_height PFG_NULL
-
-	target nullDummy
-	{
-		//The bindings made by pass bind_uav PERSIST even after we're out of renderTarget.
-		pass bind_uav
-		{
-			starting_slot 1
-			uav_buffer 0 inputUavBuffer read
-		}
-
-		pass compute
-		{
-			job	AddImpulses
-			input 0 velocityTexture write
-			input 1 inkTexture write
-			uav_buffer 2 inputUavBuffer read
-		}
-
-		pass bind_uav 
-		{
-			keep_previous_uavs false
-		}
-	}
-
-	out 0 velocityTexture
-	out 1 inkTexture
-}
-
 compositor_node TestComputeNode
 {
 	in 0 renderTarget
@@ -57,24 +12,18 @@ compositor_node TestComputeNode
 	in_buffer 0 inputUavBuffer
 
 	//buffer name size bytesPerElement [target_width] [target_height] bind_flags
-	//texture leapMotionTexture target_width target_height PFG_RGBA8_UNORM depth_pool 0 uav
+	texture leapMotionTexture target_width target_height PFG_RGBA32_FLOAT uav depth_pool 0 keep_content
+	texture tempInkTexture target_width target_height PFG_RGBA32_FLOAT uav depth_pool 0 keep_content
 
 	buffer temporaryBuffer 1 4 target_width target_height
 	
 	texture nullDummy target_width target_height PFG_NULL
-
-	target nullDummy
-	{
-	}
 
 	target
 	{
 		pass compute
 		{
 			job	AddImpulses
-			
-			input 0 velocityTexture write
-			input 1 inkTexture write
 			uav_buffer 2 inputUavBuffer read
 		}
 
@@ -82,12 +31,12 @@ compositor_node TestComputeNode
 		{
 			job AdvectionCopy 
 		}
-
+		
 		pass compute
 		{
-			job Advection
+			job VelocityAdvection
 		}
-
+		
 		pass compute
 		{
 			job Divergence
@@ -205,15 +154,51 @@ compositor_node TestComputeNode
 		{
 			job	InkAdvection
 		}
-
+		
 		pass compute
 		{
 			job	TestJob
-			
 			uav_buffer 0 temporaryBuffer write
 		}
+
+		// Not doing much
+		pass compute
+		{
+			job ClearBuffer
+			uav_buffer 0 inputUavBuffer write
+		}
 	}
-	
+
+	target tempInkTexture 
+	{
+		pass clear 
+		{
+			colour_value 0.0 0.0 0.0 1
+		}
+	}
+
+	/*target leapMotionTexture
+	{
+
+		//The bindings made by pass bind_uav PERSIST even after we're out of renderTarget.
+		pass bind_uav
+		{
+			starting_slot 1
+			uav 0 tempInkTexture read
+		}
+
+		pass render_quad
+		{
+			material CopyFromTexture
+			uses_uav 0 read
+		}
+
+		pass bind_uav
+		{
+
+		}
+	}*/
+
 	/*target previousInkTexture 0
 	{
 		pass render_quad
@@ -264,6 +249,7 @@ workspace "Test Compute Workspace"
 	connect ImpulsesNode 0 1 TestComputeNode 1 6
 	*/
 	
+	/*
 	connect_external 0 TestComputeNode 0
 	connect_external 1 TestComputeNode 1
 	connect_external 2 TestComputeNode 2
@@ -272,6 +258,7 @@ workspace "Test Compute Workspace"
 	connect_external 5 TestComputeNode 5
 	connect_external 6 TestComputeNode 6
 	connect_external 7 TestComputeNode 7
+	*/
 
 	connect_output TestComputeNode 0
 	connect_output TestComputeNode 1

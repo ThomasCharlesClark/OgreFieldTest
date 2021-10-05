@@ -406,7 +406,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\MyMaterials\compute\HLSL\Advection.hlsl">
+    <None Include="src\MyMaterials\compute\HLSL\VelocityAdvection.hlsl">
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
       </DeploymentContent>
       <FileType>Document</FileType>
@@ -444,6 +444,11 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\MyMaterials\compute\HLSL\InkAdvection.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\MyMaterials\compute\HLSL\ClearBuffer.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>
