@@ -1,5 +1,6 @@
 struct Particle
 {
+	float ink;
 	float4 colour;
 	float3 velocity;
 	float pressure;
@@ -9,6 +10,7 @@ struct Particle
 RWTexture3D<float4> velocityWrite				: register(u0);	// primaryVelocityTexture
 RWTexture3D<float4> inkWrite					: register(u1); // primaryInkTexture
 RWStructuredBuffer<Particle> handInputBuffer	: register(u2); // inputUavBuffer (leapMotion input)
+RWTexture3D<float> inkTemp						: register(u3); // tempInkTexture (temporary uav)
 
 SamplerState TextureSampler
 {
@@ -30,7 +32,10 @@ void main
 	{
 		uint rwIdx = gl_GlobalInvocationID.y * texResolution.x + gl_GlobalInvocationID.x;
 
-		velocityWrite[gl_GlobalInvocationID] = float4(handInputBuffer[rwIdx].velocity, 1.0);
-		inkWrite[gl_GlobalInvocationID] = handInputBuffer[rwIdx].colour;
+		float4 velocity = float4(handInputBuffer[rwIdx].velocity, 1.0);
+
+		velocityWrite[gl_GlobalInvocationID] = velocity;
+		inkWrite[gl_GlobalInvocationID] += handInputBuffer[rwIdx].colour;
+		inkTemp[gl_GlobalInvocationID] = handInputBuffer[rwIdx].ink;
 	}
 }

@@ -93,7 +93,11 @@ namespace MyThirdOgre
 		mInkInputBuffer = std::vector<Particle>({});
 
 		for (auto i = 0; i < mBufferResolutionWidth * mBufferResolutionHeight; i++) {
-			mInkInputBuffer.push_back({ Ogre::Vector4(0.0f, 0.0f, 0.0f, 1.0f), Ogre::Vector3::ZERO });
+			mInkInputBuffer.push_back({ 
+				Ogre::Real(0.0f), 
+				Ogre::Vector4(0.0f, 0.0f, 0.0f, 1.0f), 
+				Ogre::Vector3::ZERO 
+			});
 		}
 			
 		mDrawFromUavBufferMat = Ogre::MaterialPtr();
@@ -695,8 +699,8 @@ namespace MyThirdOgre
 				tsl->setManualValue(timeSinceLast);
 				texResolution->setManualValue(res, sizeof(res) / sizeof(Ogre::uint32));
 				reciprocalDeltaX->setManualValue(1.0f);
-				velocityDissipationConstant->setManualValue(0.997f);
-				inkDissipationConstant->setManualValue(0.997f);
+				velocityDissipationConstant->setManualValue(1.0f);
+				inkDissipationConstant->setManualValue(1.0f);
 				//inkDissipationConstant->setManualValue(1.0f);
 				shaderParams.setDirty();
 
@@ -727,8 +731,8 @@ namespace MyThirdOgre
 				tsl->setManualValue(timeSinceLast);
 				texResolution->setManualValue(res, sizeof(res) / sizeof(Ogre::uint32));
 				reciprocalDeltaX->setManualValue(1.0f);
-				velocityDissipationConstant->setManualValue(0.997f);
-				inkDissipationConstant->setManualValue(0.997f);
+				velocityDissipationConstant->setManualValue(1.0f);
+				inkDissipationConstant->setManualValue(1.0f);
 				//inkDissipationConstant->setManualValue(1.0f);
 				shaderParams.setDirty();
 
@@ -824,8 +828,10 @@ namespace MyThirdOgre
 				//Update the compute shader's
 				Ogre::ShaderParams& shaderParams = mTestComputeJob->getShaderParams("default");
 				Ogre::ShaderParams::Param* texResolution = shaderParams.findParameter("texResolution");
+				Ogre::ShaderParams::Param* maxInk = shaderParams.findParameter("maxInk");
 				auto pb = shaderParams.findParameter("pixelBuffer");
 				texResolution->setManualValue(res, sizeof(res) / sizeof(Ogre::uint32));
+				maxInk->setManualValue(20.0f);
 				shaderParams.setDirty();
 
 				mTestComputeJob->setNumThreadGroups(
@@ -893,10 +899,10 @@ namespace MyThirdOgre
 							for (size_t x = 0; x < this->getBufferResolutionWidth(); ++x)
 							{
 								float* data = reinterpret_cast<float*>(tBox.at(x, y, z));
-								data[0] = 0.0f;
-								data[1] = (x > 56 && x < 66) ? 0.85f : 0.0f;
-								data[2] = 0.0f;
-								data[3] = 1.0f;
+								data[0] = 0.0f; //r
+								data[1] = 0.0f; //g
+								data[2] = 0.0f; //b
+								data[3] = 0.0f; //a
 							}
 						}
 					}
@@ -933,7 +939,9 @@ namespace MyThirdOgre
 
 			for (auto& iter : mInkInputBuffer) {
 				// the input buffer MUST be cleared as often as possible
-				iter.colour = Ogre::Vector4(0.0f, 0.0f, 0.0f, 1.0f); // the ink field is always green and invisible
+
+				//iter.colour = Ogre::Vector4(0.0f, 0.0f, 0.0f, 1.0f);
+				iter.ink = 0.0f;
 				iter.velocity = Ogre::Vector3::ZERO;
 			}
 
@@ -982,12 +990,14 @@ namespace MyThirdOgre
 
 							if (distLen < rHandSphereSquared) {
 
-								//mInkInputBuffer[index.mIndex].colour.x = 0.0f;
-								//mInkInputBuffer[index.mIndex].colour.y = 0.0f;
-								mInkInputBuffer[index.mIndex].colour.z = 1000.0f; // mHand->getState().rInk;
+								//mInkInputBuffer[index.mIndex].colour.x = 1.0f;
+								//mInkInputBuffer[index.mIndex].colour.y = 1.0f;
+								mInkInputBuffer[index.mIndex].colour.z = 0.76f; // mHand->getState().rInk;
 
 																				// the ink field is always green and invisible
 								//mInkInputBuffer[index.mIndex].colour.w = 1.0f; // except when the hand influences the alpha
+
+								//mInkInputBuffer[index.mIndex].ink = mHand->getState().rInk;
 
 								// how do I indicate that I want to upload ONLY THESE indices?
 								// is that even what I want to do?
@@ -999,7 +1009,7 @@ namespace MyThirdOgre
 								//mInkInputBuffer[index.mIndex].velocity = mHand->getState().vVel * 100;
 
 								mInkInputBuffer[index.mIndex].velocity = mHand->getState().vVel * 100;
-
+								 
 								//mInkInputBuffer[index.mIndex].velocity += mHand->getState().vVel;
 							
 
@@ -1044,6 +1054,8 @@ namespace MyThirdOgre
 			float* instanceBuffer = const_cast<float*>(mInstanceBufferStart);
 
 			for (const auto& iter : mInkInputBuffer) {
+
+				*instanceBuffer++ = iter.ink;
 
 				*instanceBuffer++ = iter.colour.x;
 				*instanceBuffer++ = iter.colour.y;

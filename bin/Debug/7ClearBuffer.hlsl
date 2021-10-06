@@ -55,7 +55,7 @@ void main
 
 		handInputBuffer[rwIdx].ink = 0.0;
 		handInputBuffer[rwIdx].colour = float4(0, 0, 0, 1.0);
-		inkPrimary[gl_GlobalInvocationID] = float4(0, 0, 0, 1.0);
+		//inkPrimary[gl_GlobalInvocationID] = float4(0, 0, 0, 1.0);
 		inkSecondary[gl_GlobalInvocationID] = float4(0, 0, 0, 1.0);
 	}
 }

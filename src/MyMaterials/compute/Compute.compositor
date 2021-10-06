@@ -12,8 +12,10 @@ compositor_node TestComputeNode
 	in_buffer 0 inputUavBuffer
 
 	//buffer name size bytesPerElement [target_width] [target_height] bind_flags
+
 	texture leapMotionTexture target_width target_height PFG_RGBA32_FLOAT uav depth_pool 0 keep_content
-	texture tempInkTexture target_width target_height PFG_RGBA32_FLOAT uav depth_pool 0 keep_content
+
+	texture tempInkTexture target_width target_height 2 PFG_R32_FLOAT uav 3d depth_pool 0 keep_content
 
 	buffer temporaryBuffer 1 4 target_width target_height
 	
@@ -25,6 +27,7 @@ compositor_node TestComputeNode
 		{
 			job	AddImpulses
 			uav_buffer 2 inputUavBuffer read
+			uav 3 tempInkTexture write
 		}
 
 		pass compute
@@ -152,61 +155,30 @@ compositor_node TestComputeNode
 		
 		pass compute
 		{
-			job	InkAdvection
+			job ClearBuffers1
+			uav_buffer 0 inputUavBuffer write
 		}
-		
+
+		pass compute
+		{
+			job	InkAdvection
+			uav 2 tempInkTexture read write
+		}
+
 		pass compute
 		{
 			job	TestJob
 			uav_buffer 0 temporaryBuffer write
+			uav 3 tempInkTexture read
 		}
+	}
+	
+		/*
 
-		// Not doing much
 		pass compute
 		{
-			job ClearBuffer
-			uav_buffer 0 inputUavBuffer write
-		}
-	}
-
-	target tempInkTexture 
-	{
-		pass clear 
-		{
-			colour_value 0.0 0.0 0.0 1
-		}
-	}
-
-	/*target leapMotionTexture
-	{
-
-		//The bindings made by pass bind_uav PERSIST even after we're out of renderTarget.
-		pass bind_uav
-		{
-			starting_slot 1
-			uav 0 tempInkTexture read
-		}
-
-		pass render_quad
-		{
-			material CopyFromTexture
-			uses_uav 0 read
-		}
-
-		pass bind_uav
-		{
-
-		}
-	}*/
-
-	/*target previousInkTexture 0
-	{
-		pass render_quad
-		{
-			material CopyFromTexture
-		}
-	}*/
-
+			job ClearBuffers2
+		}*/
 	target renderTarget 
 	{
 		pass clear

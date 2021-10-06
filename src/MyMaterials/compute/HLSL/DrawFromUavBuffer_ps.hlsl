@@ -15,7 +15,7 @@ float4 unpackUnorm4x8( uint value )
 	retVal.z = float((value >> 16u) & 0xFF);
 	retVal.w = float((value >> 24u) & 0xFF);
 
-	return retVal * 0.0039215687f;
+	return retVal * 0.0039215687f; // 1.0 / 255.0f;
 }
 
 // for crazy funtimes!

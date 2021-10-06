@@ -20,6 +20,7 @@
 namespace MyThirdOgre
 {
 	struct Particle {
+		Ogre::Real ink;
 		Ogre::Vector4 colour;
 		Ogre::Vector3 velocity;
 		float pressure;

@@ -1543,14 +1543,16 @@ namespace MyThirdOgre
 
                 const float* instanceBufferStart = instanceBuffer;
 
-                auto c = Ogre::ColourValue(0.0f, 0.0f, 0.0f, 1.0f);
+                auto c = Ogre::Vector4(0.0f, 0.0f, 0.0f, 1.0f);
 
                 for (auto i = 0; i < uavBufferNumElements; ++i) {
 
-                    *instanceBuffer++ = c.r;
-                    *instanceBuffer++ = c.g;
-                    *instanceBuffer++ = c.b;
-                    *instanceBuffer++ = c.a;
+                    *instanceBuffer++ = 0.0f; //ink
+
+                    *instanceBuffer++ = c.x; // colour
+                    *instanceBuffer++ = c.y;
+                    *instanceBuffer++ = c.z;
+                    *instanceBuffer++ = c.w;
 
                     *instanceBuffer++ = 0.0f; // velocity.x
                     *instanceBuffer++ = 0.0f; // velocity.y
@@ -1639,6 +1641,8 @@ namespace MyThirdOgre
                 uavSlot.texture = fieldComputeSystem->getPrimaryVelocityTexture();
                 fieldComputeSystem->getAddImpulsesComputeJob()->_setUavTexture(0, uavSlot);
 
+                // noooope: now using a temporary ink 3D texture created on the GPU
+                // primaryInkTexture should STAY PUT GADDAMMIT
                 uavSlot.texture = fieldComputeSystem->getPrimaryInkTexture();
                 fieldComputeSystem->getAddImpulsesComputeJob()->_setUavTexture(1, uavSlot);
 
@@ -1681,7 +1685,6 @@ namespace MyThirdOgre
 
 
 
-
                 uavSlot.texture = fieldComputeSystem->getDivergenceTexture();
                 fieldComputeSystem->getDivergenceComputeJob()->_setUavTexture(0, uavSlot);
 
@@ -1711,10 +1714,12 @@ namespace MyThirdOgre
 
                 // this just ensures the input buffer is cleared on the GPU 
 
-                hlmsCompute->findComputeJob("ClearBuffer")->_setUavBuffer(0, bufferSlot);
-                uavSlot.texture = fieldComputeSystem->getPrimaryInkTexture();
-                hlmsCompute->findComputeJob("ClearBuffer")->_setUavTexture(1, uavSlot);
+                hlmsCompute->findComputeJob("ClearBuffers1")->_setUavBuffer(0, bufferSlot);
+                uavSlot.texture = fieldComputeSystem->getSecondaryInkTexture();
+                hlmsCompute->findComputeJob("ClearBuffers1")->_setUavTexture(1, uavSlot);
 
+                uavSlot.texture = fieldComputeSystem->getPrimaryInkTexture();
+                hlmsCompute->findComputeJob("ClearBuffers2")->_setUavTexture(0, uavSlot);
 
 
                 bool canUseSynchronousUpload = fieldComputeSystem

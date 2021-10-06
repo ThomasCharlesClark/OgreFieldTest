@@ -305,10 +305,11 @@
     <None Include="src\MyMaterials\compute\HLSL\VelocityAdvection.hlsl">
       <Filter>ComputeShaders</Filter>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="src\MyMaterials\compute\HLSL\ClearBuffer.hlsl">
+    <None Include="src\MyMaterials\compute\HLSL\ClearBuffers1.hlsl">
       <Filter>ComputeShaders</Filter>
-    </FxCompile>
+    </None>
+    <None Include="src\MyMaterials\compute\HLSL\ClearBuffers2.hlsl">
+      <Filter>ComputeShaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

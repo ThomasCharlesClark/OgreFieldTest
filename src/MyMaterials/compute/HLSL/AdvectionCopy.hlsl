@@ -29,12 +29,12 @@ void main
 		float width = texResolution.x;
 
 		float4 velocity = velocityRead.Load(idx4);
-		float4 ink = inkRead.Load(idx4);
 		
 		// to sample, or not to sample?
-		//float4 ink = inkRead.SampleLevel(TextureSampler, gl_GlobalInvocationID / width, 0); 
+		//float4 ink = inkRead.Load(idx4);
+		float4 ink = inkRead.SampleLevel(TextureSampler, gl_GlobalInvocationID / width, 0); 
 
 		velocityWrite[idx3] = velocity;
-		inkWrite[idx3] += ink;
+		inkWrite[idx3] = ink;
 	}
 }
