@@ -429,9 +429,9 @@ namespace MyThirdOgre
     //-----------------------------------------------------------------------------------
     void GraphicsSystem::update( float timeSinceLast )
     {
-        for (auto& iter : mFieldComputeSystems) {
+       /* for (auto& iter : mFieldComputeSystems) {
             iter->update(timeSinceLast);
-        }
+        }*/
 
 
 
@@ -536,6 +536,11 @@ namespace MyThirdOgre
 
                     //Get the new index the LogicSystem is telling us to use.
                     mCurrentTransformIdx = newIdx;
+                }
+
+                // sneaky but effective
+                for (auto& iter : mFieldComputeSystems) {
+                    iter->update(0.016f); // fixed arbitrary 1/60 timestep because... I said so
                 }
             }
             break;
@@ -1376,11 +1381,15 @@ namespace MyThirdOgre
 
                 fieldComputeSystem->setTestComputeJob(hlmsCompute->findComputeJob("TestJob"));
                 fieldComputeSystem->setAdvectionCopyComputeJob(hlmsCompute->findComputeJob("AdvectionCopy"));
+                fieldComputeSystem->setBoundaryConditionsComputeJob(hlmsCompute->findComputeJob("BoundaryConditions"));
+                fieldComputeSystem->setClearBuffersComputeJob(hlmsCompute->findComputeJob("ClearBuffers1"));
+                fieldComputeSystem->setClearBuffersTwoComputeJob(hlmsCompute->findComputeJob("ClearBuffers2"));
                 fieldComputeSystem->setVelocityAdvectionComputeJob(hlmsCompute->findComputeJob("VelocityAdvection"));
                 fieldComputeSystem->setInkAdvectionComputeJob(hlmsCompute->findComputeJob("InkAdvection"));
                 fieldComputeSystem->setAddImpulsesComputeJob(hlmsCompute->findComputeJob("AddImpulses"));
                 fieldComputeSystem->setDivergenceComputeJob(hlmsCompute->findComputeJob("Divergence"));
-                fieldComputeSystem->setJabobiPressureComputeJob(hlmsCompute->findComputeJob("JacobiPressure"));
+                fieldComputeSystem->setJacobiPressureComputeJob(hlmsCompute->findComputeJob("JacobiPressure"));
+                fieldComputeSystem->setJacobiDiffusionComputeJob(hlmsCompute->findComputeJob("JacobiDiffusion"));
                 fieldComputeSystem->setSubtractPressureGradientComputeJob(hlmsCompute->findComputeJob("SubtractPressureGradient"));
 
                 fieldComputeSystem->setMaterial(Ogre::MaterialManager::getSingleton().load(
@@ -1543,7 +1552,8 @@ namespace MyThirdOgre
 
                 const float* instanceBufferStart = instanceBuffer;
 
-                auto c = Ogre::Vector4(0.0f, 0.0f, 0.0f, 1.0f);
+                //auto c = Ogre::Vector4(0.0f, 0.0f, 0.0f, 1.0f);
+                auto c = Ogre::Vector4(0.0450033244f, 0.1421513113f, 0.4302441212f, 1.0f);
 
                 for (auto i = 0; i < uavBufferNumElements; ++i) {
 
@@ -1558,11 +1568,6 @@ namespace MyThirdOgre
                     *instanceBuffer++ = 0.0f; // velocity.y
                     *instanceBuffer++ = 0.0f; // velocity.z
 
-                    *instanceBuffer++ = 0.0f; // pressure
-
-                    *instanceBuffer++ = 0.0f; // pressureGradient.x
-                    *instanceBuffer++ = 0.0f; // pressureGradient.y
-                    *instanceBuffer++ = 0.0f; // pressureGradient.z
                 }
 
                 OGRE_ASSERT_LOW((size_t)(instanceBuffer - instanceBufferStart) * sizeof(float) <=
@@ -1662,8 +1667,24 @@ namespace MyThirdOgre
 
                 textureSlot.texture = fieldComputeSystem->getPrimaryInkTexture();
                 fieldComputeSystem->getAdvectionCopyComputeJob()->setTexture(1, textureSlot);
+                
 
-                 
+
+                // Boundary Conditions does... stuff
+                uavSlot.texture = fieldComputeSystem->getSecondaryVelocityTexture();
+                fieldComputeSystem->getBoundaryConditionsComputeJob()->_setUavTexture(0, uavSlot);
+
+                uavSlot.texture = fieldComputeSystem->getSecondaryInkTexture();
+                fieldComputeSystem->getBoundaryConditionsComputeJob()->_setUavTexture(1, uavSlot);
+
+                textureSlot.texture = fieldComputeSystem->getPrimaryVelocityTexture();
+                fieldComputeSystem->getBoundaryConditionsComputeJob()->setTexture(0, textureSlot);
+
+                textureSlot.texture = fieldComputeSystem->getPrimaryInkTexture();
+                fieldComputeSystem->getBoundaryConditionsComputeJob()->setTexture(1, textureSlot);
+
+
+
                 // Advection reads the secondaries and advects those onto to the primaries
                 uavSlot.texture = fieldComputeSystem->getPrimaryVelocityTexture();
                 fieldComputeSystem->getAdvectionComputeJob()->_setUavTexture(0, uavSlot);
@@ -1695,12 +1716,34 @@ namespace MyThirdOgre
 
 
 
+                // Jacobi Diffusion should only occur if we decide the fluid has some visocity
+                uavSlot.texture = fieldComputeSystem->getSecondaryVelocityTexture();
+                fieldComputeSystem->getJacobiDiffusionComputeJob()->_setUavTexture(0, uavSlot);
+
+                uavSlot.texture = fieldComputeSystem->getSecondaryInkTexture();
+                fieldComputeSystem->getJacobiDiffusionComputeJob()->_setUavTexture(1, uavSlot);
+
+                textureSlot.texture = fieldComputeSystem->getPrimaryVelocityTexture();
+                fieldComputeSystem->getJacobiDiffusionComputeJob()->setTexture(0, textureSlot);
+
+                textureSlot.texture = fieldComputeSystem->getPrimaryInkTexture();
+                fieldComputeSystem->getJacobiDiffusionComputeJob()->setTexture(1, textureSlot);
+
+
+
+
+
+
 
                 uavSlot.texture = fieldComputeSystem->getPressureTexture();
                 fieldComputeSystem->getJacobiPressureComputeJob()->_setUavTexture(0, uavSlot);
 
                 textureSlot.texture = fieldComputeSystem->getDivergenceTexture();
                 fieldComputeSystem->getJacobiPressureComputeJob()->setTexture(0, textureSlot);
+
+
+
+
 
 
 
@@ -1712,14 +1755,16 @@ namespace MyThirdOgre
                 fieldComputeSystem->getSubtractPressureGradientComputeJob()->setTexture(0, textureSlot);
 
 
-                // this just ensures the input buffer is cleared on the GPU 
 
-                hlmsCompute->findComputeJob("ClearBuffers1")->_setUavBuffer(0, bufferSlot);
+
+                fieldComputeSystem->getClearBuffersComputeJob()->_setUavBuffer(0, bufferSlot);
                 uavSlot.texture = fieldComputeSystem->getSecondaryInkTexture();
-                hlmsCompute->findComputeJob("ClearBuffers1")->_setUavTexture(1, uavSlot);
+                fieldComputeSystem->getClearBuffersComputeJob()->_setUavTexture(1, uavSlot);
 
+                fieldComputeSystem->getClearBuffersTwoComputeJob()->_setUavBuffer(0, bufferSlot);
                 uavSlot.texture = fieldComputeSystem->getPrimaryInkTexture();
-                hlmsCompute->findComputeJob("ClearBuffers2")->_setUavTexture(0, uavSlot);
+                fieldComputeSystem->getClearBuffersTwoComputeJob()->_setUavTexture(1, uavSlot);
+
 
 
                 bool canUseSynchronousUpload = fieldComputeSystem

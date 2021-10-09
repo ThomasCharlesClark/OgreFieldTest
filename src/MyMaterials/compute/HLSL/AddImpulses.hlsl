@@ -3,8 +3,6 @@ struct Particle
 	float ink;
 	float4 colour;
 	float3 velocity;
-	float pressure;
-	float3 pressureGradient;
 };
 
 RWTexture3D<float4> velocityWrite				: register(u0);	// primaryVelocityTexture
@@ -35,7 +33,12 @@ void main
 		float4 velocity = float4(handInputBuffer[rwIdx].velocity, 1.0);
 
 		velocityWrite[gl_GlobalInvocationID] = velocity;
+		// being additive here might be wrong - velocity doesn't need to be additive; why should ink?
 		inkWrite[gl_GlobalInvocationID] += handInputBuffer[rwIdx].colour;
-		inkTemp[gl_GlobalInvocationID] = handInputBuffer[rwIdx].ink;
+		inkTemp[gl_GlobalInvocationID] += handInputBuffer[rwIdx].ink;
+		
+		//handInputBuffer[rwIdx].colour = float4(0.0450033244f, 0.1421513113f, 0.4302441212f, 1.0f);
+		//handInputBuffer[rwIdx].colour = float4(0, 0, 0, 1.0);
+		//handInputBuffer[rwIdx].ink = 0.0;
 	}
 }

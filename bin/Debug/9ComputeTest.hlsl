@@ -23,8 +23,6 @@ struct Particle
 	float ink;
 	float4 colour;
 	float3 velocity;
-	float pressure;
-	float3 pressureGradient;
 };
 
 RWStructuredBuffer<uint> pixelBuffer	: register(u0); // temporaryBuffer
@@ -54,7 +52,7 @@ float4 unpackUnorm4x8(uint value)
 	retVal.z = float((value >> 16u) & 0xFF);
 	retVal.w = float((value >> 24u) & 0xFF);
 	 
-	return retVal * 0.0039215687f;
+	return retVal * 0.0039215687f; // 1.0 / 255.0f;
 }
 
 float normaliseInkValue(float i) 
@@ -80,23 +78,22 @@ void main
 
 		float inkValue = inkTemp.Load(int4(gl_GlobalInvocationID, 1));
 
-		inkColour.w = normaliseInkValue(inkValue);
+		//inkColour.w = normaliseInkValue(inkValue);
 
 		//pixelBuffer[idx] = packUnorm4x8(v);
 
 		//pixelBuffer[idx] = packUnorm4x8(inkColour);
 
-		pixelBuffer[idx] = packUnorm4x8(float4(v.xyz + normaliseInkValue(inkColour.z), 1.0f));
+		//pixelBuffer[idx] = packUnorm4x8(float4(v.xyz + normaliseInkValue(inkColour.z), 1.0f));
 
-		inkRead[gl_GlobalInvocationID] = float4(0, 0, 0, 1);
-		inkTemp[gl_GlobalInvocationID] = 0;
+		//inkTemp[gl_GlobalInvocationID] = 0;
 
 		//pixelBuffer[idx] = packUnorm4x8(float4(v.xyz + inkColour.xyz, normaliseInkValue(inkValue)));
 		
 		//pixelBuffer[idx] = packUnorm4x8(inkColour);
 
-		//pixelBuffer[idx] = packUnorm4x8(float4(inkColour.xyz, 1.0f));
+		pixelBuffer[idx] = packUnorm4x8(float4(inkColour.xyz, 1.0f));
 
-		//pixelBuffer[idx] = packUnorm4x8(float4(v.xyz + inkColour.xyz, 1.0f));
+		//pixelBuffer[idx] = packUnorm4x8(float4(saturate(v.xyz) + inkColour.xyz, 1.0f));
 	}
 }

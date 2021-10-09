@@ -31,6 +31,7 @@ void main
 {
 	if( gl_GlobalInvocationID.x < texResolution.x && gl_GlobalInvocationID.y < texResolution.y)
 	{
-		inkPrimary[gl_GlobalInvocationID] = float4(0, 0, 0, 1.0);
+		//inkPrimary[gl_GlobalInvocationID] = inkPrimary[gl_GlobalInvocationID] * 0.54;
+		//inkPrimary[gl_GlobalInvocationID] = float4(0,0,0,1);
 	}
 }

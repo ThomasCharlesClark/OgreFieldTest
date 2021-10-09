@@ -1,21 +1,21 @@
 compositor_node TestComputeNode
 {
 	in 0 renderTarget
-	in 1 velocityTexture
+	/*in 1 velocityTexture
 	in 2 previousVelocityTexture
 	in 3 pressureTexture
 	in 4 pressureGradientTexture
 	in 5 divergenceTexture
 	in 6 inkTexture
-	in 7 previousInkTexture
+	in 7 previousInkTexture*/
 
 	in_buffer 0 inputUavBuffer
 
 	//buffer name size bytesPerElement [target_width] [target_height] bind_flags
 
-	texture leapMotionTexture target_width target_height PFG_RGBA32_FLOAT uav depth_pool 0 keep_content
+	texture leapMotionTexture target_width target_height 1 PFG_RGBA32_FLOAT uav 3d depth_pool 0
 
-	texture tempInkTexture target_width target_height 2 PFG_R32_FLOAT uav 3d depth_pool 0 keep_content
+	texture tempInkTexture target_width target_height 1 PFG_R32_FLOAT uav 3d depth_pool 0
 
 	buffer temporaryBuffer 1 4 target_width target_height
 	
@@ -101,8 +101,7 @@ compositor_node TestComputeNode
 		}
 
 		// MOAR PRETTY
-		/*
-		pass compute
+		/*pass compute
 		{
 			job JacobiPressure
 		}
@@ -145,12 +144,17 @@ compositor_node TestComputeNode
 		pass compute
 		{
 			job JacobiPressure
-		}
-		*/
+		}*/
 		
 		pass compute
 		{
 			job SubtractPressureGradient
+		}
+
+		pass compute
+		{
+			job	InkAdvection
+			uav 2 tempInkTexture read write
 		}
 		
 		pass compute
@@ -161,24 +165,32 @@ compositor_node TestComputeNode
 
 		pass compute
 		{
-			job	InkAdvection
-			uav 2 tempInkTexture read write
-		}
-
-		pass compute
-		{
 			job	TestJob
 			uav_buffer 0 temporaryBuffer write
 			uav 3 tempInkTexture read
 		}
-	}
-	
-		/*
 
 		pass compute
 		{
 			job ClearBuffers2
-		}*/
+			uav_buffer 0 inputUavBuffer write
+		}
+	}
+
+	/*target 
+	{
+		pass compute
+		{
+			job ClearBuffers2
+			uav_buffer 0 inputUavBuffer write
+		}
+	}
+	
+	pass compute
+	{
+		job ClearBuffers2
+	}*/
+
 	target renderTarget 
 	{
 		pass clear
@@ -233,11 +245,11 @@ workspace "Test Compute Workspace"
 	*/
 
 	connect_output TestComputeNode 0
-	connect_output TestComputeNode 1
+	/*connect_output TestComputeNode 1
 	connect_output TestComputeNode 2
 	connect_output TestComputeNode 3
 	connect_output TestComputeNode 4
 	connect_output TestComputeNode 5
 	connect_output TestComputeNode 6
-	connect_output TestComputeNode 7
+	connect_output TestComputeNode 7*/
 }

@@ -53,7 +53,10 @@ void main
 		uint rwIdx = gl_GlobalInvocationID.y * texResolution.x + gl_GlobalInvocationID.x;
 
 		//handInputBuffer[rwIdx].ink = 0.0;
-		inkSecondary[gl_GlobalInvocationID] = inkSecondary[gl_GlobalInvocationID] * 0.998;
 		//handInputBuffer[rwIdx].colour = inkSecondary[gl_GlobalInvocationID];// float4(0, 0, 0, 1.0);
+
+		//inkSecondary[gl_GlobalInvocationID] = inkSecondary[gl_GlobalInvocationID] * 0.998;
+
+		inkSecondary[gl_GlobalInvocationID] = float4(0, 0, 0, 1.0);
 	}
 }

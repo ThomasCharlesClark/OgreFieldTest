@@ -26,8 +26,8 @@ Texture3D<float4> inkRead				: register(t1);	// primaryInkTexture
 SamplerState TextureSampler
 {
 	Filter = MIN_MAG_MIP_LINEAR;
-	AddressU = Clamp;
-	AddressV = Clamp;
+	AddressU = Wrap;
+	AddressV = Wrap;
 };
 
 uniform uint2 texResolution;
@@ -48,10 +48,13 @@ void main
 
 		float width = texResolution.x;
 
-		float4 velocity = velocityRead.Load(idx4);
 		
 		// to sample, or not to sample?
+
 		//float4 ink = inkRead.Load(idx4);
+		//float4 velocity = velocityRead.Load(idx4);
+
+		float4 velocity = velocityRead.SampleLevel(TextureSampler, gl_GlobalInvocationID / width, 0);
 		float4 ink = inkRead.SampleLevel(TextureSampler, gl_GlobalInvocationID / width, 0); 
 
 		velocityWrite[idx3] = velocity;

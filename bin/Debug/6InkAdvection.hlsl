@@ -62,11 +62,14 @@ void main
 
 		float width = texResolution.x;	
 
-		float4 velocity = velocityRead.SampleLevel(TextureSampler, idx3 / width, 0);
-		//float4 velocity = velocityRead.Load(int4(idx3, 0));// *100;
+		float4 velocity = velocityRead.SampleLevel(TextureSampler, idx3 / width, 0) * 1000;
+
+		//float4 velocity = velocityRead.Load(int4(idx3, 0)) * 100;
 
 		float3 idxBackInTime = (idx3 - (reciprocalDeltaX * velocity.xyz));
 		
+		//idxBackInTime.z = 0;
+
 		//float4 inkColour = inkRead.SampleLevel(TextureSampler, idxBackInTime / width, 0);
 		////float4 inkColour = inkRead.Load(idxBackInTime);
 
@@ -75,15 +78,18 @@ void main
 		////inkRead[idxBackInTime] = inkWrite[idx3];
 		////inkRead[idxBackInTime] = float4(0,0,0,1);
 
-		//float i = inkTemp.Load(float4(idxBackInTime, 1));
+		float i0 = inkTemp.Load(float4(idxBackInTime, 0));
 
-		//inkTemp[idx3] = i;
-
+		inkTemp[idx3] = i0;
 
 		float4 i = inkRead.Load(idxBackInTime);
 
-		inkWrite[idx3] = float4(i.xyz, 1.0) * 0.244;
+		inkWrite[idx3] += float4(i.xyz, 1.0);
 
-		//inkRead[idxBackInTime] = float4(0, 0, 0, 1);// inkWrite[idx3];
+		//inkRead[idxBackInTime] = inkRead[idxBackInTime] * 0.9;//inkWrite[idx3];
+		//inkRead[idx3] = float4(0, 0, 0, 1);
+
+		//inkRead[idx3] = float4(0, 0, 0, 1); 
+		//inkRead[idxBackInTime] = inkWrite[idx3];
 	}
 }

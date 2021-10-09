@@ -23,8 +23,6 @@ namespace MyThirdOgre
 		Ogre::Real ink;
 		Ogre::Vector4 colour;
 		Ogre::Vector3 velocity;
-		float pressure;
-		Ogre::Vector3 pressureGradient;
 	};
 
 	struct FieldComputeSystem_StagingTextureMessage
@@ -136,7 +134,11 @@ namespace MyThirdOgre
 			bool						mDownloadingTextureViaTicket;
 			bool						mHaveSetTestComputeShaderParameters;
 			bool						mHaveSetAdvectionCopyComputeShaderParameters;
+			bool						mHaveSetBoundaryConditionsComputeShaderParameters;
+			bool						mHaveSetClearBuffersComputeShaderParameters;
+			bool						mHaveSetClearBuffersComputeTwoShaderParameters;
 			bool						mHaveSetVelocityAdvectionComputeShaderParameters;
+			bool						mHaveSetJacobiDiffusionComputeShaderParameters;
 			bool						mHaveSetInkAdvectionComputeShaderParameters;
 			bool						mHaveSetAddImpulsesComputeShaderParameters;
 			bool						mHaveSetDivergenceComputeShaderParameters;
@@ -170,7 +172,11 @@ namespace MyThirdOgre
 			Ogre::AsyncTextureTicket*			mTextureTicket3D;
 			Ogre::HlmsComputeJob*				mTestComputeJob;
 			Ogre::HlmsComputeJob*				mAdvectionCopyComputeJob;
+			Ogre::HlmsComputeJob*				mBoundaryConditionsComputeJob;
+			Ogre::HlmsComputeJob*				mClearBuffersComputeJob;
+			Ogre::HlmsComputeJob*				mClearBuffersTwoComputeJob;
 			Ogre::HlmsComputeJob*				mVelocityAdvectionComputeJob;
+			Ogre::HlmsComputeJob*				mJacobiDiffusionComputeJob;
 			Ogre::HlmsComputeJob*				mInkAdvectionComputeJob;
 			Ogre::HlmsComputeJob*				mAddImpulsesComputeJob;
 			Ogre::HlmsComputeJob*				mDivergenceComputeJob;
@@ -189,6 +195,7 @@ namespace MyThirdOgre
 			float* RESTRICT_ALIAS mInstanceBuffer;
 			const float* mInstanceBufferStart;
 
+			Ogre::uint32 resolution[2];
 
 		public:
 			FieldComputeSystem(Ogre::uint32 id, const MovableObjectDefinition* moDefinition,
@@ -205,11 +212,15 @@ namespace MyThirdOgre
 
 			virtual void setTestComputeJob(Ogre::HlmsComputeJob* job);
 			virtual void setAdvectionCopyComputeJob(Ogre::HlmsComputeJob* job);
+			virtual void setBoundaryConditionsComputeJob(Ogre::HlmsComputeJob* job);
+			virtual void setClearBuffersComputeJob(Ogre::HlmsComputeJob* job);
+			virtual void setClearBuffersTwoComputeJob(Ogre::HlmsComputeJob* job);
 			virtual void setVelocityAdvectionComputeJob(Ogre::HlmsComputeJob* job);
 			virtual void setInkAdvectionComputeJob(Ogre::HlmsComputeJob* job);
 			virtual void setAddImpulsesComputeJob(Ogre::HlmsComputeJob* job);
+			virtual void setJacobiDiffusionComputeJob(Ogre::HlmsComputeJob* job);
 			virtual void setDivergenceComputeJob(Ogre::HlmsComputeJob* job);
-			virtual void setJabobiPressureComputeJob(Ogre::HlmsComputeJob* job);
+			virtual void setJacobiPressureComputeJob(Ogre::HlmsComputeJob* job);
 			virtual void setSubtractPressureGradientComputeJob(Ogre::HlmsComputeJob* job);
 			virtual void setMaterial(Ogre::MaterialPtr mat);
 			virtual void setVelocityStagingTexture(Ogre::StagingTexture* tex);
@@ -242,8 +253,12 @@ namespace MyThirdOgre
 			bool getDownloadingTextureViaTicket(void) { return mDownloadingTextureViaTicket; };
 			Ogre::HlmsComputeJob* getTestComputeJob(void) { return mTestComputeJob; };
 			Ogre::HlmsComputeJob* getAdvectionCopyComputeJob(void) { return mAdvectionCopyComputeJob; };
+			Ogre::HlmsComputeJob* getBoundaryConditionsComputeJob(void) { return mBoundaryConditionsComputeJob; };
+			Ogre::HlmsComputeJob* getClearBuffersComputeJob(void) { return mClearBuffersComputeJob; };
+			Ogre::HlmsComputeJob* getClearBuffersTwoComputeJob(void) { return mClearBuffersTwoComputeJob; };
 			Ogre::HlmsComputeJob* getAdvectionComputeJob(void) { return mVelocityAdvectionComputeJob; };
 			Ogre::HlmsComputeJob* getInkAdvectionComputeJob(void) { return mInkAdvectionComputeJob; };
+			Ogre::HlmsComputeJob* getJacobiDiffusionComputeJob(void) { return mJacobiDiffusionComputeJob; };
 			Ogre::HlmsComputeJob* getAddImpulsesComputeJob(void) { return mAddImpulsesComputeJob; };
 			Ogre::HlmsComputeJob* getDivergenceComputeJob(void) { return mDivergenceComputeJob; };
 			Ogre::HlmsComputeJob* getJacobiPressureComputeJob(void) { return mJacobiPressureComputeJob; };

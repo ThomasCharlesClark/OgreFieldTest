@@ -3,8 +3,6 @@ struct Particle
 	float ink;
 	float4 colour;
 	float3 velocity;
-	float pressure;
-	float3 pressureGradient;
 };
 
 RWStructuredBuffer<uint> pixelBuffer	: register(u0); // temporaryBuffer
@@ -74,8 +72,8 @@ void main
 		
 		//pixelBuffer[idx] = packUnorm4x8(inkColour);
 
-		pixelBuffer[idx] = packUnorm4x8(float4(inkColour.xyz, 1.0f));
+		//pixelBuffer[idx] = packUnorm4x8(float4(inkColour.xyz, 1.0f));
 
-		//pixelBuffer[idx] = packUnorm4x8(float4(v.xyz + inkColour.xyz, 1.0f));
+		pixelBuffer[idx] = packUnorm4x8(float4(v.xyz + inkColour.xyz, 1.0f));
 	}
 }
