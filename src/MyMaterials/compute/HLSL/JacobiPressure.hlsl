@@ -33,11 +33,12 @@ void main
 		float4 d = pressureTexture.Load(float4(idx.x, idx.y + 1, idx.z, 0));
 
 		float4 p = float4(
-			(a.x + b.x + c.x + d.x + alpha * beta.x) * rBeta, 
-			(a.x + b.x + c.x + d.x + alpha * beta.x) * rBeta, 
-			(a.x + b.x + c.x + d.x + alpha * beta.x) * rBeta, 
+			(a.x + b.x + c.x + d.x + alpha * beta.x) * rBeta,
+			(a.x + b.x + c.x + d.x + alpha * beta.x) * rBeta,
+			(a.x + b.x + c.x + d.x + alpha * beta.x) * rBeta,
 			0);
 
-		pressureTexture[idx] = p; // float3(0.0, 0.4, 0.0);
+		pressureTexture[idx] = p;
+		
 	}
 }

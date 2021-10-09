@@ -80,7 +80,7 @@ void main
 
 		//inkColour.w = normaliseInkValue(inkValue);
 
-		//pixelBuffer[idx] = packUnorm4x8(v);
+		//pixelBuffer[idx] = packUnorm4x8(float4(v.xyz, 1.0));
 
 		//pixelBuffer[idx] = packUnorm4x8(inkColour);
 
@@ -92,8 +92,8 @@ void main
 		
 		//pixelBuffer[idx] = packUnorm4x8(inkColour);
 
-		pixelBuffer[idx] = packUnorm4x8(float4(inkColour.xyz, 1.0f));
+		//pixelBuffer[idx] = packUnorm4x8(float4(inkColour.xyz, 1.0f));
 
-		//pixelBuffer[idx] = packUnorm4x8(float4(saturate(v.xyz) + inkColour.xyz, 1.0f));
+		pixelBuffer[idx] = packUnorm4x8(float4(v.xyz + inkColour.xyz, 1.0f));
 	}
 }

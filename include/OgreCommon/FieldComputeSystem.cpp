@@ -76,10 +76,10 @@ namespace MyThirdOgre
 		mFieldWidth = 64.0f;
 		mFieldHeight = 64.0f;
 #else
-		mBufferResolutionWidth = 512.0f;
-		mBufferResolutionHeight = 512.0f;
-		mFieldWidth = 64.0f;
-		mFieldHeight = 64.0f;
+		mBufferResolutionWidth = 256.0f;
+		mBufferResolutionHeight = 256.0f;
+		mFieldWidth = 32.0f;
+		mFieldHeight = 32.0f;
 #endif
 
 		resolution[0] = mBufferResolutionWidth;
@@ -127,6 +127,7 @@ namespace MyThirdOgre
 		mHaveSetBoundaryConditionsComputeShaderParameters = false;
 		mHaveSetClearBuffersComputeShaderParameters = false;
 		mHaveSetClearBuffersComputeTwoShaderParameters = false;
+		mHaveSetInkAdvectionComputeShaderParameters = false;
 
 		mTimeAccumulator = 0.0f;
 
@@ -203,10 +204,10 @@ namespace MyThirdOgre
 		{
 			mDrawFromUavBufferMat.setNull();
 
-			if (mTestComputeJob) {
-				mTestComputeJob->clearUavBuffers();
-				mTestComputeJob->clearTexBuffers();
-			}
+			//if (mTestComputeJob) {
+			//	mTestComputeJob->clearUavBuffers();
+			//	mTestComputeJob->clearTexBuffers();
+			//}
 
 			//if (mLeapMotionStagingTexture) 
 			//{
@@ -218,7 +219,7 @@ namespace MyThirdOgre
 				auto listeners = mRenderTargetTexture->getListeners();
 
 				if (listeners.size()) {
-					mRenderTargetTexture->removeListener(mTestComputeJob);
+					//mRenderTargetTexture->removeListener(mTestComputeJob);
 
 					// It would seem that we do not need to remove HLMSUnlitDatablock listeners.
 					// These are probably being handled higher up the chain by the game entity destructors.
@@ -710,7 +711,38 @@ namespace MyThirdOgre
 
 				shaderParams.setDirty();
 
+				mAddImpulsesComputeJob->setNumThreadGroups(
+					(res[0] + mAddImpulsesComputeJob->getThreadsPerGroupX() - 1u) / mAddImpulsesComputeJob->getThreadsPerGroupX(),
+					(res[1] + mAddImpulsesComputeJob->getThreadsPerGroupY() - 1u) / mAddImpulsesComputeJob->getThreadsPerGroupY(),
+					1u);
+
 				mHaveSetAddImpulsesComputeShaderParameters = true;
+			}
+		}
+
+		if (mVelocityAdvectionComputeJob) {
+
+			if (!mHaveSetVelocityAdvectionComputeShaderParameters) {
+
+				Ogre::ShaderParams& shaderParams = mVelocityAdvectionComputeJob->getShaderParams("default");
+				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
+				Ogre::ShaderParams::Param* texResolution = shaderParams.findParameter("texResolution");
+				Ogre::ShaderParams::Param* reciprocalDeltaX = shaderParams.findParameter("reciprocalDeltaX");
+				Ogre::ShaderParams::Param* velocityDissipationConstant = shaderParams.findParameter("velocityDissipationConstant");
+				Ogre::ShaderParams::Param* inkDissipationConstant = shaderParams.findParameter("inkDissipationConstant");
+				tsl->setManualValue(timeSinceLast);
+				texResolution->setManualValue(resolution, sizeof(resolution) / sizeof(Ogre::uint));
+				reciprocalDeltaX->setManualValue(1.0f);
+				velocityDissipationConstant->setManualValue(1.0f);
+				inkDissipationConstant->setManualValue(1.0f);
+				shaderParams.setDirty();
+
+				mVelocityAdvectionComputeJob->setNumThreadGroups(
+					(res[0] + mVelocityAdvectionComputeJob->getThreadsPerGroupX() - 1u) / mVelocityAdvectionComputeJob->getThreadsPerGroupX(),
+					(res[1] + mVelocityAdvectionComputeJob->getThreadsPerGroupY() - 1u) / mVelocityAdvectionComputeJob->getThreadsPerGroupY(),
+					1u);
+
+				mHaveSetVelocityAdvectionComputeShaderParameters = true;
 			}
 		}
 
@@ -730,6 +762,11 @@ namespace MyThirdOgre
 				
 				shaderParams.setDirty();
 
+				mAdvectionCopyComputeJob->setNumThreadGroups(
+					(res[0] + mAdvectionCopyComputeJob->getThreadsPerGroupX() - 1u) / mAdvectionCopyComputeJob->getThreadsPerGroupX(),
+					(res[1] + mAdvectionCopyComputeJob->getThreadsPerGroupY() - 1u) / mAdvectionCopyComputeJob->getThreadsPerGroupY(),
+					1u);
+
 				mHaveSetAdvectionCopyComputeShaderParameters = true;
 			}
 		}
@@ -746,8 +783,12 @@ namespace MyThirdOgre
 
 				shaderParams.setDirty();
 
-				mHaveSetBoundaryConditionsComputeShaderParameters = true;
+				mBoundaryConditionsComputeJob->setNumThreadGroups(
+					(res[0] + mBoundaryConditionsComputeJob->getThreadsPerGroupX() - 1u) / mBoundaryConditionsComputeJob->getThreadsPerGroupX(),
+					(res[1] + mBoundaryConditionsComputeJob->getThreadsPerGroupY() - 1u) / mBoundaryConditionsComputeJob->getThreadsPerGroupY(),
+					1u);
 
+				mHaveSetBoundaryConditionsComputeShaderParameters = true;
 			}
 		}
 
@@ -762,6 +803,11 @@ namespace MyThirdOgre
 				texResolution->setManualValue(resolution, sizeof(resolution) / sizeof(Ogre::uint32));
 
 				shaderParams.setDirty();
+
+				mClearBuffersComputeJob->setNumThreadGroups(
+					(res[0] + mClearBuffersComputeJob->getThreadsPerGroupX() - 1u) / mClearBuffersComputeJob->getThreadsPerGroupX(),
+					(res[1] + mClearBuffersComputeJob->getThreadsPerGroupY() - 1u) / mClearBuffersComputeJob->getThreadsPerGroupY(),
+					1u);
 
 				mHaveSetClearBuffersComputeShaderParameters = true;
 
@@ -780,8 +826,12 @@ namespace MyThirdOgre
 
 				shaderParams.setDirty();
 
-				mHaveSetClearBuffersComputeTwoShaderParameters = true;
+				mClearBuffersTwoComputeJob->setNumThreadGroups(
+					(res[0] + mClearBuffersTwoComputeJob->getThreadsPerGroupX() - 1u) / mClearBuffersTwoComputeJob->getThreadsPerGroupX(),
+					(res[1] + mClearBuffersTwoComputeJob->getThreadsPerGroupY() - 1u) / mClearBuffersTwoComputeJob->getThreadsPerGroupY(),
+					1u);
 
+				mHaveSetClearBuffersComputeTwoShaderParameters = true;
 			}
 		}
 
@@ -795,6 +845,11 @@ namespace MyThirdOgre
 				texResolution->setManualValue(resolution, sizeof(resolution) / sizeof(Ogre::uint));
 				halfDeltaX->setManualValue(0.5f);
 				shaderParams.setDirty();
+
+				mDivergenceComputeJob->setNumThreadGroups(
+					(res[0] + mDivergenceComputeJob->getThreadsPerGroupX() - 1u) / mDivergenceComputeJob->getThreadsPerGroupX(),
+					(res[1] + mDivergenceComputeJob->getThreadsPerGroupY() - 1u) / mDivergenceComputeJob->getThreadsPerGroupY(),
+					1u);
 
 				mHaveSetDivergenceComputeShaderParameters = true;
 			}
@@ -818,15 +873,12 @@ namespace MyThirdOgre
 				//inkDissipationConstant->setManualValue(1.0f);
 				shaderParams.setDirty();
 
+				mInkAdvectionComputeJob->setNumThreadGroups(
+					(res[0] + mInkAdvectionComputeJob->getThreadsPerGroupX() - 1u) / mInkAdvectionComputeJob->getThreadsPerGroupX(),
+					(res[1] + mInkAdvectionComputeJob->getThreadsPerGroupY() - 1u) / mInkAdvectionComputeJob->getThreadsPerGroupY(),
+					1u);
+
 				mHaveSetInkAdvectionComputeShaderParameters = true;
-			}
-			else {
-				/*Ogre::ShaderParams& shaderParams = mInkAdvectionComputeJob->getShaderParams("default");
-				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
-				Ogre::ShaderParams::Param* reciprocalDeltaX = shaderParams.findParameter("reciprocalDeltaX");
-				tsl->setManualValue(timeSinceLast);
-				reciprocalDeltaX->setManualValue(1.0f);
-				shaderParams.setDirty();*/
 			}
 		}
 
@@ -841,6 +893,11 @@ namespace MyThirdOgre
 				halfDeltaX->setManualValue(0.5f);
 				shaderParams.setDirty();
 
+				mJacobiDiffusionComputeJob->setNumThreadGroups(
+					(res[0] + mJacobiDiffusionComputeJob->getThreadsPerGroupX() - 1u) / mJacobiDiffusionComputeJob->getThreadsPerGroupX(),
+					(res[1] + mJacobiDiffusionComputeJob->getThreadsPerGroupY() - 1u) / mJacobiDiffusionComputeJob->getThreadsPerGroupY(),
+					1u);
+
 				mHaveSetJacobiDiffusionComputeShaderParameters = true;
 			}
 		}
@@ -848,9 +905,6 @@ namespace MyThirdOgre
 		if (mJacobiPressureComputeJob) {
 
 			if (!mHaveSetJacobiPressureComputeShaderParameters) {
-				Ogre::uint32 res[2];
-				res[0] = mBufferResolutionWidth;
-				res[1] = mBufferResolutionHeight;
 
 				Ogre::ShaderParams& shaderParams = mJacobiPressureComputeJob->getShaderParams("default");
 				Ogre::ShaderParams::Param* texResolution = shaderParams.findParameter("texResolution");
@@ -859,6 +913,11 @@ namespace MyThirdOgre
 				halfDeltaX->setManualValue(0.5f);
 				shaderParams.setDirty();
 
+				mJacobiPressureComputeJob->setNumThreadGroups(
+					(res[0] + mJacobiPressureComputeJob->getThreadsPerGroupX() - 1u) / mJacobiPressureComputeJob->getThreadsPerGroupX(),
+					(res[1] + mJacobiPressureComputeJob->getThreadsPerGroupY() - 1u) / mJacobiPressureComputeJob->getThreadsPerGroupY(),
+					1u);
+
 				mHaveSetJacobiPressureComputeShaderParameters = true;
 			}
 		}
@@ -866,9 +925,6 @@ namespace MyThirdOgre
 		if (mSubtractPressureGradientComputeJob) {
 
 			if (!mHaveSetSubtractPressureGradientComputeShaderParameters) {
-				Ogre::uint32 res[2];
-				res[0] = mBufferResolutionWidth;
-				res[1] = mBufferResolutionHeight;
 
 				Ogre::ShaderParams& shaderParams = mSubtractPressureGradientComputeJob->getShaderParams("default");
 				Ogre::ShaderParams::Param* texResolution = shaderParams.findParameter("texResolution");
@@ -877,46 +933,18 @@ namespace MyThirdOgre
 				halfDeltaX->setManualValue(0.5f);
 				shaderParams.setDirty();
 
+				mSubtractPressureGradientComputeJob->setNumThreadGroups(
+					(res[0] + mSubtractPressureGradientComputeJob->getThreadsPerGroupX() - 1u) / mSubtractPressureGradientComputeJob->getThreadsPerGroupX(),
+					(res[1] + mSubtractPressureGradientComputeJob->getThreadsPerGroupY() - 1u) / mSubtractPressureGradientComputeJob->getThreadsPerGroupY(),
+					1u);
+
 				mHaveSetSubtractPressureGradientComputeShaderParameters = true;
-			}
-		}
-
-		if (mVelocityAdvectionComputeJob) {
-
-			if (!mHaveSetVelocityAdvectionComputeShaderParameters) {
-
-				Ogre::ShaderParams& shaderParams = mVelocityAdvectionComputeJob->getShaderParams("default");
-				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
-				Ogre::ShaderParams::Param* texResolution = shaderParams.findParameter("texResolution");
-				Ogre::ShaderParams::Param* reciprocalDeltaX = shaderParams.findParameter("reciprocalDeltaX");
-				Ogre::ShaderParams::Param* velocityDissipationConstant = shaderParams.findParameter("velocityDissipationConstant");
-				Ogre::ShaderParams::Param* inkDissipationConstant = shaderParams.findParameter("inkDissipationConstant");
-				tsl->setManualValue(timeSinceLast);
-				texResolution->setManualValue(resolution, sizeof(resolution) / sizeof(Ogre::uint));
-				reciprocalDeltaX->setManualValue(1.0f);
-				velocityDissipationConstant->setManualValue(1.0f);
-				inkDissipationConstant->setManualValue(1.0f);
-				//inkDissipationConstant->setManualValue(1.0f);
-				shaderParams.setDirty();
-
-				mHaveSetVelocityAdvectionComputeShaderParameters = true;
-			}
-			else {
-				Ogre::ShaderParams& shaderParams = mVelocityAdvectionComputeJob->getShaderParams("default");
-				Ogre::ShaderParams::Param* texResolution = shaderParams.findParameter("texResolution");
-				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
-				texResolution->setManualValue(resolution, sizeof(resolution) / sizeof(Ogre::uint));
-				tsl->setManualValue(timeSinceLast);
-				shaderParams.setDirty();
 			}
 		}
 
 		if (mTestComputeJob)
 		{
 			if (!mHaveSetTestComputeShaderParameters) {
-				Ogre::uint32 res[2];
-				res[0] = mBufferResolutionWidth;
-				res[1] = mBufferResolutionHeight;
 
 				//Update the compute shader's
 				Ogre::ShaderParams& shaderParams = mTestComputeJob->getShaderParams("default");
@@ -930,41 +958,6 @@ namespace MyThirdOgre
 				mTestComputeJob->setNumThreadGroups(
 					(res[0] + mTestComputeJob->getThreadsPerGroupX() - 1u) / mTestComputeJob->getThreadsPerGroupX(),
 					(res[1] + mTestComputeJob->getThreadsPerGroupY() - 1u) / mTestComputeJob->getThreadsPerGroupY(), 
-					1u);
-
-				mAdvectionCopyComputeJob->setNumThreadGroups(
-					(res[0] + mAdvectionCopyComputeJob->getThreadsPerGroupX() - 1u) / mAdvectionCopyComputeJob->getThreadsPerGroupX(),
-					(res[1] + mAdvectionCopyComputeJob->getThreadsPerGroupY() - 1u) / mAdvectionCopyComputeJob->getThreadsPerGroupY(),
-					1u);
-
-				mVelocityAdvectionComputeJob->setNumThreadGroups(
-					(res[0] + mVelocityAdvectionComputeJob->getThreadsPerGroupX() - 1u) / mVelocityAdvectionComputeJob->getThreadsPerGroupX(),
-					(res[1] + mVelocityAdvectionComputeJob->getThreadsPerGroupY() - 1u) / mVelocityAdvectionComputeJob->getThreadsPerGroupY(),
-					1u);
-
-				mInkAdvectionComputeJob->setNumThreadGroups(
-					(res[0] + mInkAdvectionComputeJob->getThreadsPerGroupX() - 1u) / mInkAdvectionComputeJob->getThreadsPerGroupX(),
-					(res[1] + mInkAdvectionComputeJob->getThreadsPerGroupY() - 1u) / mInkAdvectionComputeJob->getThreadsPerGroupY(),
-					1u);
-
-				mAddImpulsesComputeJob->setNumThreadGroups(
-					(res[0] + mAddImpulsesComputeJob->getThreadsPerGroupX() - 1u) / mAddImpulsesComputeJob->getThreadsPerGroupX(),
-					(res[1] + mAddImpulsesComputeJob->getThreadsPerGroupY() - 1u) / mAddImpulsesComputeJob->getThreadsPerGroupY(),
-					1u);
-
-				mDivergenceComputeJob->setNumThreadGroups(
-					(res[0] + mDivergenceComputeJob->getThreadsPerGroupX() - 1u) / mDivergenceComputeJob->getThreadsPerGroupX(),
-					(res[1] + mDivergenceComputeJob->getThreadsPerGroupY() - 1u) / mDivergenceComputeJob->getThreadsPerGroupY(),
-					1u);
-
-				mJacobiPressureComputeJob->setNumThreadGroups(
-					(res[0] + mJacobiPressureComputeJob->getThreadsPerGroupX() - 1u) / mJacobiPressureComputeJob->getThreadsPerGroupX(),
-					(res[1] + mJacobiPressureComputeJob->getThreadsPerGroupY() - 1u) / mJacobiPressureComputeJob->getThreadsPerGroupY(),
-					1u);
-
-				mSubtractPressureGradientComputeJob->setNumThreadGroups(
-					(res[0] + mSubtractPressureGradientComputeJob->getThreadsPerGroupX() - 1u) / mSubtractPressureGradientComputeJob->getThreadsPerGroupX(),
-					(res[1] + mSubtractPressureGradientComputeJob->getThreadsPerGroupY() - 1u) / mSubtractPressureGradientComputeJob->getThreadsPerGroupY(),
 					1u);
 
 				////Update the pass that draws the UAV Buffer into the RTT (we could
@@ -1127,10 +1120,10 @@ namespace MyThirdOgre
 
 								//*instanceBuffer++ = thisElement.ink;
 
-								//*instanceBuffer++ += thisElement.colour.x;
-								//*instanceBuffer++ += thisElement.colour.y;
-								//*instanceBuffer++ += thisElement.colour.z;
-								//*instanceBuffer++ += thisElement.colour.w;
+								//*instanceBuffer++ = thisElement.colour.x;
+								//*instanceBuffer++ = thisElement.colour.y;
+								//*instanceBuffer++ = thisElement.colour.z;
+								//*instanceBuffer++ = thisElement.colour.w;
 
 								//*instanceBuffer++ = thisElement.velocity.x;
 								//*instanceBuffer++ = thisElement.velocity.y;

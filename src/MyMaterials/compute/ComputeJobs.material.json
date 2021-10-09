@@ -27,9 +27,8 @@
       "threads_per_group": [ 8, 8, 1 ],
       "thread_groups": [ 4, 4, 1 ],
       "source": "AdvectionCopy",
-      "uav_units": 2,
+      "uav_units": 1,
       "textures": [
-        {},
         {}
       ],
       "params": [
@@ -73,7 +72,6 @@
       "source": "VelocityAdvection",
       "uav_units": 1,
       "textures": [
-        {}
       ],
       "params": [
         [
@@ -107,8 +105,9 @@
       "threads_per_group": [ 8, 8, 1 ],
       "thread_groups": [ 4, 4, 1 ],
       "source": "InkAdvection",
-      "uav_units": 3,
+      "uav_units": 1,
       "textures": [
+        {},
         {}
       ],
       "params": [
@@ -167,7 +166,7 @@
     },
     "ClearBuffers1": {
       "threads_per_group": [ 8, 8, 1 ],
-      "thread_groups": [ 32, 32, 1 ],
+      "thread_groups": [ 4, 4, 1 ],
       "source": "ClearBuffers1",
       "uav_units": 2,
       "params": [
@@ -180,7 +179,7 @@
     },
     "ClearBuffers2": {
       "threads_per_group": [ 8, 8, 1 ],
-      "thread_groups": [ 32, 32, 1 ],
+      "thread_groups": [ 4, 4, 1 ],
       "source": "ClearBuffers2",
       "uav_units": 2,
       "params": [
@@ -193,7 +192,7 @@
     },
     "Divergence": {
       "threads_per_group": [ 8, 8, 1 ],
-      "thread_groups": [ 32, 32, 1 ],
+      "thread_groups": [ 4, 4, 1 ],
       "source": "Divergence",
       "uav_units": 1,
       "textures": [

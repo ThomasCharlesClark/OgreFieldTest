@@ -18,9 +18,9 @@
 	DONE DUMPING PROPERTIES
 	DONE DUMPING PIECES
 #endif
-RWTexture3D<float4> inkWrite		: register(u0); // primaryInkTexture
-RWTexture3D<float4> inkRead			: register(u1); // secondaryInkTexture
-Texture3D<float4> velocityRead		: register(t0); // primaryVelocityTexture
+RWTexture3D<float4> inkTextureFinal		: register(u0);
+Texture3D<float4> velocityTexture		: register(t0);
+Texture3D<float4> inkTexture			: register(t1);
 
 SamplerState TextureSampler
 {
@@ -54,27 +54,21 @@ void main
     uint3 gl_GlobalInvocationID : SV_DispatchThreadId
 )
 {
-	if( gl_GlobalInvocationID.x < texResolution.x && gl_GlobalInvocationID.y < texResolution.y)
+	if (gl_GlobalInvocationID.x < texResolution.x && gl_GlobalInvocationID.y < texResolution.y)
 	{
 		float3 idx3 = float3(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, gl_GlobalInvocationID.z);
 
 		float width = texResolution.x;
 
-		//float4 velocity = velocityRead.Load(float4(idx3, 0)) ;
-		float4 velocity = velocityRead.SampleLevel(TextureSampler, idx3 / width, 0) * 1000;
+		float4 velocity = velocityTexture.SampleLevel(TextureSampler, idx3 / width, 0) * 10000;
 
 		float3 idxBackInTime = (idx3 - (reciprocalDeltaX * velocity.xyz));
-		
-		//float4 i = inkWrite[idxBackInTime];// inkRead.Load(float4(idxBackInTime, 0));
-		//float4 i = inkRead.Load(float4(idxBackInTime, 0));
 
-		float4 i = inkRead.Load(idxBackInTime);
+		float4 i = inkTexture.SampleLevel(TextureSampler, idxBackInTime / width, 0);
+		//float4 i = inkTexture.Load(int4(idxBackInTime, 0));
 
-		inkWrite[idx3] = i;
+		inkTextureFinal[idx3] = float4(i.xyz, 1.0);
 
-		//inkWrite[idx.xy] = float4(i.xyz * inkDissipationConstant, 1.0);
-
-		//inkRead[idx.xy] = float4(i.xyz * inkDissipationConstant, 1.0);
-		//inkWrite[idx.xy] = float4(i.xyz, 1.0f);
+		//inkTexture[idxBackInTime] = float4(0, 0, 0, 1.0);
 	}
 }

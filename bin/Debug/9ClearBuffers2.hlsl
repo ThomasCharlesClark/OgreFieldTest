@@ -26,7 +26,7 @@ struct Particle
 }; 
 
 RWStructuredBuffer<Particle> handInputBuffer	: register(u0); // inputUavBuffer (leapMotion input)
-RWTexture3D<float4> inkPrimary					: register(u1); // primaryInkTexture
+RWTexture3D<float4> inkTexture					: register(u1); // primaryInkTexture
 
 uniform uint2 texResolution;
 
@@ -42,10 +42,11 @@ void main
 		uint rwIdx = gl_GlobalInvocationID.y * texResolution.x + gl_GlobalInvocationID.x;
 
 		//handInputBuffer[rwIdx].ink = 0.0;
-		//handInputBuffer[rwIdx].colour = float4(0, 0, 0, 1);
+		//handInputBuffer[rwIdx].colour *= 0.98;// float4(0, 0, 0, 1);
+		//handInputBuffer[rwIdx].velocity *= 0.98;// float3(0, 0, 0);
 
-		inkPrimary[gl_GlobalInvocationID] = float4(inkPrimary[gl_GlobalInvocationID].xyz * 0.28, 1.0);
+		//inkTexture[gl_GlobalInvocationID] = float4(inkTexture[gl_GlobalInvocationID].xyz * 0.997, 1.0);
 
-		//inkPrimary[gl_GlobalInvocationID] = float4(0, 0, 0, 1);
+		inkTexture[gl_GlobalInvocationID] = float4(0, 0, 0, 1);
 	}
 }

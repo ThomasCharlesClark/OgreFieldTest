@@ -1,7 +1,5 @@
-RWTexture3D<float4> velocityWrite		: register(u0);	// secondaryVelocityTexture
-RWTexture3D<float4> inkWrite			: register(u1);	// secondaryInkTexture
-Texture3D<float4> velocityRead			: register(t0); // primaryVelocityTexture
-Texture3D<float4> inkRead				: register(t1);	// primaryInkTexture
+RWTexture3D<float4> inkTexture				: register(u0);
+Texture3D<float4>	inkTextureFinal			: register(t0);
 
 SamplerState TextureSampler
 {
@@ -28,16 +26,8 @@ void main
 
 		float width = texResolution.x;
 
-		
-		// to sample, or not to sample?
+		float4 ink = inkTextureFinal.SampleLevel(TextureSampler, gl_GlobalInvocationID / width, 0); 
 
-		//float4 ink = inkRead.Load(idx4);
-		//float4 velocity = velocityRead.Load(idx4);
-
-		float4 velocity = velocityRead.SampleLevel(TextureSampler, gl_GlobalInvocationID / width, 0);
-		float4 ink = inkRead.SampleLevel(TextureSampler, gl_GlobalInvocationID / width, 0); 
-
-		velocityWrite[idx3] = velocity;
-		inkWrite[idx3] = ink;
+		inkTexture[idx3] = ink;
 	}
 }

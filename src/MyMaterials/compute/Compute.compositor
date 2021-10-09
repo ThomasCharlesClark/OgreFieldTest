@@ -1,195 +1,169 @@
 compositor_node TestComputeNode
 {
 	in 0 renderTarget
-	/*in 1 velocityTexture
-	in 2 previousVelocityTexture
-	in 3 pressureTexture
-	in 4 pressureGradientTexture
-	in 5 divergenceTexture
-	in 6 inkTexture
-	in 7 previousInkTexture*/
-
 	in_buffer 0 inputUavBuffer
 
-	//buffer name size bytesPerElement [target_width] [target_height] bind_flags
-
-	texture leapMotionTexture target_width target_height 1 PFG_RGBA32_FLOAT uav 3d depth_pool 0
+	texture velocityTexture			target_width target_height 1 PFG_RGBA32_FLOAT uav 3d depth_pool 0 keep_content
+	texture inkTexture				target_width target_height 1 PFG_RGBA32_FLOAT uav 3d depth_pool 0 keep_content 
+	texture inkTextureFinal			target_width target_height 1 PFG_RGBA32_FLOAT uav 3d depth_pool 0 keep_content
+	texture divergenceTexture		target_width target_height 1 PFG_RGBA32_FLOAT uav 3d depth_pool 0 keep_content
+	texture pressureTexture			target_width target_height 1 PFG_RGBA32_FLOAT uav 3d depth_pool 0 keep_content
 
 	texture tempInkTexture target_width target_height 1 PFG_R32_FLOAT uav 3d depth_pool 0
 
 	buffer temporaryBuffer 1 4 target_width target_height
 	
 	texture nullDummy target_width target_height PFG_NULL
-
+	
 	target
 	{
 		pass compute
 		{
 			job	AddImpulses
-			uav_buffer 2 inputUavBuffer read
+			uav_buffer 0 inputUavBuffer read
+			uav 1 velocityTexture write
+			uav 2 inkTexture write
 			uav 3 tempInkTexture write
-		}
-
-		pass compute
-		{
-			job AdvectionCopy 
 		}
 		
 		pass compute
 		{
 			job VelocityAdvection
+			uav 0 velocityTexture read write
 		}
-		
+
 		pass compute
 		{
 			job Divergence
+			uav 0 divergenceTexture write
+			input 0 velocityTexture read
 		}
 		
 		pass compute
 		{
 			job JacobiPressure
+			uav 0 pressureTexture write
+			input 0 divergenceTexture read
 		}
 		
 		pass compute
 		{
 			job JacobiPressure
+			uav 0 pressureTexture write
+			input 0 divergenceTexture read
 		}
 		
 		pass compute
 		{
 			job JacobiPressure
+			uav 0 pressureTexture write
+			input 0 divergenceTexture read
 		}
 		
 		pass compute
 		{
 			job JacobiPressure
+			uav 0 pressureTexture write
+			input 0 divergenceTexture read
 		}
 		
 		pass compute
 		{
 			job JacobiPressure
+			uav 0 pressureTexture write
+			input 0 divergenceTexture read
 		}
 		
 		pass compute
 		{
 			job JacobiPressure
+			uav 0 pressureTexture write
+			input 0 divergenceTexture read
 		}
 		
 		pass compute
 		{
 			job JacobiPressure
+			uav 0 pressureTexture write
+			input 0 divergenceTexture read
 		}
 		
 		pass compute
 		{
 			job JacobiPressure
+			uav 0 pressureTexture write
+			input 0 divergenceTexture read
 		}
 		
 		pass compute
 		{
 			job JacobiPressure
+			uav 0 pressureTexture write
+			input 0 divergenceTexture read
 		}
 		
 		pass compute
 		{
 			job JacobiPressure
+			uav 0 pressureTexture write
+			input 0 divergenceTexture read
 		}
-		
-		pass compute
-		{
-			job JacobiPressure
-		}
-
-		// MOAR PRETTY
-		/*pass compute
-		{
-			job JacobiPressure
-		}
-		
-		pass compute
-		{
-			job JacobiPressure
-		}
-		
-		pass compute
-		{
-			job JacobiPressure
-		}
-		
-		pass compute
-		{
-			job JacobiPressure
-		}
-		
-		pass compute
-		{
-			job JacobiPressure
-		}
-		
-		pass compute
-		{
-			job JacobiPressure
-		}
-		
-		pass compute
-		{
-			job JacobiPressure
-		}
-		
-		pass compute
-		{
-			job JacobiPressure
-		}
-		
-		pass compute
-		{
-			job JacobiPressure
-		}*/
 		
 		pass compute
 		{
 			job SubtractPressureGradient
+			uav 0 velocityTexture write
+			input 0 pressureTexture read
 		}
-
+	
+		/*pass compute
+		{
+			job AdvectionCopy
+			uav 0 inkTextureFinal read
+			input 0 inkTexture write
+		}*/
+		
 		pass compute
 		{
 			job	InkAdvection
-			uav 2 tempInkTexture read write
+			uav 0 inkTextureFinal write
+			input 0 velocityTexture read
+			input 1 inkTexture read
 		}
 		
 		pass compute
 		{
 			job ClearBuffers1
 			uav_buffer 0 inputUavBuffer write
+			uav 1 inkTexture write
 		}
 
+		pass compute
+		{
+			job ClearBuffers2
+			uav_buffer 0 inputUavBuffer write
+			uav 1 inkTextureFinal write
+		}
+		
 		pass compute
 		{
 			job	TestJob
 			uav_buffer 0 temporaryBuffer write
+			uav 1 velocityTexture read
+			uav 2 inkTextureFinal read
 			uav 3 tempInkTexture read
 		}
-
-		pass compute
-		{
-			job ClearBuffers2
-			uav_buffer 0 inputUavBuffer write
-		}
 	}
 
-	/*target 
-	{
-		pass compute
-		{
-			job ClearBuffers2
-			uav_buffer 0 inputUavBuffer write
-		}
-	}
+	/*
+	~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	
-	pass compute
-	{
-		job ClearBuffers2
-	}*/
+
+
+
+	
+	~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	*/
 
 	target renderTarget 
 	{
@@ -224,32 +198,5 @@ workspace "Test Compute Workspace"
 {
 	connect_buffer_external 0 TestComputeNode 0
 
-	/*
-
-	connect_buffer_external 0 ImpulsesNode 0
-	connect_external 1 ImpulsesNode 0
-	connect_external 6 ImpulsesNode 1
-
-	connect ImpulsesNode 0 1 TestComputeNode 1 6
-	*/
-	
-	/*
-	connect_external 0 TestComputeNode 0
-	connect_external 1 TestComputeNode 1
-	connect_external 2 TestComputeNode 2
-	connect_external 3 TestComputeNode 3
-	connect_external 4 TestComputeNode 4
-	connect_external 5 TestComputeNode 5
-	connect_external 6 TestComputeNode 6
-	connect_external 7 TestComputeNode 7
-	*/
-
 	connect_output TestComputeNode 0
-	/*connect_output TestComputeNode 1
-	connect_output TestComputeNode 2
-	connect_output TestComputeNode 3
-	connect_output TestComputeNode 4
-	connect_output TestComputeNode 5
-	connect_output TestComputeNode 6
-	connect_output TestComputeNode 7*/
 }

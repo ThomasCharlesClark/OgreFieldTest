@@ -1,5 +1,4 @@
-RWTexture3D<float4> velocityWrite			: register(u0); // primaryVelocityTexture
-Texture3D<float4> velocityRead				: register(t0); // secondaryVelocityTexture
+RWTexture3D<float4> velocityTexture				: register(u0); // primaryVelocityTexture
 
 SamplerState TextureSampler
 {
@@ -40,14 +39,12 @@ void main
 
 		float width = texResolution.x;
 
-		float4 velocity = velocityRead.SampleLevel(TextureSampler, idx / width, 0);
+		float4 velocity = velocityTexture.Load(idx);
 
 		float3 idxBackInTime = (idx - (timeSinceLast * reciprocalDeltaX * velocity.xyz));
 
-		//float4 v = float4(float3(velocityRead.SampleLevel(TextureSampler, idxBackInTime / width, 0).xyz) * velocityDissipationConstant, 0);
+		float4 v = float4(float3(velocityTexture.Load(idxBackInTime).xyz), 0);
 
-		float4 v = float4(float3(velocityRead.SampleLevel(TextureSampler, idxBackInTime / width, 0).xyz), 0);
-
-		velocityWrite[idx] = v;
+		velocityTexture[idx] = v;
 	}
 }

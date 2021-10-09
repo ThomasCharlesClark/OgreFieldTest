@@ -25,10 +25,10 @@ struct Particle
 	float3 velocity;
 };
 
-RWStructuredBuffer<uint> pixelBuffer	: register(u0); // temporaryBuffer
-RWTexture3D<float4> velocityRead		: register(u1); // primaryVelocityTexture
-RWTexture3D<float4> inkRead				: register(u2); // primaryInkTexture
-RWTexture3D<float> inkTemp				: register(u3); // tempInkTexture
+RWStructuredBuffer<uint> pixelBuffer	: register(u0);
+RWTexture3D<float4> velocityTexture		: register(u1);
+RWTexture3D<float4> inkTextureFinal		: register(u2);
+RWTexture3D<float> inkTemp				: register(u3);
 
 uniform float maxInk;
 uniform uint2 texResolution;
@@ -72,15 +72,15 @@ void main
 		uint idx = gl_GlobalInvocationID.y * texResolution.x + gl_GlobalInvocationID.x;
 
 		//float4 i = inkRead.Load(int4(gl_GlobalInvocationID, 1));
-		float4 inkColour = inkRead.Load(int4(gl_GlobalInvocationID, 1));
+		float4 inkColour = inkTextureFinal.Load(int4(gl_GlobalInvocationID, 1));
 
-		float4 v = velocityRead.Load(int4(gl_GlobalInvocationID, 1));
+		float4 v = velocityTexture.Load(int4(gl_GlobalInvocationID, 1));
 
 		float inkValue = inkTemp.Load(int4(gl_GlobalInvocationID, 1));
 
 		//inkColour.w = normaliseInkValue(inkValue);
 
-		//pixelBuffer[idx] = packUnorm4x8(v);
+		//pixelBuffer[idx] = packUnorm4x8(float4(v.xyz, 1.0));
 
 		//pixelBuffer[idx] = packUnorm4x8(inkColour);
 
@@ -94,6 +94,6 @@ void main
 
 		pixelBuffer[idx] = packUnorm4x8(float4(inkColour.xyz, 1.0f));
 
-		//pixelBuffer[idx] = packUnorm4x8(float4(saturate(v.xyz) + inkColour.xyz, 1.0f));
+		//pixelBuffer[idx] = packUnorm4x8(float4(v.xyz + inkColour.xyz, 1.0f));
 	}
 }
