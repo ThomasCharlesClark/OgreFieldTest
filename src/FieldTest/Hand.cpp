@@ -17,7 +17,8 @@ namespace MyThirdOgre
         {
             mState.bIsVisible = true,
             //mState.vPos = Ogre::Vector3(-16.0f, 0.0f, 16.0f),
-            mState.vPos = Ogre::Vector3(0, 10, 0),
+            mState.vPos = Ogre::Vector3(0, 0, 0),
+            mState.vPosPrev = Ogre::Vector3(0, 0, 0),
             mState.vVel = Ogre::Vector3::ZERO,
             mState.qRot = Ogre::Quaternion::IDENTITY,
             mState.rInk = 0.0f,
@@ -81,6 +82,7 @@ namespace MyThirdOgre
 
     void Hand::setPosition(float timeSinceLast, Ogre::Vector3 position) 
     {
+        mState.vPosPrev = mState.vPos;
         mState.vPos = position;
         mSphere->setCenter(mState.vPos);
         mOuterSphere->setCenter(mState.vPos);

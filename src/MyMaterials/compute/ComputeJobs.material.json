@@ -4,24 +4,27 @@
       "threads_per_group": [ 8, 8, 1 ],
       "thread_groups": [ 4, 4, 1 ],
       "source": "ComputeTest",
-      "uav_units": 4,
+      "uav_units": 6,
+      "textures": [
+        {}
+      ],
       "params": [
-        [
-          "texResolution",
-          [ 256, 256 ],
-          "uint"
-        ],
-        [
-          "timeSinceLast",
-          [ 0 ],
-          "float"
-        ],
-        [
-          "maxInk",
-          [ 20.0 ],
-          "float"
+          [
+            "texResolution",
+            [ 256, 256 ],
+            "uint"
+          ],
+          [
+            "timeSinceLast",
+            [ 0 ],
+            "float"
+          ],
+          [
+            "maxInk",
+            [ 20.0 ],
+            "float"
+          ]
         ]
-      ]
     },
     "AdvectionCopy": {
       "threads_per_group": [ 8, 8, 1 ],
@@ -48,10 +51,8 @@
       "threads_per_group": [ 8, 8, 1 ],
       "thread_groups": [ 4, 4, 1 ],
       "source": "BoundaryConditions",
-      "uav_units": 2,
+      "uav_units": 3,
       "textures": [
-        {},
-        {}
       ],
       "params": [
         [
@@ -181,7 +182,7 @@
       "threads_per_group": [ 8, 8, 1 ],
       "thread_groups": [ 4, 4, 1 ],
       "source": "ClearBuffers2",
-      "uav_units": 2,
+      "uav_units": 3,
       "params": [
         [
           "texResolution",
@@ -270,6 +271,58 @@
         ],
         [
           "halfDeltaX",
+          [ 0 ],
+          "float"
+        ]
+      ]
+    },
+    "VorticityComputation": {
+      "threads_per_group": [ 8, 8, 1 ],
+      "thread_groups": [ 4, 4, 1 ],
+      "source": "VorticityComputation",
+      "uav_units": 1,
+      "textures": [
+        {}
+      ],
+      "params": [
+        [
+          "texResolution",
+          [ 256, 256 ],
+          "uint"
+        ],
+        [
+          "halfDeltaX",
+          [ 0 ],
+          "float"
+        ]
+      ]
+    },
+    "VorticityConfinement": {
+      "threads_per_group": [ 8, 8, 1 ],
+      "thread_groups": [ 4, 4, 1 ],
+      "source": "VorticityConfinement",
+      "uav_units": 1,
+      "textures": [
+        {}
+      ],
+      "params": [
+        [
+          "texResolution",
+          [ 256, 256 ],
+          "uint"
+        ],
+        [
+          "halfDeltaX",
+          [ 0 ],
+          "float"
+        ],
+        [
+          "vorticityConfinementScale",
+          [ 0.065 ],
+          "float"
+        ],
+        [
+          "timeSinceLast",
           [ 0 ],
           "float"
         ]

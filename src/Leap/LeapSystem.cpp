@@ -86,9 +86,9 @@ namespace MyThirdOgre
 
                         vPos.y -= 50;
 
-                        vVel.normalise();
+                        //vVel.normalise();
 
-                        vVel *= mVelocityScalingFactor;
+                        //vVel *= mVelocityScalingFactor;
 
                         Leap_MotionMessage vMsg = Leap_MotionMessage(timeSinceLast, vVel, vPos, 10.0f);
                             //msg.tracking_event->pHands[0].index.is_extended);
@@ -100,8 +100,6 @@ namespace MyThirdOgre
                 }
                 break;
             }
-
-            int f = 0;
         }
     }
     

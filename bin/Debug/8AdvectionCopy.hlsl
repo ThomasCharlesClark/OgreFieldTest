@@ -18,16 +18,14 @@
 	DONE DUMPING PROPERTIES
 	DONE DUMPING PIECES
 #endif
-RWTexture3D<float4> velocityWrite		: register(u0);
-RWTexture3D<float4> inkWrite			: register(u1);
-Texture3D<float4> velocityRead	: register(t0);
-Texture3D<float4> inkRead		: register(t1);
+RWTexture3D<float4> inkTexture				: register(u0);
+Texture3D<float4>	inkTextureFinal			: register(t0);
 
 SamplerState TextureSampler
 {
 	Filter = MIN_MAG_MIP_LINEAR;
-	AddressU = Clamp;
-	AddressV = Clamp;
+	AddressU = Wrap;
+	AddressV = Wrap;
 };
 
 uniform uint2 texResolution;
@@ -44,12 +42,12 @@ void main
 	if( gl_GlobalInvocationID.x < texResolution.x && gl_GlobalInvocationID.y < texResolution.y)
 	{
 		int4 idx4 = int4(gl_GlobalInvocationID, 0);
+		int3 idx3 = int3(gl_GlobalInvocationID);
 
-		float4 velocity = velocityRead.Load(idx4);
-		float4 ink = inkRead.Load(idx4);
-		//float4 ink = inkRead.SampleLevel(TextureSampler, float3(gl_GlobalInvocationID) / texResolution.x, 1);
+		float width = texResolution.x;
 
-		velocityWrite[gl_GlobalInvocationID] = velocity;
-		inkWrite[gl_GlobalInvocationID] = ink;
+		float4 ink = inkTextureFinal.SampleLevel(TextureSampler, gl_GlobalInvocationID / width, 0); 
+
+		inkTexture[idx3] = ink;
 	}
 }

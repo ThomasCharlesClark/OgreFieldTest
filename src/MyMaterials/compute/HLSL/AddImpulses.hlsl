@@ -36,11 +36,9 @@ void main
 		velocityWrite[gl_GlobalInvocationID] = velocity;
 		inkWrite[gl_GlobalInvocationID] += handInputBuffer[rwIdx].colour;
 		inkTemp[gl_GlobalInvocationID] += handInputBuffer[rwIdx].ink;
-		
-		// clearing the input buffer here == slowtown
-		/*handInputBuffer[rwIdx].colour = float4(0, 0, 0, 1.0);
-		handInputBuffer[rwIdx].velocity = float3(0, 0, 0);
-		handInputBuffer[rwIdx].ink = 0.0;*/
-		// but not clearing it at all == bleh
+
+		//handInputBuffer[rwIdx].ink = 0.0;
+		//handInputBuffer[rwIdx].colour *= 0.98;// float4(0, 0, 0, 1);
+		//handInputBuffer[rwIdx].velocity *= 0.98;// float3(0, 0, 0);
 	}
 }

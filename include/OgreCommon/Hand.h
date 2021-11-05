@@ -35,6 +35,7 @@ namespace MyThirdOgre
 	{
 		bool bIsVisible;
 		Ogre::Vector3 vPos;
+		Ogre::Vector3 vPosPrev;
 		Ogre::Vector3 vVel;
 		Ogre::Quaternion qRot;
 		Ogre::Real rInk;
@@ -44,6 +45,7 @@ namespace MyThirdOgre
 		HandState() :
 			bIsVisible(false),
 			vPos(Ogre::Vector3::ZERO),
+			vPosPrev(Ogre::Vector3::ZERO),
 			vVel(Ogre::Vector3::ZERO),
 			qRot(Ogre::Quaternion::IDENTITY),
 			rInk(0.0f),
@@ -53,6 +55,7 @@ namespace MyThirdOgre
 		HandState(
 			bool bV,
 			Ogre::Vector3 vP,
+			Ogre::Vector3 vPp,
 			Ogre::Vector3 vV,
 			Ogre::Quaternion qR,
 			Ogre::Real rI,
@@ -60,6 +63,7 @@ namespace MyThirdOgre
 			bool a) {
 			bIsVisible = bV;
 			vPos = vP;
+			vPosPrev = vPp;
 			vVel = vV;
 			qRot = qR;
 			rInk = rI;

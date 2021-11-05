@@ -457,6 +457,14 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <FileType>Document</FileType>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="src\MyMaterials\compute\HLSL\VorticityComputation.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="src\MyMaterials\compute\HLSL\VorticityConfinement.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

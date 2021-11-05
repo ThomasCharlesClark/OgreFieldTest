@@ -18,16 +18,15 @@
 	DONE DUMPING PROPERTIES
 	DONE DUMPING PIECES
 #endif
-RWTexture3D<float4> velocityWrite	: register(u0);
-RWTexture2D<float4> inkWrite		: register(u1);
-RWTexture2D<float4> inkRead			: register(u2);
-Texture3D<float4> velocityRead		: register(t0);
+RWTexture3D<float4> inkTextureFinal		: register(u0);
+Texture3D<float4> velocityTexture		: register(t0);
+Texture3D<float4> inkTexture			: register(t1);
 
 SamplerState TextureSampler
 {
 	Filter = MIN_MAG_MIP_LINEAR;
-	AddressU = Clamp;
-	AddressV = Clamp;
+	AddressU = Wrap;
+	AddressV = Wrap;
 };
 
 float4 unpackUnorm4x8(uint value)
@@ -55,23 +54,25 @@ void main
     uint3 gl_GlobalInvocationID : SV_DispatchThreadId
 )
 {
-	if( gl_GlobalInvocationID.x < texResolution.x && gl_GlobalInvocationID.y < texResolution.y)
+	if (gl_GlobalInvocationID.x < texResolution.x && gl_GlobalInvocationID.y < texResolution.y)
 	{
-		float3 idx = float3(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, gl_GlobalInvocationID.z);
+		float3 idx3 = float3(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, gl_GlobalInvocationID.z);
 
 		float width = texResolution.x;
 
-		//float4 velocity = velocityRead.Load(float4(idx, 0));
-		float4 velocity = velocityRead.SampleLevel(TextureSampler, idx / width, 0) * 100;
+		float4 velocity = velocityTexture.SampleLevel(TextureSampler, idx3 / width, 1);
 
-		float3 idxBackInTime = (idx - (reciprocalDeltaX * velocity.xyz));
-		
-		//float4 i = inkWrite[idxBackInTime];// inkRead.Load(float4(idxBackInTime, 0));
-		//float4 i = inkRead.Load(float4(idxBackInTime, 0));
-		float4 i = inkRead.Load(idxBackInTime.xy);
+		float3 idxBackInTime = (idx3 - 1 / (timeSinceLast * reciprocalDeltaX * velocity.xyz));
+		//float3 idxBackInTime = (idx3 - (timeSinceLast * reciprocalDeltaX * velocity.xyz));
 
-		inkWrite[idx.xy] = i;
-		//inkWrite[idx.xy] = float4(i.xyz * inkDissipationConstant, 1.0);
-		//inkWrite[idx] = float4(i.xyz, 1) * inkDissipationConstant;
+		float4 i = inkTexture.SampleLevel(TextureSampler, idxBackInTime / width, 1);
+
+		//float4 i = inkTexture.Load(idxBackInTime);
+
+		//inkTexture[idxBackInTime] = float4(0, 0, 0, 1.0);
+
+		inkTextureFinal[idx3] = i; // float4(i.xyz, 1.0);
+
+		//inkTexture[idxBackInTime] = float4(0, 0, 0, 1.0);
 	}
 }

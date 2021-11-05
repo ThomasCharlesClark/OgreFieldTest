@@ -144,6 +144,8 @@ namespace MyThirdOgre
 			bool						mHaveSetDivergenceComputeShaderParameters;
 			bool						mHaveSetJacobiPressureComputeShaderParameters;
 			bool						mHaveSetSubtractPressureGradientComputeShaderParameters;
+			bool						mHaveSetVorticityComputationComputeShaderParameters;
+			bool						mHaveSetVorticityConfinementComputeShaderParameters;
 
 			MovableObjectDefinition*	mPlaneMoDef;
 			MovableObjectDefinition*	mDebugPlaneMoDef;
@@ -182,6 +184,8 @@ namespace MyThirdOgre
 			Ogre::HlmsComputeJob*				mDivergenceComputeJob;
 			Ogre::HlmsComputeJob*				mJacobiPressureComputeJob;
 			Ogre::HlmsComputeJob*				mSubtractPressureGradientComputeJob;
+			Ogre::HlmsComputeJob*				mVorticityComputationComputeJob;
+			Ogre::HlmsComputeJob*				mVorticityConfinementComputeJob;
 			float								mTimeAccumulator;
 			Hand*								mHand;
 
@@ -222,6 +226,8 @@ namespace MyThirdOgre
 			virtual void setDivergenceComputeJob(Ogre::HlmsComputeJob* job);
 			virtual void setJacobiPressureComputeJob(Ogre::HlmsComputeJob* job);
 			virtual void setSubtractPressureGradientComputeJob(Ogre::HlmsComputeJob* job);
+			virtual void setVorticityComputationComputeJob(Ogre::HlmsComputeJob* job);
+			virtual void setVorticityConfinementComputeJob(Ogre::HlmsComputeJob* job);
 			virtual void setMaterial(Ogre::MaterialPtr mat);
 			virtual void setVelocityStagingTexture(Ogre::StagingTexture* tex);
 			virtual void setInkStagingTexture(Ogre::StagingTexture* tex);
@@ -263,6 +269,8 @@ namespace MyThirdOgre
 			Ogre::HlmsComputeJob* getDivergenceComputeJob(void) { return mDivergenceComputeJob; };
 			Ogre::HlmsComputeJob* getJacobiPressureComputeJob(void) { return mJacobiPressureComputeJob; };
 			Ogre::HlmsComputeJob* getSubtractPressureGradientComputeJob(void) { return mSubtractPressureGradientComputeJob; };
+			Ogre::HlmsComputeJob* getVorticityComputationComputeJob(void) { return mVorticityComputationComputeJob; };
+			Ogre::HlmsComputeJob* getVorticityConfinementComputeJob(void) { return mVorticityConfinementComputeJob; };
 			Ogre::TextureGpu* getRenderTargetTexture(void) { return mRenderTargetTexture; };
 			Ogre::TextureGpu* getPrimaryVelocityTexture(void) { return mVelocityTexture; };
 			Ogre::TextureGpu* getSecondaryVelocityTexture(void) { return mSecondaryVelocityTexture; };

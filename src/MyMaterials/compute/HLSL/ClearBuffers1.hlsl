@@ -32,10 +32,9 @@ void main
 
 		//handInputBuffer[rwIdx].ink = 0.0;
 		//handInputBuffer[rwIdx].colour = float4(0, 0, 0, 1.0);
+		//handInputBuffer[rwIdx].velocity = float3(0, 0, 0);
 
-		inkTexture[gl_GlobalInvocationID] = float4(inkTexture[gl_GlobalInvocationID].xyz * 0.98, 1.0);
-
-		//inkSecondary[gl_GlobalInvocationID] = inkSecondary[gl_GlobalInvocationID] * 0.28;
+		//inkTexture[gl_GlobalInvocationID] = float4(inkTexture[gl_GlobalInvocationID].xyz * 0.998, 1.0);
 
 		//inkTexture[gl_GlobalInvocationID] = float4(0, 0, 0, 1.0);
 	}

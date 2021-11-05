@@ -1391,6 +1391,8 @@ namespace MyThirdOgre
                 fieldComputeSystem->setJacobiPressureComputeJob(hlmsCompute->findComputeJob("JacobiPressure"));
                 fieldComputeSystem->setJacobiDiffusionComputeJob(hlmsCompute->findComputeJob("JacobiDiffusion"));
                 fieldComputeSystem->setSubtractPressureGradientComputeJob(hlmsCompute->findComputeJob("SubtractPressureGradient"));
+                fieldComputeSystem->setVorticityComputationComputeJob(hlmsCompute->findComputeJob("VorticityComputation"));
+                fieldComputeSystem->setVorticityConfinementComputeJob(hlmsCompute->findComputeJob("VorticityConfinement"));
 
                 fieldComputeSystem->setMaterial(Ogre::MaterialManager::getSingleton().load(
                     "DrawFromUavBuffer", Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME).

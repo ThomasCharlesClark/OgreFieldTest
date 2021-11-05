@@ -6,7 +6,7 @@
 	***	threads_per_group_z	1
 	***	hlms_high_quality	0
 	***	typed_uav_load	1
-	***	num_thread_groups_y	32
+	***	num_thread_groups_y	16
 	***	glsles	1070293233
 	***	hlslvk	1841745752
 	***	syntax	-334286542
@@ -14,7 +14,7 @@
 	***	num_thread_groups_z	1
 	***	glslvk	-338983575
 	***	hlsl	-334286542
-	***	num_thread_groups_x	32
+	***	num_thread_groups_x	16
 	DONE DUMPING PROPERTIES
 	DONE DUMPING PIECES
 #endif
@@ -56,11 +56,9 @@ void main
 		velocityWrite[gl_GlobalInvocationID] = velocity;
 		inkWrite[gl_GlobalInvocationID] += handInputBuffer[rwIdx].colour;
 		inkTemp[gl_GlobalInvocationID] += handInputBuffer[rwIdx].ink;
-		
-		// clearing the input buffer here == slowtown
-		/*handInputBuffer[rwIdx].colour = float4(0, 0, 0, 1.0);
-		handInputBuffer[rwIdx].velocity = float3(0, 0, 0);
-		handInputBuffer[rwIdx].ink = 0.0;*/
-		// but not clearing it at all == bleh
+
+		//handInputBuffer[rwIdx].ink = 0.0;
+		//handInputBuffer[rwIdx].colour *= 0.98;// float4(0, 0, 0, 1);
+		//handInputBuffer[rwIdx].velocity *= 0.98;// float3(0, 0, 0);
 	}
 }

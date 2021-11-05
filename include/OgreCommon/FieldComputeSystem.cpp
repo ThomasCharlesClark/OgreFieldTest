@@ -34,6 +34,8 @@ namespace MyThirdOgre
 		mDivergenceComputeJob = 0;
 		mJacobiPressureComputeJob = 0;
 		mSubtractPressureGradientComputeJob = 0;
+		mVorticityConfinementComputeJob = 0;
+		mVorticityComputationComputeJob = 0;
 
 		mRenderTargetTexture = 0;
 		mVelocityTexture = 0;
@@ -71,15 +73,15 @@ namespace MyThirdOgre
 		mDebugPlaneMoDef->resourceGroup = Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME;
 
 #if OGRE_DEBUG_MODE
-		mBufferResolutionWidth = 256.0f;
-		mBufferResolutionHeight = 256.0f;
+		mBufferResolutionWidth = 128.0f;
+		mBufferResolutionHeight = 128.0f;
 		mFieldWidth = 64.0f;
 		mFieldHeight = 64.0f;
 #else
-		mBufferResolutionWidth = 256.0f;
-		mBufferResolutionHeight = 256.0f;
-		mFieldWidth = 32.0f;
-		mFieldHeight = 32.0f;
+		mBufferResolutionWidth = 512.0f;
+		mBufferResolutionHeight = 512.0f;
+		mFieldWidth = 64.0f;
+		mFieldHeight = 64.0f;
 #endif
 
 		resolution[0] = mBufferResolutionWidth;
@@ -128,6 +130,8 @@ namespace MyThirdOgre
 		mHaveSetClearBuffersComputeShaderParameters = false;
 		mHaveSetClearBuffersComputeTwoShaderParameters = false;
 		mHaveSetInkAdvectionComputeShaderParameters = false;
+		mHaveSetVorticityComputationComputeShaderParameters = false;
+		mHaveSetVorticityConfinementComputeShaderParameters = false;
 
 		mTimeAccumulator = 0.0f;
 
@@ -626,6 +630,16 @@ namespace MyThirdOgre
 		mSubtractPressureGradientComputeJob = job;
 	}
 
+	void FieldComputeSystem::setVorticityComputationComputeJob(Ogre::HlmsComputeJob* job)
+	{
+		mVorticityComputationComputeJob = job;
+	}
+
+	void FieldComputeSystem::setVorticityConfinementComputeJob(Ogre::HlmsComputeJob* job)
+	{
+		mVorticityConfinementComputeJob = job;
+	}
+
 	void FieldComputeSystem::setMaterial(Ogre::MaterialPtr mat)
 	{
 		mDrawFromUavBufferMat = mat;
@@ -942,6 +956,56 @@ namespace MyThirdOgre
 			}
 		}
 
+		if (mVorticityComputationComputeJob) {
+
+			if (!mHaveSetVorticityComputationComputeShaderParameters) {
+
+				Ogre::ShaderParams& shaderParams = mVorticityComputationComputeJob->getShaderParams("default");
+				Ogre::ShaderParams::Param* texResolution = shaderParams.findParameter("texResolution");
+				Ogre::ShaderParams::Param* halfDeltaX = shaderParams.findParameter("halfDeltaX");
+				texResolution->setManualValue(resolution, sizeof(resolution) / sizeof(Ogre::uint));
+				halfDeltaX->setManualValue(0.5f);
+				shaderParams.setDirty();
+
+				mVorticityComputationComputeJob->setNumThreadGroups(
+					(res[0] + mVorticityComputationComputeJob->getThreadsPerGroupX() - 1u) / mVorticityComputationComputeJob->getThreadsPerGroupX(),
+					(res[1] + mVorticityComputationComputeJob->getThreadsPerGroupY() - 1u) / mVorticityComputationComputeJob->getThreadsPerGroupY(),
+					1u);
+
+				mHaveSetVorticityComputationComputeShaderParameters = true;
+			}
+		}
+
+		if (mVorticityConfinementComputeJob) {
+
+			if (!mHaveSetVorticityConfinementComputeShaderParameters) {
+
+				Ogre::ShaderParams& shaderParams = mVorticityConfinementComputeJob->getShaderParams("default");
+				Ogre::ShaderParams::Param* texResolution = shaderParams.findParameter("texResolution");
+				Ogre::ShaderParams::Param* halfDeltaX = shaderParams.findParameter("halfDeltaX");
+				Ogre::ShaderParams::Param* vortConfScale = shaderParams.findParameter("vorticityConfinementScale");
+				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
+				texResolution->setManualValue(resolution, sizeof(resolution) / sizeof(Ogre::uint));
+				halfDeltaX->setManualValue(0.5f);
+				vortConfScale->setManualValue(0.58f);
+				tsl->setManualValue(timeSinceLast);
+				shaderParams.setDirty();
+
+				mVorticityConfinementComputeJob->setNumThreadGroups(
+					(res[0] + mVorticityConfinementComputeJob->getThreadsPerGroupX() - 1u) / mVorticityConfinementComputeJob->getThreadsPerGroupX(),
+					(res[1] + mVorticityConfinementComputeJob->getThreadsPerGroupY() - 1u) / mVorticityConfinementComputeJob->getThreadsPerGroupY(),
+					1u);
+
+				mHaveSetVorticityConfinementComputeShaderParameters = true;
+			}
+			else {
+				Ogre::ShaderParams& shaderParams = mVorticityConfinementComputeJob->getShaderParams("default");
+				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
+				tsl->setManualValue(timeSinceLast);
+				shaderParams.setDirty();
+			}
+		}
+
 		if (mTestComputeJob)
 		{
 			if (!mHaveSetTestComputeShaderParameters) {
@@ -1080,8 +1144,8 @@ namespace MyThirdOgre
 
 								thisElement.ink = 1.0f;
 
-								thisElement.colour.x = 1.0f;
-								thisElement.colour.y = 0.4941176562f;
+								thisElement.colour.x = 0.85f;
+								thisElement.colour.y = 0.2941176562f;
 								//thisElement.colour.z = 0.0f; // mHand->getState().rInk;
 
 																				// the ink field is always green and invisible
@@ -1098,8 +1162,30 @@ namespace MyThirdOgre
 
 								//mInkInputBuffer[index.mIndex].velocity = mHand->getState().vVel * 100;
 
+								//auto pos = mHand->getState().vPos;
+
+								//auto posPrev = mHand->getState().vPosPrev;
+
+								//auto dir = pos - posPrev;
+
+								//auto vel = dir;
+
+								//if (mHand->getState().vVel != Ogre::Vector3::ZERO) {
+								//	vel.normalise();
+								//	vel = dir * mHand->getState().vVel.squaredLength();
+								//}
+
+								//if (vel.x != 0 || vel.y != 0 || vel.z != 0) {
+								//	int f = 0;
+								//}
+								//else {
+								//	int f = 0;
+								//}
+
 								thisElement.velocity = mHand->getState().vVel;
 								 
+								//thisElement.velocity = Ogre::Vector3(0.0f, 0.0f, 100.0f);
+
 								//mInkInputBuffer[index.mIndex].velocity += mHand->getState().vVel;
 							
 
@@ -1152,8 +1238,8 @@ namespace MyThirdOgre
 				*instanceBuffer++ = iter.colour.w;// iter.colour.a;// (float)sin(mTimeAccumulator);
 				
 				*instanceBuffer++ = iter.velocity.x;
-				*instanceBuffer++ = iter.velocity.y;
 				*instanceBuffer++ = iter.velocity.z;
+				*instanceBuffer++ = iter.velocity.y;
 			}
 
 			auto tsb = buffer->getTotalSizeBytes();
