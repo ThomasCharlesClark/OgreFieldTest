@@ -44,7 +44,6 @@ namespace MyThirdOgre
 	public:
 		size_t mIndex;
 		Ogre::Vector3 mPosition;
-		Ogre::Vector3* mFieldCenter;
 
 		FieldComputeSystem_BufferIndexPosition(
 			size_t i,
@@ -296,8 +295,6 @@ namespace MyThirdOgre
 				int& leafIndexX,
 				int& leafIndexZ,
 				float& depthCount);
-
-			virtual void buildBoundingDivisionIntersections(const size_t index, FieldComputeSystem_BoundingHierarchyBox& box);
 
 			virtual void traverseBoundingHierarchy(const FieldComputeSystem_BoundingHierarchyBox& level, 
 				const std::vector<FieldComputeSystem_BoundingHierarchyBox>* leaves,

@@ -1,11 +1,11 @@
-RWTexture3D<float4> inkTexture				: register(u0);
-Texture3D<float4>	inkTextureFinal			: register(t0);
+RWTexture3D<float4> target			: register(u0);
+Texture3D<float4>	source			: register(t0);
 
 SamplerState TextureSampler
 {
 	Filter = MIN_MAG_MIP_LINEAR;
-	AddressU = Wrap;
-	AddressV = Wrap;
+	AddressU = Clamp;
+	AddressV = Clamp;
 };
 
 uniform uint2 texResolution;
@@ -26,8 +26,9 @@ void main
 
 		float width = texResolution.x;
 
-		float4 ink = inkTextureFinal.SampleLevel(TextureSampler, gl_GlobalInvocationID / width, 0); 
+		//float4 value = source.SampleLevel(TextureSampler, gl_GlobalInvocationID / width, 0);
+		float4 value = source.Load(idx4);
 
-		inkTexture[idx3] = ink;
+		target[idx3] = value;
 	}
 }

@@ -1077,9 +1077,9 @@ namespace MyThirdOgre
                         auto datablock = dynamic_cast<Ogre::HlmsPbsDatablock*>(item->getSubItem(i)->getDatablock());
 
                         Ogre::HlmsSamplerblock diffuseBlock(*datablock->getSamplerblock(Ogre::PBSM_DIFFUSE));
-                        diffuseBlock.mU = Ogre::TAM_WRAP;
-                        diffuseBlock.mV = Ogre::TAM_WRAP;
-                        diffuseBlock.mW = Ogre::TAM_WRAP;
+                        diffuseBlock.mU = Ogre::TAM_CLAMP;
+                        diffuseBlock.mV = Ogre::TAM_CLAMP;
+                        diffuseBlock.mW = Ogre::TAM_CLAMP;
                         datablock->setSamplerblock(Ogre::PBSM_DIFFUSE, diffuseBlock);
 
                         datablock->setTransparency(cge->gameEntity->mTransparency, Ogre::HlmsPbsDatablock::Transparent, true);
@@ -1223,9 +1223,9 @@ namespace MyThirdOgre
                     personalDatablock->setTexture(Ogre::PbsTextureTypes::PBSM_DIFFUSE, cge->gameEntity->mTextureGpu);
 
                     Ogre::HlmsSamplerblock diffuseBlock(*personalDatablock->getSamplerblock(Ogre::PBSM_DIFFUSE));
-                    diffuseBlock.mU = Ogre::TAM_WRAP;
-                    diffuseBlock.mV = Ogre::TAM_WRAP;
-                    diffuseBlock.mW = Ogre::TAM_WRAP;
+                    diffuseBlock.mU = Ogre::TAM_CLAMP;
+                    diffuseBlock.mV = Ogre::TAM_CLAMP;
+                    diffuseBlock.mW = Ogre::TAM_CLAMP;
 
                     personalDatablock->setSamplerblock(Ogre::PBSM_DIFFUSE, diffuseBlock);
 
@@ -1256,9 +1256,9 @@ namespace MyThirdOgre
                 auto personalDatablock = dynamic_cast<Ogre::HlmsPbsDatablock*>(datablock->clone(Ogre::StringConverter::toString(cge->gameEntity->getId()) + Ogre::String("personalDataBlock")));
 
                 Ogre::HlmsSamplerblock diffuseBlock(*personalDatablock->getSamplerblock(Ogre::PBSM_DIFFUSE));
-                diffuseBlock.mU = Ogre::TAM_WRAP;
-                diffuseBlock.mV = Ogre::TAM_WRAP;
-                diffuseBlock.mW = Ogre::TAM_WRAP;
+                diffuseBlock.mU = Ogre::TAM_CLAMP;
+                diffuseBlock.mV = Ogre::TAM_CLAMP;
+                diffuseBlock.mW = Ogre::TAM_CLAMP;
                 personalDatablock->setSamplerblock(Ogre::PBSM_DIFFUSE, diffuseBlock);
 
                 if (cge->useAlpha)
@@ -1283,9 +1283,9 @@ namespace MyThirdOgre
                     auto personalDatablock = dynamic_cast<Ogre::HlmsPbsDatablock*>(pft->getSubEntity(0)->getDatablock());
 
                     Ogre::HlmsSamplerblock diffuseBlock(*personalDatablock->getSamplerblock(Ogre::PBSM_DIFFUSE));
-                    diffuseBlock.mU = Ogre::TAM_WRAP;
-                    diffuseBlock.mV = Ogre::TAM_WRAP;
-                    diffuseBlock.mW = Ogre::TAM_WRAP;
+                    diffuseBlock.mU = Ogre::TAM_CLAMP;
+                    diffuseBlock.mV = Ogre::TAM_CLAMP;
+                    diffuseBlock.mW = Ogre::TAM_CLAMP;
                     personalDatablock->setSamplerblock(Ogre::PBSM_DIFFUSE, diffuseBlock);
 
                     if (cge->useAlpha)
@@ -1315,9 +1315,9 @@ namespace MyThirdOgre
                     personalDatablock->setTexture(Ogre::PbsTextureTypes::PBSM_DIFFUSE, cge->gameEntity->mTextureGpu);
 
                     Ogre::HlmsSamplerblock diffuseBlock(*personalDatablock->getSamplerblock(Ogre::PBSM_DIFFUSE));
-                    diffuseBlock.mU = Ogre::TAM_WRAP;
-                    diffuseBlock.mV = Ogre::TAM_WRAP;
-                    diffuseBlock.mW = Ogre::TAM_WRAP;
+                    diffuseBlock.mU = Ogre::TAM_CLAMP;
+                    diffuseBlock.mV = Ogre::TAM_CLAMP;
+                    diffuseBlock.mW = Ogre::TAM_CLAMP;
                     
                     personalDatablock->setSamplerblock(Ogre::PBSM_DIFFUSE, diffuseBlock);
 

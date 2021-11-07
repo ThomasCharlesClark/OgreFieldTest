@@ -65,7 +65,7 @@ void main
 
 		float width = texResolution.x;
 
-		int4 idx4 = int4(gl_GlobalInvocationID, 1);
+		int4 idx4 = int4(gl_GlobalInvocationID, 0);
 
 		//float4 inkColour = inkTextureFinal.Load(idx4);
 
@@ -97,15 +97,24 @@ void main
 
 		float4 final = float4(0, 0, 0, 1.0);
 		
-		//final.xyz += inkColour.xyz;
+		//final.xyz = v.xyz;
 
-		//final.xyz *= length(v);
-		
+		//final.xyz = abs(v.xyz);
+
 		//final.xyz += p.xyz;
-
-		final.xyz += v.xyz;
+		
+		//final.xyz *= length(v);
 
 		//final.z += vortValue;
+
+		//if (gl_GlobalInvocationID.x == 0 && gl_GlobalInvocationID.y == 0) {
+		//	final = float4(1, 0, 0, 1);
+		//}
+		//else {
+		//	//final = float4(0, 0, 0, 1);
+		//}
+		
+		final.xyz += inkColour.xyz;
 
 		pixelBuffer[idx] = packUnorm4x8(final);
 	}

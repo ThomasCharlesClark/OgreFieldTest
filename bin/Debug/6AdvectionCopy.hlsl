@@ -6,7 +6,7 @@
 	***	threads_per_group_z	1
 	***	hlms_high_quality	0
 	***	typed_uav_load	1
-	***	num_thread_groups_y	32
+	***	num_thread_groups_y	16
 	***	glsles	1070293233
 	***	hlslvk	1841745752
 	***	syntax	-334286542
@@ -14,7 +14,7 @@
 	***	num_thread_groups_z	1
 	***	glslvk	-338983575
 	***	hlsl	-334286542
-	***	num_thread_groups_x	32
+	***	num_thread_groups_x	16
 	DONE DUMPING PROPERTIES
 	DONE DUMPING PIECES
 #endif
@@ -46,7 +46,8 @@ void main
 
 		float width = texResolution.x;
 
-		float4 ink = inkTextureFinal.SampleLevel(TextureSampler, gl_GlobalInvocationID / width, 0); 
+		//float4 ink = inkTextureFinal.SampleLevel(TextureSampler, gl_GlobalInvocationID / width, 0);
+		float4 ink = inkTextureFinal.Load(idx4);
 
 		inkTexture[idx3] = ink;
 	}

@@ -1,12 +1,12 @@
 #if 0
-	***	threads_per_group_x	8
+	***	threads_per_group_x	1
 	***	fast_shader_build_hack	1
 	***	glsl	635204550
-	***	threads_per_group_y	8
+	***	threads_per_group_y	1
 	***	threads_per_group_z	1
 	***	hlms_high_quality	0
 	***	typed_uav_load	1
-	***	num_thread_groups_y	32
+	***	num_thread_groups_y	128
 	***	glsles	1070293233
 	***	hlslvk	1841745752
 	***	syntax	-334286542
@@ -14,12 +14,13 @@
 	***	num_thread_groups_z	1
 	***	glslvk	-338983575
 	***	hlsl	-334286542
-	***	num_thread_groups_x	32
+	***	num_thread_groups_x	128
 	DONE DUMPING PROPERTIES
 	DONE DUMPING PIECES
 #endif
-RWTexture3D<float4> velocityWrite			: register(u0); // primaryVelocityTexture
-Texture3D<float4> velocityRead				: register(t0); // secondaryVelocityTexture
+Texture3D<float4> velocityTexture				: register(t0);
+RWTexture3D<float4> velocityFinal				: register(u0);
+
 
 SamplerState TextureSampler
 {
@@ -45,7 +46,7 @@ uniform float reciprocalDeltaX;
 uniform float velocityDissipationConstant;
 uniform float inkDissipationConstant;
 
-[numthreads(8, 8, 1)]
+[numthreads(1, 1, 1)]
 void main
 (
     uint3 gl_LocalInvocationID : SV_GroupThreadID,
@@ -54,20 +55,23 @@ void main
 {
 	if( gl_GlobalInvocationID.x < texResolution.x && gl_GlobalInvocationID.y < texResolution.y)
 	{
-		float3 idx = float3(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, gl_GlobalInvocationID.z);
+		int3 idx3 = int3(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, gl_GlobalInvocationID.z);
+		int4 idx4 = int4(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, gl_GlobalInvocationID.z, 0);
 
 		uint rwIdx = gl_GlobalInvocationID.y * texResolution.x + gl_GlobalInvocationID.x;
 
 		float width = texResolution.x;
 
-		float4 velocity = velocityRead.SampleLevel(TextureSampler, idx / width, 0);
+		//float4 velocity = velocityTexture.SampleLevel(TextureSampler, idx3 / width, 0);
 
-		float3 idxBackInTime = (idx - (timeSinceLast * reciprocalDeltaX * velocity.xyz));
+		float4 velocity = velocityTexture.Load(idx4);
 
-		//float4 v = float4(float3(velocityRead.SampleLevel(TextureSampler, idxBackInTime / width, 0).xyz) * velocityDissipationConstant, 0);
+		float4 idxBackInTime = (idx4 - (timeSinceLast * reciprocalDeltaX * velocity));
 
-		float4 v = float4(float3(velocityRead.SampleLevel(TextureSampler, idxBackInTime / width, 0).xyz), 0);
+		float4 v = velocityTexture.SampleLevel(TextureSampler, idxBackInTime / width, 0);
 
-		velocityWrite[idx] = v;
+		//float4 v = velocityTexture.Load(idxBackInTime);
+
+		velocityFinal[idx3] = v;
 	}
 }

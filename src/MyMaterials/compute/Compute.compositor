@@ -3,22 +3,43 @@ compositor_node TestComputeNode
 	in 0 renderTarget
 	in_buffer 0 inputUavBuffer
 
-	texture velocityTexture			target_width target_height 1 PFG_RGBA32_FLOAT	uav 3d depth_pool 0 keep_content
-	texture velocityFinal			target_width target_height 1 PFG_RGBA32_FLOAT	uav 3d depth_pool 0
-	texture inkTexture				target_width target_height 1 PFG_RGBA32_FLOAT	uav 3d depth_pool 0 keep_content 
-	texture inkTextureFinal			target_width target_height 1 PFG_RGBA32_FLOAT	uav 3d depth_pool 0 keep_content
-	texture divergenceTexture		target_width target_height 1 PFG_RGBA32_FLOAT	uav 3d depth_pool 0 keep_content
-	texture pressureTexture			target_width target_height 1 PFG_RGBA32_FLOAT	uav 3d depth_pool 0 keep_content
+	texture velocityTexture			target_width target_height 1 PFG_RGBA32_FLOAT	uav keep_content 3d depth_pool 0 
+	texture velocityFinal			target_width target_height 1 PFG_RGBA32_FLOAT	uav keep_content 3d depth_pool 0 
+	texture inkTexture				target_width target_height 1 PFG_RGBA32_FLOAT	uav keep_content 3d depth_pool 0  
+	texture inkTextureFinal			target_width target_height 1 PFG_RGBA32_FLOAT	uav keep_content 3d depth_pool 0 
+	texture divergenceTexture		target_width target_height 1 PFG_RGBA32_FLOAT	uav keep_content 3d depth_pool 0 
+	texture pressureTexture			target_width target_height 1 PFG_RGBA32_FLOAT	uav keep_content 3d depth_pool 0 
 	texture vortTex					target_width target_height 1 PFG_R32_FLOAT		uav 3d depth_pool 0
 
 	texture tempInkTexture target_width target_height 1 PFG_R32_FLOAT uav 3d depth_pool 0
 
+	//buffer <buffer_name> <num_elements> <bytes_per_element> [target_width] [target_width_scaled] [target_height] [target_height_scaled]
 	buffer temporaryBuffer 1 4 target_width target_height
 	
 	texture nullDummy target_width target_height PFG_NULL
 	
+	/*
+	
+	
+
+	*/
+
 	target
 	{
+		pass compute 
+		{
+			job AdvectionCopy
+			uav 0 velocityTexture write
+			input 0 velocityFinal read
+		}
+		
+		pass compute 
+		{
+			job AdvectionCopy
+			uav 0 inkTextureFinal write
+			input 0 inkTexture read
+		}
+
 		pass compute
 		{
 			job	AddImpulses
@@ -26,12 +47,25 @@ compositor_node TestComputeNode
 			uav 1 velocityTexture write
 			uav 2 inkTexture write
 			uav 3 tempInkTexture write
+			
+			/* Must preserve state from previous frame */
+			input 0 velocityFinal read
+			input 1 inkTextureFinal read
+		}
+
+		pass compute
+		{
+			job VelocityAdvection
+			input 0 velocityTexture read
+			uav 0 velocityFinal write
 		}
 		
 		pass compute
 		{
-			job VelocityAdvection
-			uav 0 velocityTexture read write
+			job	InkAdvection
+			uav 0 inkTextureFinal write
+			input 0 velocityFinal read
+			input 1 inkTexture read
 		}
 
 		pass compute
@@ -384,13 +418,13 @@ compositor_node TestComputeNode
 			input 0 divergenceTexture read
 		}
 
-		/*pass compute
+		pass compute
 		{
 			job BoundaryConditions
 			uav 0 velocityFinal read write
 			uav 1 pressureTexture read write
 			uav 2 inkTexture read write
-		}*/
+		}
 
 		pass compute
 		{
@@ -412,22 +446,7 @@ compositor_node TestComputeNode
 			input 0 vortTex read
 			uav 0 velocityFinal write
 		}*/
-	
-		pass compute
-		{
-			job AdvectionCopy
-			uav 0 inkTextureFinal write
-			input 0 inkTexture read
-		}
-		
-		pass compute
-		{
-			job	InkAdvection
-			uav 0 inkTextureFinal write
-			input 0 velocityFinal read
-			input 1 inkTexture read
-		}
-		
+
 		/*pass compute
 		{
 			job ClearBuffers1
@@ -446,13 +465,15 @@ compositor_node TestComputeNode
 			uav 5 pressureTexture read
 			input 0 inkTextureFinal read
 		}
-
+		
 		pass compute
 		{
 			job ClearBuffers2
 			uav_buffer 0 inputUavBuffer write
 			uav 1 inkTexture write
-			uav 2 velocityFinal write
+			uav 2 inkTextureFinal write
+			uav 3 velocityFinal write
+			uav 4 velocityTexture write
 		}
 	}
 
@@ -510,3 +531,54 @@ workspace "Test Compute Workspace"
 
 	connect_output TestComputeNode 0
 }
+
+
+
+
+
+
+
+
+
+
+
+
+	/*target inkTexture
+	{
+		pass bind_uav
+		{
+			starting_slot 1
+			uav 0 inkTextureFinal read
+		}
+
+		pass render_quad
+		{
+			material CopyFromTexture
+			uses_uav 0 read
+		}
+
+		pass bind_uav 
+		{
+
+		}
+	}
+
+	target velocityTexture
+	{
+		pass bind_uav
+		{
+			starting_slot 1
+			uav 0 velocityFinal read
+		}
+
+		pass render_quad
+		{
+			material CopyFromTexture
+			uses_uav 0 read
+		}
+
+		pass bind_uav 
+		{
+
+		}
+	}*/

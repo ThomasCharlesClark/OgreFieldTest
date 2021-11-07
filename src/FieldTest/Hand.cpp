@@ -65,7 +65,7 @@ namespace MyThirdOgre
 
 //#if OGRE_DEBUG_MODE
         mSphere = new Ogre::Sphere(mState.vPos, 1.5f);
-        mOuterSphere = new Ogre::Sphere(mState.vPos, 5.0f);
+        mOuterSphere = new Ogre::Sphere(mState.vPos, 1.5f);
 //#else
        /* mSphere = new Ogre::Sphere(mState.vPos, 0.75f);
         mOuterSphere = new Ogre::Sphere(mState.vPos, 2.5f);*/

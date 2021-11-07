@@ -1,12 +1,12 @@
 #if 0
-	***	threads_per_group_x	8
+	***	threads_per_group_x	1
 	***	fast_shader_build_hack	1
 	***	glsl	635204550
-	***	threads_per_group_y	8
+	***	threads_per_group_y	1
 	***	threads_per_group_z	1
 	***	hlms_high_quality	0
 	***	typed_uav_load	1
-	***	num_thread_groups_y	32
+	***	num_thread_groups_y	128
 	***	glsles	1070293233
 	***	hlslvk	1841745752
 	***	syntax	-334286542
@@ -14,14 +14,12 @@
 	***	num_thread_groups_z	1
 	***	glslvk	-338983575
 	***	hlsl	-334286542
-	***	num_thread_groups_x	32
+	***	num_thread_groups_x	128
 	DONE DUMPING PROPERTIES
 	DONE DUMPING PIECES
 #endif
-RWTexture3D<float4> velocityWrite		: register(u0); // secondaryVelocityTexture
-RWTexture3D<float4> inkWrite			: register(u1); // secondaryInkTexture
-Texture3D<float4> velocityRead	: register(t0);			// primaryVelocityTexture
-Texture3D<float4> inkRead		: register(t1);			// primaryInkTexture
+RWTexture3D<float4> target			: register(u0);
+Texture3D<float4>	source			: register(t0);
 
 SamplerState TextureSampler
 {
@@ -34,7 +32,7 @@ uniform uint2 texResolution;
 
 uniform float reciprocalDeltaX;
 
-[numthreads(8, 8, 1)]
+[numthreads(1, 1, 1)]
 void main
 (
     uint3 gl_LocalInvocationID : SV_GroupThreadID,
@@ -48,10 +46,9 @@ void main
 
 		float width = texResolution.x;
 
-		float4 velocity = velocityRead.Load(idx4);
-		float4 ink = inkRead.SampleLevel(TextureSampler, gl_GlobalInvocationID / width, 0);
+		//float4 value = source.SampleLevel(TextureSampler, gl_GlobalInvocationID / width, 0);
+		float4 value = source.Load(idx4);
 
-		velocityWrite[idx3] = velocity;
-		inkWrite[idx3] = ink;
+		target[idx3] = value;
 	}
 }

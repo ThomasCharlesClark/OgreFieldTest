@@ -18,7 +18,7 @@
 #include "Hand.h"
 #include <vector>
 
-namespace MyThirdOgre 
+namespace MyThirdOgre
 {
 	FieldComputeSystem::FieldComputeSystem(Ogre::uint32 id, const MovableObjectDefinition* moDefinition,
 		Ogre::SceneMemoryMgrTypes type, GameEntityManager* geMgr) : GameEntity(id, moDefinition, type)
@@ -99,17 +99,17 @@ namespace MyThirdOgre
 
 		mLeafCountZ = mBufferResolutionHeight / mLeafResolutionZ;
 		mLeafHeight = mFieldHeight / mLeafCountZ;
-		
+
 		mInkInputBuffer = std::vector<Particle>({});
 
 		for (auto i = 0; i < mBufferResolutionWidth * mBufferResolutionHeight; i++) {
-			mInkInputBuffer.push_back({ 
-				Ogre::Real(0.0f), 
-				Ogre::Vector4(0.0f, 0.0f, 0.0f, 1.0f), 
-				Ogre::Vector3::ZERO 
-			});
+			mInkInputBuffer.push_back({
+				Ogre::Real(0.0f),
+				Ogre::Vector4(0.0f, 0.0f, 0.0f, 1.0f),
+				Ogre::Vector3::ZERO
+				});
 		}
-		
+
 		mDrawFromUavBufferMat = Ogre::MaterialPtr();
 
 		mGameEntityManager = geMgr;
@@ -154,7 +154,7 @@ namespace MyThirdOgre
 			(static_cast<size_t>(mInstanceBuffer - mInstanceBufferStart) * sizeof(float)));
 	}
 
-	FieldComputeSystem::~FieldComputeSystem() 
+	FieldComputeSystem::~FieldComputeSystem()
 	{
 		if (mPlaneMoDef) {
 			delete mPlaneMoDef;
@@ -190,7 +190,7 @@ namespace MyThirdOgre
 				Ogre::Vector3(-(mFieldWidth / 2), 0, -(mFieldHeight / 2))
 				}),
 			Ogre::BLANKSTRING,
-			mTransform[0]->vPos + Ogre::Vector3::ZERO,
+			mTransform[0]->vPos + Ogre::Vector3(-0.5f, 0.0f, -0.5f),
 			Ogre::Quaternion::IDENTITY,
 			Ogre::Vector3::UNIT_SCALE,
 			true,
@@ -208,63 +208,8 @@ namespace MyThirdOgre
 		{
 			mDrawFromUavBufferMat.setNull();
 
-			//if (mTestComputeJob) {
-			//	mTestComputeJob->clearUavBuffers();
-			//	mTestComputeJob->clearTexBuffers();
-			//}
-
-			//if (mLeapMotionStagingTexture) 
-			//{
-			//	//mStagingTexture->upload
-			//}
-
-			if (mRenderTargetTexture)
-			{
-				auto listeners = mRenderTargetTexture->getListeners();
-
-				if (listeners.size()) {
-					//mRenderTargetTexture->removeListener(mTestComputeJob);
-
-					// It would seem that we do not need to remove HLMSUnlitDatablock listeners.
-					// These are probably being handled higher up the chain by the game entity destructors.
-					/*mTextures[FieldComputeSystemTexture::Velocity]->removeListener(static_cast<Ogre::HlmsUnlitDatablock*>(static_cast<Ogre::v1::Entity*>(mPlaneEntity->mMovableObject)->getSubEntity(0)->getDatablock()));*/
-				}
-			}
-
-			//if (mVelocityTexture) {
-
-			//	auto listeners = mVelocityTexture->getListeners();
-
-			//	if (listeners.size()) {
-			//		mVelocityTexture->removeListener(mTestComputeJob);
-			//		mVelocityTexture->removeListener(mAdvectionComputeJob);
-			//	}
-			//}
-
-			//if (mInkTexture) {
-
-			//	auto listeners = mInkTexture->getListeners();
-
-			//	if (listeners.size()) {
-			//		mVelocityTexture->removeListener(mTestComputeJob);
-			//		mInkTexture->removeListener(mAdvectionComputeJob);
-			//	}
-			//}
-
-
-			//if (mTextures[FieldComputeSystemTexture::LeapMotion])
-			//{
-			//	auto listeners = mTextures[FieldComputeSystemTexture::LeapMotion]->getListeners();
-
-			//	if (listeners.size()) {
-			//		// it would seem that this second texture, if "unused" in some capacity, 
-			//		// does not actually need to be removed here.
-
-			//		//mTextures[FieldComputeSystemTexture::LeapMotion]->removeListener(mComputeJob);
-			//	}
-			//}
-
 			delete mUavBuffers;
+
 			mUavBuffers = 0;
 
 			mDeinitialised = true;
@@ -296,7 +241,6 @@ namespace MyThirdOgre
 					"White",
 					mTransform[0]->vPos + Ogre::Vector3(0, depthCount, 0),
 					Ogre::Quaternion::IDENTITY,
-					//Ogre::Vector3(0.05f, 0.05f, 0.05f),
 					Ogre::Vector3::UNIT_SCALE,
 					true,
 					0.35f);
@@ -310,14 +254,14 @@ namespace MyThirdOgre
 
 		float halfOffsetX = offsetX * 0.5f;
 		float halfOffsetZ = offsetZ * 0.5f;
-		
+
 		Ogre::Vector3 leafHalfWidths = Ogre::Vector3(mLeafWidth / 2, 0, mLeafHeight / 2);
 
-		for (float z = 0; z < mLeafCountZ * mLeafWidth; z += mLeafWidth) 
+		for (float z = 0; z < mLeafCountZ * mLeafWidth; z += mLeafWidth)
 		{
 			leafIndexX = 0;
 
-			for (float x = 0; x < mLeafCountX * mLeafHeight; x += mLeafHeight) 
+			for (float x = 0; x < mLeafCountX * mLeafHeight; x += mLeafHeight)
 			{
 				Ogre::Vector3 leafCenter = mTransform[0]->vPos + Ogre::Vector3(
 					(x + leafHalfWidths.x + ((mFieldWidth / 2) - mFieldWidth)),
@@ -334,15 +278,18 @@ namespace MyThirdOgre
 
 				auto corner = box->mAaBb.getCorner(Ogre::AxisAlignedBox::FAR_LEFT_BOTTOM);
 
-				for (size_t j = 0; j < mLeafResolutionZ; ++j) {
-					for (size_t i = 0; i < mLeafResolutionX; ++i) {
+				for (size_t j = 0; j < mLeafResolutionZ; j++) {
+					for (size_t i = 0; i < mLeafResolutionX; i++) {
+
+						auto p = Ogre::Vector3(
+							corner.x + (offsetX * (float)i) + halfOffsetX,
+							0.0f,
+							corner.z + (offsetZ * (float)j) + halfOffsetZ
+						);
+
 						box->mBufferIndices.push_back(FieldComputeSystem_BufferIndexPosition(
 							offset + j + i,
-							Ogre::Vector3(
-								corner.x + (offsetX * (float)i) + halfOffsetX,
-								0.0f,
-								corner.z + (offsetZ * (float)j) + halfOffsetZ
-							)));
+							p));
 					}
 
 					offset += (mBufferResolutionWidth - 1);
@@ -360,38 +307,35 @@ namespace MyThirdOgre
 	void FieldComputeSystem::subdivideBoundingHierarchy(
 		float xRes,
 		float zRes,
-		FieldComputeSystem_BoundingHierarchyBox& box, 
+		FieldComputeSystem_BoundingHierarchyBox& box,
 		int& leafIndexX,
 		int& leafIndexZ,
 		float& depthCount)
 	{
-		/*if (depthCount > 20)
-			return;*/
-
 		Ogre::Quaternion qRot = Ogre::Quaternion::IDENTITY;
 
 		depthCount += 0.2f;
 
-		if (xRes > mLeafWidth && zRes > mLeafHeight) {
+		if (xRes > mLeafWidth&& zRes > mLeafHeight) {
 
 			Ogre::Vector3 hw = Ogre::Vector3(box.mHalfWidths.x, box.mHalfWidths.y, box.mHalfWidths.z) / 2; // these SHOULD be quarter-widths:
 																										// as we're dividing space in quads
 
 			auto a = FieldComputeSystem_BoundingHierarchyBox(
 				Ogre::Vector3(box.mCenter.x + -hw.x, hw.y, box.mCenter.z + hw.z),
-						hw);
+				hw);
 
 			auto b = FieldComputeSystem_BoundingHierarchyBox(
 				Ogre::Vector3(box.mCenter.x + hw.x, hw.y, box.mCenter.z + hw.z),
-						hw);
+				hw);
 
 			auto c = FieldComputeSystem_BoundingHierarchyBox(
 				Ogre::Vector3(box.mCenter.x + hw.x, hw.y, box.mCenter.z + -hw.z),
-						hw);
+				hw);
 
 			auto d = FieldComputeSystem_BoundingHierarchyBox(
 				Ogre::Vector3(box.mCenter.x + -hw.x, hw.y, box.mCenter.z + -hw.z),
-						hw);
+				hw);
 
 			if (mDebugFieldBoundingHierarchy) {
 
@@ -407,7 +351,6 @@ namespace MyThirdOgre
 						"White",
 						a.mCenter + Ogre::Vector3(0, depthCount, 0),
 						qRot,
-						//Ogre::Vector3(0.05f, 0.05f, 0.05f),
 						Ogre::Vector3::UNIT_SCALE,
 						true,
 						0.35f);
@@ -424,7 +367,6 @@ namespace MyThirdOgre
 						"White",
 						b.mCenter + Ogre::Vector3(0, depthCount, 0),
 						qRot,
-						//Ogre::Vector3(0.05f, 0.05f, 0.05f),
 						Ogre::Vector3::UNIT_SCALE,
 						true,
 						0.35f);
@@ -441,7 +383,6 @@ namespace MyThirdOgre
 						"White",
 						c.mCenter + Ogre::Vector3(0, depthCount, 0),
 						qRot,
-						//Ogre::Vector3(0.05f, 0.05f, 0.05f),
 						Ogre::Vector3::UNIT_SCALE,
 						true,
 						0.35f);
@@ -458,7 +399,6 @@ namespace MyThirdOgre
 						"White",
 						d.mCenter + Ogre::Vector3(0, depthCount, 0),
 						qRot,
-						//Ogre::Vector3(0.05f, 0.05f, 0.05f),
 						Ogre::Vector3::UNIT_SCALE,
 						true,
 						0.35f);
@@ -506,66 +446,27 @@ namespace MyThirdOgre
 			box.mIsLeaf = true;
 			box.mLeafIndexX = leafIndexX;
 			box.mLeafIndexZ = leafIndexZ;
-
-			/*leafIndexX++;
-
-			if (leafIndexX > mLeafCountX - 1) {
-				leafIndexZ++;
-				leafIndexX = 0;
-			}
-
-			mLeaves.insert({ CellCoord(box.mLeafIndexX, 0, box.mLeafIndexZ), &box });*/
 		}
 	}
 
-	//////
-	/*
-
-		
-
-	*/
-	void FieldComputeSystem::buildBoundingDivisionIntersections(const size_t i, FieldComputeSystem_BoundingHierarchyBox& box)
-	{
-		// determine the position in space of this point in my buffer.
-
-		// This is what's causing the fuckuppery, isn't it. 
-		// I'm dictating that the buffer resolution has a direct correlation to positions in 3D space: this is not true.
-		// This must be scaled by the actual plane dimensions.
-
-		Ogre::Vector3 pos = Ogre::Vector3(
-			(i % (int)mBufferResolutionHeight - (mBufferResolutionHeight / 2)),
-			0,
-			(i / (int)mBufferResolutionWidth - (mBufferResolutionWidth / 2)));
-
-		if (box.mAaBb.intersects(pos)) {
-			if (box.mChildren.size()) {
-				for (auto& iter : box.mChildren)
-					buildBoundingDivisionIntersections(i, iter);
-			}
-			else {
-				//box.mBufferIndices.push_back(i);
-			}
-		}
-	}
-
-	void FieldComputeSystem::_notifyGraphicsSystem(GraphicsSystem* gs) 
+	void FieldComputeSystem::_notifyGraphicsSystem(GraphicsSystem* gs)
 	{
 		mGraphicsSystem = gs;
 	}
-	
-	void FieldComputeSystem::_notifyStagingTextureRemoved(const FieldComputeSystem_StagingTextureMessage* msg) 
+
+	void FieldComputeSystem::_notifyStagingTextureRemoved(const FieldComputeSystem_StagingTextureMessage* msg)
 	{
-		if (msg->mStagingTexture == mVelocityStagingTexture) 
+		if (msg->mStagingTexture == mVelocityStagingTexture)
 		{
 			mVelocityStagingTexture = 0;
 		}
-		else if (msg->mStagingTexture == mInkStagingTexture) 
+		else if (msg->mStagingTexture == mInkStagingTexture)
 		{
 			mInkStagingTexture = 0;
 		}
-	} 
+	}
 
-	void FieldComputeSystem::addUavBuffer(Ogre::UavBufferPacked* buffer) 
+	void FieldComputeSystem::addUavBuffer(Ogre::UavBufferPacked* buffer)
 	{
 		mUavBuffers->push_back(buffer);
 	}
@@ -685,7 +586,7 @@ namespace MyThirdOgre
 		mSecondaryInkTexture = texture;
 	}
 
-	void FieldComputeSystem::setVelocityStagingTexture(Ogre::StagingTexture* sTex) 
+	void FieldComputeSystem::setVelocityStagingTexture(Ogre::StagingTexture* sTex)
 	{
 		mVelocityStagingTexture = sTex;
 	}
@@ -695,7 +596,7 @@ namespace MyThirdOgre
 		mInkStagingTexture = sTex;
 	}
 
-	void FieldComputeSystem::setAsyncTextureTicket2D(Ogre::AsyncTextureTicket* texTicket) 
+	void FieldComputeSystem::setAsyncTextureTicket2D(Ogre::AsyncTextureTicket* texTicket)
 	{
 		mTextureTicket2D = texTicket;
 	}
@@ -773,7 +674,7 @@ namespace MyThirdOgre
 				texResolution->setManualValue(resolution, sizeof(resolution) / sizeof(Ogre::uint32));
 
 				reciprocalDeltaX->setManualValue(1.0f);
-				
+
 				shaderParams.setDirty();
 
 				mAdvectionCopyComputeJob->setNumThreadGroups(
@@ -1021,7 +922,7 @@ namespace MyThirdOgre
 
 				mTestComputeJob->setNumThreadGroups(
 					(res[0] + mTestComputeJob->getThreadsPerGroupX() - 1u) / mTestComputeJob->getThreadsPerGroupX(),
-					(res[1] + mTestComputeJob->getThreadsPerGroupY() - 1u) / mTestComputeJob->getThreadsPerGroupY(), 
+					(res[1] + mTestComputeJob->getThreadsPerGroupY() - 1u) / mTestComputeJob->getThreadsPerGroupY(),
 					1u);
 
 				////Update the pass that draws the UAV Buffer into the RTT (we could
@@ -1130,6 +1031,8 @@ namespace MyThirdOgre
 						float zOffset = 0;
 						float xOffset = 0;
 
+						auto intersectors = std::vector<FieldComputeSystem_BufferIndexPosition>();
+
 						for (size_t i = 0; i < l.mBufferIndices.size(); i++) {
 
 							auto& index = l.mBufferIndices[i];
@@ -1138,7 +1041,9 @@ namespace MyThirdOgre
 							Ogre::Vector3 dist = vHandPos - pos;
 							Ogre::Real distLen = dist.length();
 
-							if (distLen < rHandSphereSquared) {
+							if (distLen <= rHandSphereSquared) {
+
+								intersectors.push_back(index);
 
 								auto& thisElement = mInkInputBuffer[index.mIndex];
 
@@ -1183,11 +1088,11 @@ namespace MyThirdOgre
 								//}
 
 								thisElement.velocity = mHand->getState().vVel;
-								 
-								//thisElement.velocity = Ogre::Vector3(0.0f, 0.0f, 100.0f);
+
+								//thisElement.velocity = Ogre::Vector3(0.0f, 0.0f, 50.0f);
 
 								//mInkInputBuffer[index.mIndex].velocity += mHand->getState().vVel;
-							
+
 
 
 
@@ -1218,6 +1123,8 @@ namespace MyThirdOgre
 								//buffer->upload(m_CpuInstanceBuffer, index.mIndex, 1);
 							}
 						}
+
+						int f = 0;
 					}
 				}
 			}
@@ -1236,9 +1143,9 @@ namespace MyThirdOgre
 				*instanceBuffer++ = iter.colour.y;
 				*instanceBuffer++ = iter.colour.z;
 				*instanceBuffer++ = iter.colour.w;// iter.colour.a;// (float)sin(mTimeAccumulator);
-				
+
 				*instanceBuffer++ = iter.velocity.x;
-				*instanceBuffer++ = iter.velocity.z;
+				*instanceBuffer++ = -iter.velocity.z;
 				*instanceBuffer++ = iter.velocity.y;
 			}
 
@@ -1252,7 +1159,7 @@ namespace MyThirdOgre
 	}
 
 	void FieldComputeSystem::traverseBoundingHierarchy(
-		const FieldComputeSystem_BoundingHierarchyBox& level, 
+		const FieldComputeSystem_BoundingHierarchyBox& level,
 		const std::vector<FieldComputeSystem_BoundingHierarchyBox>* leaves,
 		int& aabbIntersectionCount)
 	{
@@ -1273,9 +1180,9 @@ namespace MyThirdOgre
 		}
 	}
 
-	void FieldComputeSystem::writeDebugImages(float timeSinceLast) 
+	void FieldComputeSystem::writeDebugImages(float timeSinceLast)
 	{
-		if (mTestComputeJob) 
+		if (mTestComputeJob)
 		{
 			mGameEntityManager->mLogicSystem->queueSendMessage(
 				mGameEntityManager->mGraphicsSystem,
