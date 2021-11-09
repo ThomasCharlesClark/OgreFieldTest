@@ -33,6 +33,7 @@ namespace MyThirdOgre
 
             // ...? -> Graphics System <-- Compute! ^_^
             FIELD_COMPUTE_SYSTEM_WRITE_FILE_TESTING,
+            FIELD_COMPUTE_SYSTEM_WRITE_VELOCITIES,
             FIELD_COMPUTE_JOB_REQUESTED,
             FIELD_COMPUTE_JOB_DESTROYED,
 

@@ -16,9 +16,20 @@
 #include <Hand.h>
 #include "OgreAxisAlignedBox.h"
 #include <Cell.h>
+#include <Field.h>
 
 namespace MyThirdOgre
 {
+	struct FieldComputeSystem_VelocityMessage
+	{
+		std::pair<CellCoord, HandInfluence> velocity;
+
+		FieldComputeSystem_VelocityMessage(std::pair<CellCoord, HandInfluence> v)
+		{
+			velocity = v;
+		}
+	};
+
 	struct Particle {
 		Ogre::Real ink;
 		Ogre::Vector4 colour;
@@ -112,6 +123,8 @@ namespace MyThirdOgre
 	//	}
 	//};
 
+	class Field;
+
 	class MessageQueueSystem;
 
 	struct FieldComputeSystem : GameEntity
@@ -150,6 +163,7 @@ namespace MyThirdOgre
 			MovableObjectDefinition*	mDebugPlaneMoDef;
 			GameEntity*					mPlaneEntity;
 			GraphicsSystem*				mGraphicsSystem;
+			Field*						mParent;
 
 		protected:
 			GameEntityManager*					mGameEntityManager;
@@ -201,12 +215,15 @@ namespace MyThirdOgre
 			Ogre::uint32 resolution[2];
 
 		public:
-			FieldComputeSystem(Ogre::uint32 id, const MovableObjectDefinition* moDefinition,
-				Ogre::SceneMemoryMgrTypes type, GameEntityManager* geMgr);
+			FieldComputeSystem(Ogre::uint32 id, 
+				const MovableObjectDefinition* moDefinition,
+				Ogre::SceneMemoryMgrTypes type,
+				GameEntityManager* geMgr);
 			~FieldComputeSystem();
 
 			virtual void _notifyGraphicsSystem(GraphicsSystem* gs);
 			virtual void _notifyStagingTextureRemoved(const FieldComputeSystem_StagingTextureMessage* msg);
+			virtual void _notifyField(Field* f);
 
 			virtual void initialise(void);
 			virtual void deinitialise(void);
@@ -280,7 +297,11 @@ namespace MyThirdOgre
 			Ogre::TextureGpu* getSecondaryInkTexture(void) { return mSecondaryInkTexture; };
 			Ogre::UavBufferPackedVec* getUavBuffers(void) { return mUavBuffers; };
 			Ogre::UavBufferPacked* getUavBuffer(int idx) { return mUavBuffers->at(idx); };
-			Ogre::AsyncTextureTicket* getTextureTicket(void) { return mTextureTicket2D; };
+			Ogre::AsyncTextureTicket* getTextureTicket2D(void) { return mTextureTicket2D; };
+			Ogre::AsyncTextureTicket* getTextureTicket3D(void) { return mTextureTicket3D; };
+			Field* getParent(void) { return mParent; };
+
+			bool isDownloadingViaTextureTicket(void) { return mDownloadingTextureViaTicket; };
 
 			void _notifyHand(Hand* hand) { mHand = hand; };
 

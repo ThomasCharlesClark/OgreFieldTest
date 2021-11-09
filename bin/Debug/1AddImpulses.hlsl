@@ -6,7 +6,7 @@
 	***	threads_per_group_z	1
 	***	hlms_high_quality	0
 	***	typed_uav_load	1
-	***	num_thread_groups_y	128
+	***	num_thread_groups_y	23
 	***	glsles	1070293233
 	***	hlslvk	1841745752
 	***	syntax	-334286542
@@ -14,7 +14,7 @@
 	***	num_thread_groups_z	1
 	***	glslvk	-338983575
 	***	hlsl	-334286542
-	***	num_thread_groups_x	128
+	***	num_thread_groups_x	23
 	DONE DUMPING PROPERTIES
 	DONE DUMPING PIECES
 #endif
@@ -65,7 +65,7 @@ void main
 		float4 prevInk = inkTextureFinal.Load(idx4);
 
 		// being additive here might be wrong
-		velocityTexture[gl_GlobalInvocationID] += velocity;
+		velocityTexture[gl_GlobalInvocationID] += velocity;// +prevVelocity;
 		inkTexture[gl_GlobalInvocationID] += inputUavBuffer[rwIdx].colour;
 		tempInkTexture[gl_GlobalInvocationID] = inputUavBuffer[rwIdx].ink;
 

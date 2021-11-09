@@ -143,15 +143,34 @@ namespace MyThirdOgre
         case Mq::LEAPFRAME_MOTION:
             {
                 auto hand = dynamic_cast<LogicGameState*>(mCurrentGameState)->getHand();
+
                 if (hand) {
                     auto leapMotionFrame = reinterpret_cast<const Leap_MotionMessage*>(data);
                     hand->setPosition(leapMotionFrame->timeSinceLast, leapMotionFrame->position);
                     hand->setVelocity(leapMotionFrame->timeSinceLast, leapMotionFrame->velocity);
                     hand->setInk(leapMotionFrame->timeSinceLast, leapMotionFrame->ink);
                 }
+
             }
             break;
+        case Mq::FIELD_COMPUTE_SYSTEM_WRITE_VELOCITIES:
+            {
+                auto field = dynamic_cast<LogicGameState*>(mCurrentGameState)->getField();
 
+                if (field) {
+                    auto velocityMsg = reinterpret_cast<const FieldComputeSystem_VelocityMessage*>(data);
+
+                    auto c = field->getCell(velocityMsg->velocity.first);
+                    
+                    if (c) {
+                        c->setVelocity(velocityMsg->velocity.second.vVelocity);
+                    }
+                    else {
+                        int f = 0;
+                    }
+                }
+            }
+            break;
         default:
             break;
         }

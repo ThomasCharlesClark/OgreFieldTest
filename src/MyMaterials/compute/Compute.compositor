@@ -1,9 +1,10 @@
 compositor_node TestComputeNode
 {
 	in 0 renderTarget
+	in 1 velocityTexture
 	in_buffer 0 inputUavBuffer
 
-	texture velocityTexture			target_width target_height 1 PFG_RGBA32_FLOAT	uav keep_content 3d depth_pool 0 
+	//texture velocityTexture			target_width target_height 1 PFG_RGBA32_FLOAT	uav keep_content 3d depth_pool 0 
 	texture velocityFinal			target_width target_height 1 PFG_RGBA32_FLOAT	uav keep_content 3d depth_pool 0 
 	texture inkTexture				target_width target_height 1 PFG_RGBA32_FLOAT	uav keep_content 3d depth_pool 0  
 	texture inkTextureFinal			target_width target_height 1 PFG_RGBA32_FLOAT	uav keep_content 3d depth_pool 0 
@@ -19,11 +20,18 @@ compositor_node TestComputeNode
 	texture nullDummy target_width target_height PFG_NULL
 	
 	/*
-	
-	
+		So... what HAVE we got, and WHY.
 
-	*/
+		WHY have we got TWO textures for Velocity?!
+		WHY have we got TWO textures for Ink?!
 
+		BECAUSE we need to be able to write to them in compute shaders, but also to Sample them.
+
+
+		HOW can we see if Velocity is doing what we think it ought to?
+
+		MAP the velocity texture back to the CPU - arrows displaying direction and magnitude?
+		
 	target
 	{
 		pass compute 
@@ -32,14 +40,21 @@ compositor_node TestComputeNode
 			uav 0 velocityTexture write
 			input 0 velocityFinal read
 		}
-		
+
 		pass compute 
 		{
 			job AdvectionCopy
-			uav 0 inkTextureFinal write
-			input 0 inkTexture read
+			uav 0 inkTexture write
+			input 0 inkTextureFinal read
 		}
+	}
 
+	*/
+	
+
+	target
+	{
+		
 		pass compute
 		{
 			job	AddImpulses
@@ -528,6 +543,7 @@ compositor_node TestComputeNode
 workspace "Test Compute Workspace"
 {
 	connect_buffer_external 0 TestComputeNode 0
+	connect_external 1 TestComputeNode 1
 
 	connect_output TestComputeNode 0
 }

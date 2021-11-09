@@ -569,14 +569,14 @@ namespace MyThirdOgre
             break;
         case Mq::FIELD_COMPUTE_SYSTEM_WRITE_FILE_TESTING:
             {
-                /*for (auto& iter : mFieldComputeSystems) {
-                    iter->getTextureTicket()->download(iter->getTexture(FieldComputeSystemTexture::Velocity), 0, false);
-                    iter->setDownloadingTextureViaTicket(true);
-                }*/
-
                 for (auto& iter : mFieldComputeSystems) {
-                    iter->getRenderTargetTexture()->writeContentsToFile("velocity.png", 0, 1, true);
+                    iter->getTextureTicket3D()->download(iter->getPrimaryVelocityTexture(), 0, false);
+                    iter->setDownloadingTextureViaTicket(true);
                 }
+
+                //for (auto& iter : mFieldComputeSystems) {
+                //    iter->getRenderTargetTexture()->writeContentsToFile("velocity.png", 0, 1, true);
+                //}
 
                 //auto msg = reinterpret_cast<const FieldComputeSystem_TestMessage*>(data);
                 //msg->mUavTextureGpu->writeContentsToFile(

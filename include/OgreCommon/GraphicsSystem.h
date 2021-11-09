@@ -34,6 +34,7 @@
 namespace MyThirdOgre
 {
     class SdlInputHandler;
+    class FieldComputeSystem;
 
     class GraphicsSystem : public BaseSystem, public Ogre::UniformScalableTask
     {

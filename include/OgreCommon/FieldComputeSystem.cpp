@@ -16,6 +16,7 @@
 #include "Compositor\OgreCompositorWorkspace.h"
 #include "Vao\OgreUavBufferPacked.h"
 #include "Hand.h"
+#include <Field.h>
 #include <vector>
 
 namespace MyThirdOgre
@@ -23,6 +24,7 @@ namespace MyThirdOgre
 	FieldComputeSystem::FieldComputeSystem(Ogre::uint32 id, const MovableObjectDefinition* moDefinition,
 		Ogre::SceneMemoryMgrTypes type, GameEntityManager* geMgr) : GameEntity(id, moDefinition, type)
 	{
+		mParent = 0;
 		mTestComputeJob = 0;
 		mAdvectionCopyComputeJob = 0;
 		mBoundaryConditionsComputeJob = 0;
@@ -73,10 +75,10 @@ namespace MyThirdOgre
 		mDebugPlaneMoDef->resourceGroup = Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME;
 
 #if OGRE_DEBUG_MODE
-		mBufferResolutionWidth = 128.0f;
-		mBufferResolutionHeight = 128.0f;
-		mFieldWidth = 64.0f;
-		mFieldHeight = 64.0f;
+		mBufferResolutionWidth = 23.0f;
+		mBufferResolutionHeight = 23.0f;
+		mFieldWidth = 23.0f;
+		mFieldHeight = 23.0f;
 #else
 		mBufferResolutionWidth = 512.0f;
 		mBufferResolutionHeight = 512.0f;
@@ -190,7 +192,7 @@ namespace MyThirdOgre
 				Ogre::Vector3(-(mFieldWidth / 2), 0, -(mFieldHeight / 2))
 				}),
 			Ogre::BLANKSTRING,
-			mTransform[0]->vPos + Ogre::Vector3(-0.5f, 0.0f, -0.5f),
+			mTransform[0]->vPos,// + Ogre::Vector3(-0.5f, 0.0f, -0.5f),
 			Ogre::Quaternion::IDENTITY,
 			Ogre::Vector3::UNIT_SCALE,
 			true,
@@ -447,6 +449,11 @@ namespace MyThirdOgre
 			box.mLeafIndexX = leafIndexX;
 			box.mLeafIndexZ = leafIndexZ;
 		}
+	}
+	
+	void FieldComputeSystem::_notifyField(Field* f) 
+	{
+		mParent = f;
 	}
 
 	void FieldComputeSystem::_notifyGraphicsSystem(GraphicsSystem* gs)
@@ -1155,6 +1162,45 @@ namespace MyThirdOgre
 			OGRE_ASSERT_LOW(calc <= tsb);
 
 			buffer->upload(mCpuInstanceBuffer, 0u, buffer->getNumElements());
+		}
+
+		if (mParent && !isDownloadingViaTextureTicket()) {
+			getTextureTicket3D()->download(getPrimaryVelocityTexture(), 0, false);
+			setDownloadingTextureViaTicket(true);
+		}
+		else 
+		{
+			if (getTextureTicket3D()->queryIsTransferDone())
+			{
+				setDownloadingTextureViaTicket(false);
+
+				for (int i = 0; i < getTextureTicket3D()->getNumSlices(); i++) {
+					auto texBox = getTextureTicket3D()->map(i);
+					auto pFormat = getPrimaryVelocityTexture()->getPixelFormat();
+
+					for (int x = 0; x < mBufferResolutionWidth; x++) {
+						for (int z = 0; z < mBufferResolutionHeight; z++) {
+
+							auto colourValue = texBox.getColourAt(x, z, 0, pFormat);
+
+							FieldComputeSystem_VelocityMessage velocityMessage = FieldComputeSystem_VelocityMessage({ 
+								CellCoord(x - (mBufferResolutionWidth / 2), 
+										  0, 
+										  z - (mBufferResolutionHeight / 2)), 
+								HandInfluence(Ogre::Vector3(colourValue.r, colourValue.g, colourValue.b), 0.0f) });
+
+							mGameEntityManager->mGraphicsSystem->queueSendMessage(
+								mGameEntityManager->mLogicSystem,
+								Mq::FIELD_COMPUTE_SYSTEM_WRITE_VELOCITIES,
+								velocityMessage);
+						}
+					}
+
+					int f = 0;
+					// Yay! I can read a texture which was written BY THE GPU!!!
+				}
+				getTextureTicket3D()->unmap();
+			}
 		}
 	}
 

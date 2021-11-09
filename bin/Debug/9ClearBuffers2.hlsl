@@ -6,7 +6,7 @@
 	***	threads_per_group_z	1
 	***	hlms_high_quality	0
 	***	typed_uav_load	1
-	***	num_thread_groups_y	128
+	***	num_thread_groups_y	23
 	***	glsles	1070293233
 	***	hlslvk	1841745752
 	***	syntax	-334286542
@@ -14,7 +14,7 @@
 	***	num_thread_groups_z	1
 	***	glslvk	-338983575
 	***	hlsl	-334286542
-	***	num_thread_groups_x	128
+	***	num_thread_groups_x	23
 	DONE DUMPING PROPERTIES
 	DONE DUMPING PIECES
 #endif
@@ -53,16 +53,16 @@ void main
 		//inkTexture[gl_GlobalInvocationID] *= 0.98; // float4(0, 0, 0, 1);
 
 		inkTexture[gl_GlobalInvocationID] *= 0.98;
-		//inkTextureFinal[gl_GlobalInvocationID] *= 0.98;
+		inkTextureFinal[gl_GlobalInvocationID] *= 0.98;
 
 		//inkTexture[gl_GlobalInvocationID] = float4(0, 0, 0, 1);
-		inkTextureFinal[gl_GlobalInvocationID] = float4(0, 0, 0, 1);
+		//inkTextureFinal[gl_GlobalInvocationID] = float4(0, 0, 0, 1);
 
 		/*velocityFinal[gl_GlobalInvocationID] *= 0.9;
 		velocityTexture[gl_GlobalInvocationID] *= 0.9;*/
 
-		velocityFinal[gl_GlobalInvocationID] *= 0.75;
-		velocityTexture[gl_GlobalInvocationID] *= 0.75;
+		velocityFinal[gl_GlobalInvocationID] *= 0.975;
+		velocityTexture[gl_GlobalInvocationID] *= 0.975;
 
 		//velocityFinal[gl_GlobalInvocationID] = float4(0, 0, 0, 1);
 		//velocityTexture[gl_GlobalInvocationID] = float4(0, 0, 0, 1);

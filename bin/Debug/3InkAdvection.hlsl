@@ -6,7 +6,7 @@
 	***	threads_per_group_z	1
 	***	hlms_high_quality	0
 	***	typed_uav_load	1
-	***	num_thread_groups_y	128
+	***	num_thread_groups_y	23
 	***	glsles	1070293233
 	***	hlslvk	1841745752
 	***	syntax	-334286542
@@ -14,7 +14,7 @@
 	***	num_thread_groups_z	1
 	***	glslvk	-338983575
 	***	hlsl	-334286542
-	***	num_thread_groups_x	128
+	***	num_thread_groups_x	23
 	DONE DUMPING PROPERTIES
 	DONE DUMPING PIECES
 #endif
@@ -60,8 +60,8 @@ void main
 
 		float width = texResolution.x;
 
-		float4 velocity = velocityTexture.SampleLevel(TextureSampler, idx3 / width, 0);
-		//float4 velocity = velocityTexture.Load(int4(idx3, 0));
+		//float4 velocity = velocityTexture.SampleLevel(TextureSampler, idx3 / width, 0);
+		float4 velocity = velocityTexture.Load(int4(idx3, 0));
 
 		//float3 idxBackInTime = (idx3 - 1 / (timeSinceLast * reciprocalDeltaX * velocity.xyz));
 
@@ -77,7 +77,7 @@ void main
 
 		//inkTexture[idxBackInTime] = float4(0, 0, 0, 1.0);
 
-		inkTextureFinal[idx3] += i; // float4(i.xyz, 1.0);
+		inkTextureFinal[idx3] = i; // float4(i.xyz, 1.0);
 
 		//inkTextureFinal[idxBackInTime] = float4(0, 0, 0, 1.0);
 	}

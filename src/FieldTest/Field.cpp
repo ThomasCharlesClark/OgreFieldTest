@@ -26,8 +26,10 @@ namespace MyThirdOgre
 		mHalfScale(0.5 * scale),
 		mDeltaX(1.0f),
 		mHalfDeltaX(0.5f),
-		mColumnCount(columnCount),
-		mRowCount(rowCount),
+		/*mColumnCount(columnCount),
+		mRowCount(rowCount),*/
+		mColumnCount(23),
+		mRowCount(23),
 		mGridLineMoDef(0),
 		mGridEntity(0),
 		mLayerCount(1),
@@ -46,7 +48,7 @@ namespace MyThirdOgre
 		mKinematicViscosity(mViscosity / mFluidDensity),
 		mVelocityDissipationConstant(1.0f),
 		mInkDissipationConstant(0.991f),
-		mIsRunning(true),
+		mIsRunning(false),
 		mPressureSpreadHalfWidth(4),
 		mVelocitySpreadHalfWidth(2),
 #if OGRE_DEBUG_MODE
@@ -75,7 +77,7 @@ namespace MyThirdOgre
 		if (mGridVisible)
 			createGrid();
 
-		if (!mUseComputeSystem)
+		//if (!mUseComputeSystem)
 			createCells();
 
 		//mActiveCell = mCells[{0, 0, mRowCount / 2 - 1}];
@@ -198,11 +200,12 @@ namespace MyThirdOgre
 			Ogre::SceneMemoryMgrTypes::SCENE_STATIC,
 			mFieldComputeSystemMoDef,
 			"TestCompute",
-			Ogre::Vector3(0, 0, 0),
+			Ogre::Vector3(0, -1, 0),
 			Ogre::Quaternion::IDENTITY,
-			Ogre::Vector3::UNIT_SCALE // What does it mean to even scale an abstract concept... 
+			Ogre::Vector3::UNIT_SCALE, // What does it mean to even scale an abstract concept... 
 									  // but it ISN'T an abstract concept: this is a concrete THING which exists at a POSITION and DOES STUFF.
 									  // might be sensible to try to avoid the notion of scaling it just yet, though.
+			this
 		);
 	}
 
@@ -218,7 +221,12 @@ namespace MyThirdOgre
 
 	void Field::update(float timeSinceLast, Ogre::uint32 currentTransformIndex, Ogre::uint32 previousTransformIndex)
 	{
-		if (mIsRunning) {
+		if (mFieldComputeSystem && !mFieldComputeSystem->getParent()) {
+			mFieldComputeSystem->_notifyField(this);
+		}
+
+		if (mIsRunning) 
+		{
 
 			// Noooooooooooooooo don't do that here
 			// Let the Graphics thread do all the updating of the field compute system
@@ -271,6 +279,17 @@ namespace MyThirdOgre
 
 			for (const auto& cell : mCells) {
 				cell.second->updateTransforms(timeSinceLast, currentTransformIndex, previousTransformIndex);
+			}
+		}
+		else {
+			// we can now be "not running" as in "not running on the CPU", but still trying to transmit info from GPU to CPU cells.
+			for (const auto& cell : mCells) {
+				if (cell.second) {
+					cell.second->updateTransforms(timeSinceLast, currentTransformIndex, previousTransformIndex);
+				}
+				else {
+					int f = 0;
+				}
 			}
 		}
 	}

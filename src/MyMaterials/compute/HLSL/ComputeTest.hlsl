@@ -97,7 +97,7 @@ void main
 
 		float4 final = float4(0, 0, 0, 1.0);
 		
-		//final.xyz = v.xyz;
+		final.xyz = v.xyz;
 
 		//final.xyz = abs(v.xyz);
 
