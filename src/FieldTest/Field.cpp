@@ -28,8 +28,13 @@ namespace MyThirdOgre
 		mHalfDeltaX(0.5f),
 		/*mColumnCount(columnCount),
 		mRowCount(rowCount),*/
-		mColumnCount(23),
-		mRowCount(23),
+#if OGRE_DEBUG_MODE
+		mColumnCount(32),
+		mRowCount(32),
+#else
+		mColumnCount(128),
+		mRowCount(128),
+#endif
 		mGridLineMoDef(0),
 		mGridEntity(0),
 		mLayerCount(1),
@@ -59,7 +64,7 @@ namespace MyThirdOgre
 		mJacobiIterationsDiffusion(20),
 #else
 		mGridVisible(false),
-		mVelocityVisible(false),
+		mVelocityVisible(true),
 		mPressureGradientVisible(false),
 		mJacobiIterationsPressure(80),
 		mJacobiIterationsDiffusion(40),
@@ -200,7 +205,7 @@ namespace MyThirdOgre
 			Ogre::SceneMemoryMgrTypes::SCENE_STATIC,
 			mFieldComputeSystemMoDef,
 			"TestCompute",
-			Ogre::Vector3(0, -1, 0),
+			Ogre::Vector3(0, 0, 0),
 			Ogre::Quaternion::IDENTITY,
 			Ogre::Vector3::UNIT_SCALE, // What does it mean to even scale an abstract concept... 
 									  // but it ISN'T an abstract concept: this is a concrete THING which exists at a POSITION and DOES STUFF.

@@ -45,7 +45,7 @@ void main
 		float4 prevInk = inkTextureFinal.Load(idx4);
 
 		// being additive here might be wrong
-		velocityTexture[gl_GlobalInvocationID] += velocity;// +prevVelocity;
+		velocityTexture[gl_GlobalInvocationID] = velocity;// +prevVelocity;
 		inkTexture[gl_GlobalInvocationID] += inputUavBuffer[rwIdx].colour;
 		tempInkTexture[gl_GlobalInvocationID] = inputUavBuffer[rwIdx].ink;
 

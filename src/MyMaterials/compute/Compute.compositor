@@ -2,10 +2,11 @@ compositor_node TestComputeNode
 {
 	in 0 renderTarget
 	in 1 velocityTexture
+	in 2 velocityFinal
 	in_buffer 0 inputUavBuffer
 
 	//texture velocityTexture			target_width target_height 1 PFG_RGBA32_FLOAT	uav keep_content 3d depth_pool 0 
-	texture velocityFinal			target_width target_height 1 PFG_RGBA32_FLOAT	uav keep_content 3d depth_pool 0 
+	//texture velocityFinal			target_width target_height 1 PFG_RGBA32_FLOAT	uav keep_content 3d depth_pool 0 
 	texture inkTexture				target_width target_height 1 PFG_RGBA32_FLOAT	uav keep_content 3d depth_pool 0  
 	texture inkTextureFinal			target_width target_height 1 PFG_RGBA32_FLOAT	uav keep_content 3d depth_pool 0 
 	texture divergenceTexture		target_width target_height 1 PFG_RGBA32_FLOAT	uav keep_content 3d depth_pool 0 
@@ -448,7 +449,7 @@ compositor_node TestComputeNode
 			input 0 pressureTexture read
 		}
 
-		/*pass compute
+		pass compute
 		{
 			job VorticityComputation
 			input 0 velocityFinal read
@@ -460,7 +461,7 @@ compositor_node TestComputeNode
 			job VorticityConfinement
 			input 0 vortTex read
 			uav 0 velocityFinal write
-		}*/
+		}
 
 		/*pass compute
 		{
@@ -544,6 +545,7 @@ workspace "Test Compute Workspace"
 {
 	connect_buffer_external 0 TestComputeNode 0
 	connect_external 1 TestComputeNode 1
+	connect_external 2 TestComputeNode 2
 
 	connect_output TestComputeNode 0
 }

@@ -6,7 +6,7 @@
 	***	threads_per_group_z	1
 	***	hlms_high_quality	0
 	***	typed_uav_load	1
-	***	num_thread_groups_y	23
+	***	num_thread_groups_y	256
 	***	glsles	1070293233
 	***	hlslvk	1841745752
 	***	syntax	-334286542
@@ -14,7 +14,7 @@
 	***	num_thread_groups_z	1
 	***	glslvk	-338983575
 	***	hlsl	-334286542
-	***	num_thread_groups_x	23
+	***	num_thread_groups_x	256
 	DONE DUMPING PROPERTIES
 	DONE DUMPING PIECES
 #endif
@@ -117,7 +117,7 @@ void main
 
 		float4 final = float4(0, 0, 0, 1.0);
 		
-		//final.xyz = v.xyz;
+		final.xyz = v.xyz;
 
 		//final.xyz = abs(v.xyz);
 

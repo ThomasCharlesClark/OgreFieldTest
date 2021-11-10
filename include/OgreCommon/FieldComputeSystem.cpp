@@ -39,6 +39,8 @@ namespace MyThirdOgre
 		mVorticityConfinementComputeJob = 0;
 		mVorticityComputationComputeJob = 0;
 
+		textureTicketFrameCounter = 0;
+
 		mRenderTargetTexture = 0;
 		mVelocityTexture = 0;
 		mSecondaryVelocityTexture = 0;
@@ -75,15 +77,19 @@ namespace MyThirdOgre
 		mDebugPlaneMoDef->resourceGroup = Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME;
 
 #if OGRE_DEBUG_MODE
-		mBufferResolutionWidth = 23.0f;
+	/*	mBufferResolutionWidth = 23.0f;
 		mBufferResolutionHeight = 23.0f;
 		mFieldWidth = 23.0f;
-		mFieldHeight = 23.0f;
-#else
-		mBufferResolutionWidth = 512.0f;
-		mBufferResolutionHeight = 512.0f;
+		mFieldHeight = 23.0f;*/
+		mBufferResolutionWidth = 64.0f;
+		mBufferResolutionHeight = 64.0f;
 		mFieldWidth = 64.0f;
-		mFieldHeight = 64.0f;
+		mFieldHeight = 64.0f;	
+#else
+		mBufferResolutionWidth = 128.0f;
+		mBufferResolutionHeight = 128.0f;
+		mFieldWidth = 128.0f;
+		mFieldHeight = 128.0f;
 #endif
 
 		resolution[0] = mBufferResolutionWidth;
@@ -109,7 +115,7 @@ namespace MyThirdOgre
 				Ogre::Real(0.0f),
 				Ogre::Vector4(0.0f, 0.0f, 0.0f, 1.0f),
 				Ogre::Vector3::ZERO
-				});
+			});
 		}
 
 		mDrawFromUavBufferMat = Ogre::MaterialPtr();
@@ -1165,42 +1171,53 @@ namespace MyThirdOgre
 		}
 
 		if (mParent && !isDownloadingViaTextureTicket()) {
-			getTextureTicket3D()->download(getPrimaryVelocityTexture(), 0, false);
+			getTextureTicket3D()->download(getSecondaryVelocityTexture(), 0, true);
 			setDownloadingTextureViaTicket(true);
 		}
 		else 
 		{
-			if (getTextureTicket3D()->queryIsTransferDone())
-			{
-				setDownloadingTextureViaTicket(false);
+			//if (textureTicketFrameCounter > 5) 
+			//{
+				if (getTextureTicket3D()->queryIsTransferDone())
+				{
+					setDownloadingTextureViaTicket(false);
 
-				for (int i = 0; i < getTextureTicket3D()->getNumSlices(); i++) {
-					auto texBox = getTextureTicket3D()->map(i);
-					auto pFormat = getPrimaryVelocityTexture()->getPixelFormat();
+					auto numSlices = getTextureTicket3D()->getNumSlices();
 
-					for (int x = 0; x < mBufferResolutionWidth; x++) {
-						for (int z = 0; z < mBufferResolutionHeight; z++) {
+					for (int i = 0; i < numSlices; i++) {
+						auto texBox = getTextureTicket3D()->map(i);
+						auto pFormat = getSecondaryVelocityTexture()->getPixelFormat();
 
-							auto colourValue = texBox.getColourAt(x, z, 0, pFormat);
+						for (int x = 0; x < mBufferResolutionWidth; x++) {
+							for (int z = 0; z < mBufferResolutionHeight; z++) {
 
-							FieldComputeSystem_VelocityMessage velocityMessage = FieldComputeSystem_VelocityMessage({ 
-								CellCoord(x - (mBufferResolutionWidth / 2), 
-										  0, 
-										  z - (mBufferResolutionHeight / 2)), 
-								HandInfluence(Ogre::Vector3(colourValue.r, colourValue.g, colourValue.b), 0.0f) });
+								auto colourValue = texBox.getColourAt(x, z, 0, pFormat);
 
-							mGameEntityManager->mGraphicsSystem->queueSendMessage(
-								mGameEntityManager->mLogicSystem,
-								Mq::FIELD_COMPUTE_SYSTEM_WRITE_VELOCITIES,
-								velocityMessage);
+								FieldComputeSystem_VelocityMessage velocityMessage = FieldComputeSystem_VelocityMessage({
+									CellCoord(x - (mBufferResolutionWidth / 2),
+											  0,
+											  z - (mBufferResolutionHeight / 2)),
+									HandInfluence(Ogre::Vector3(colourValue.r, colourValue.g, colourValue.b), 0.0f) });
+
+								mGameEntityManager->mGraphicsSystem->queueSendMessage(
+									mGameEntityManager->mLogicSystem,
+									Mq::FIELD_COMPUTE_SYSTEM_WRITE_VELOCITIES,
+									velocityMessage);
+							}
 						}
-					}
 
-					int f = 0;
-					// Yay! I can read a texture which was written BY THE GPU!!!
+						int f = 0;
+						// Yay! I can read a texture which was written BY THE GPU!!!
+					}
+					getTextureTicket3D()->unmap();
+
+					textureTicketFrameCounter = 0;
 				}
-				getTextureTicket3D()->unmap();
-			}
+			/*}
+			else 
+			{
+				textureTicketFrameCounter++;
+			}*/
 		}
 	}
 

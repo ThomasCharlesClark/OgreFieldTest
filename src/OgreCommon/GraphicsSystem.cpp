@@ -1086,6 +1086,13 @@ namespace MyThirdOgre
                     }
                 }
 
+                if (minMaterials == 0) {
+                    //item->setDatablock("lambert3");
+                    /*item->getSubItem(0)->setDatablockOrMaterialName("lambert3",
+                        cge->gameEntity->mMoDefinition->
+                        resourceGroup);*/
+                }
+
                 if (cge->useAlpha) {
 
                     auto datablock = dynamic_cast<Ogre::HlmsPbsDatablock*>(item->getSubItem(0)->getDatablock());
@@ -1103,6 +1110,9 @@ namespace MyThirdOgre
                 }
 
                 item->setRenderQueueGroup(49u);
+
+                //if (mWireAabb)
+                //    mWireAabb->track(item);
 
                 cge->gameEntity->mMovableObject = item;
             }
@@ -1240,6 +1250,9 @@ namespace MyThirdOgre
                     mo->getSection(0)->setDatablock(personalDatablock);
                 }
 
+                //if (mWireAabb)
+                //    mWireAabb->track(mo);
+
                 cge->gameEntity->mMovableObject = mo;
             }
             break;
@@ -1270,7 +1283,6 @@ namespace MyThirdOgre
                 pft->getSubEntity(0)->setDatablock(personalDatablock);
 
                 cge->gameEntity->mMovableObject = pft;
-
 
                 /*Ogre::v1::Entity* pft = mSceneManager->createEntity(Ogre::SceneManager::PrefabType::PT_PLANE, cge->gameEntity->mType);
 
@@ -1327,8 +1339,6 @@ namespace MyThirdOgre
 
                 }
 
-                if (mWireAabb)
-                    mWireAabb->track(pft);
 
                 cge->gameEntity->mMovableObject = pft;*/
             }

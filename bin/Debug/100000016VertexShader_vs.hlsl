@@ -9,6 +9,7 @@
 	***	hlms_lights_spotparams	0
 	***	uv_detail_nm2	0
 	***	BRDF_Default	1
+	***	set0_texture_slot_end	2
 	***	uv_specular	0
 	***	hlms_lights_directional	0
 	***	samplerStateStart	2
@@ -17,6 +18,7 @@
 	***	metallic_workflow	0
 	***	hw_gamma_write	1
 	***	uv_detail_weight	0
+	***	hlms_alpha_to_coverage	0
 	***	cubemaps_as_diffuse_gi	1
 	***	uv_detail_nm3	0
 	***	hlms_pose_normals	0
@@ -27,6 +29,7 @@
 	***	num_textures	1
 	***	uv_detail3	0
 	***	normal_map	0
+	***	hlms_tangent	1
 	***	uv_detail1	0
 	***	fresnel_workflow	0
 	***	perceptual_roughness	1
@@ -36,7 +39,6 @@
 	***	hlms_skeleton	0
 	***	hlms_lights_point	1
 	***	diffuse_map_sampler	0
-	***	transparent_mode	1
 	***	s_lights_directional_non_caster	1
 	***	uv_detail0	0
 	***	uv_diffuse	0
@@ -44,15 +46,16 @@
 	***	uv_detail_nm0	0
 	***	diffuse_map_idx	0
 	***	hlms_lights_attenuation	0
-	***	use_texture_alpha	1
 	***	hlms_render_depth_only	0
 	***	uv_detail2	0
 	***	textureMaps0	2
-	***	hlms_qtangent	1
 	***	uv_roughness	0
 	***	receive_shadows	1
+	***	clear_coat	0
 	***	needs_view_dir	1
+	***	set1_texture_slot_end	3
 	***	use_planar_reflections	0
+	***	hlms_normal	1
 	***	ltc_texture_available	1
 	***	num_samplers	1
 	***	normal_weight	0

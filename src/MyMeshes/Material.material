@@ -1,0 +1,5 @@
+hlms Material pbs
+{
+	diffuse 0.036386 0.0548129 0.322 1
+	specular 0 0 0
+}

@@ -96,7 +96,7 @@ namespace MyThirdOgre
 			mLeafEntity = 0;
 			mLeafVisible = false;
 
-			mAaBb = Ogre::AxisAlignedBox(mCenter - mHalfWidths, mCenter + mHalfWidths);
+			mAaBb = Ogre::AxisAlignedBox(mCenter - mHalfWidths - Ogre::Vector3(0.0f, 1.0f, 0.0f), mCenter + mHalfWidths + Ogre::Vector3(0.0f, 1.0f, 0.0f));
 			mChildren = std::vector<FieldComputeSystem_BoundingHierarchyBox>({});
 			mBufferIndices = std::vector<FieldComputeSystem_BufferIndexPosition>({});
 		}
@@ -158,6 +158,8 @@ namespace MyThirdOgre
 			bool						mHaveSetSubtractPressureGradientComputeShaderParameters;
 			bool						mHaveSetVorticityComputationComputeShaderParameters;
 			bool						mHaveSetVorticityConfinementComputeShaderParameters;
+
+			int							textureTicketFrameCounter;
 
 			MovableObjectDefinition*	mPlaneMoDef;
 			MovableObjectDefinition*	mDebugPlaneMoDef;
