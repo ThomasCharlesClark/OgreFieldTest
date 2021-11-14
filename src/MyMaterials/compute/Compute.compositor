@@ -1,94 +1,65 @@
 compositor_node TestComputeNode
 {
 	in 0 renderTarget
-	in 1 velocityTexture
-	in 2 velocityFinal
+	in 1 velTexture
+	in 2 velTexFinal
 	in_buffer 0 inputUavBuffer
 
-	//texture velocityTexture			target_width target_height 1 PFG_RGBA32_FLOAT	uav keep_content 3d depth_pool 0 
+	//texture velTexture			target_width target_height 1 PFG_RGBA32_FLOAT	uav keep_content 3d depth_pool 0 
 	//texture velocityFinal			target_width target_height 1 PFG_RGBA32_FLOAT	uav keep_content 3d depth_pool 0 
 	texture inkTexture				target_width target_height 1 PFG_RGBA32_FLOAT	uav keep_content 3d depth_pool 0  
-	texture inkTextureFinal			target_width target_height 1 PFG_RGBA32_FLOAT	uav keep_content 3d depth_pool 0 
+	texture inkTextureSampler		target_width target_height 1 PFG_RGBA32_FLOAT	uav keep_content 3d depth_pool 0 
 	texture divergenceTexture		target_width target_height 1 PFG_RGBA32_FLOAT	uav keep_content 3d depth_pool 0 
 	texture pressureTexture			target_width target_height 1 PFG_RGBA32_FLOAT	uav keep_content 3d depth_pool 0 
-	texture vortTex					target_width target_height 1 PFG_R32_FLOAT		uav 3d depth_pool 0
-
-	texture tempInkTexture target_width target_height 1 PFG_R32_FLOAT uav 3d depth_pool 0
+	texture vortTex					target_width target_height 1 PFG_R32_FLOAT		uav keep_content 3d depth_pool 0
 
 	//buffer <buffer_name> <num_elements> <bytes_per_element> [target_width] [target_width_scaled] [target_height] [target_height_scaled]
 	buffer temporaryBuffer 1 4 target_width target_height
 	
 	texture nullDummy target_width target_height PFG_NULL
 	
-	/*
-		So... what HAVE we got, and WHY.
-
-		WHY have we got TWO textures for Velocity?!
-		WHY have we got TWO textures for Ink?!
-
-		BECAUSE we need to be able to write to them in compute shaders, but also to Sample them.
-
-
-		HOW can we see if Velocity is doing what we think it ought to?
-
-		MAP the velocity texture back to the CPU - arrows displaying direction and magnitude?
-		
-	target
+	/* This is now doing a perfect copy, exactly as intended */
+	target inkTextureSampler
 	{
-		pass compute 
+		pass render_quad 
 		{
-			job AdvectionCopy
-			uav 0 velocityTexture write
-			input 0 velocityFinal read
-		}
-
-		pass compute 
-		{
-			job AdvectionCopy
-			uav 0 inkTexture write
-			input 0 inkTextureFinal read
+			material CopyFromTexture
+			input 0 inkTexture
 		}
 	}
 
+	/*
+		pass compute
+		{
+			job AdvectionCopy
+			uav 0 velTexFinal write
+			input 0 velTexture read
+		}
 	*/
 	
-
 	target
 	{
-		
+
 		pass compute
 		{
 			job	AddImpulses
 			uav_buffer 0 inputUavBuffer read
-			uav 1 velocityTexture write
+			uav 1 velTexture write
 			uav 2 inkTexture write
-			uav 3 tempInkTexture write
-			
-			/* Must preserve state from previous frame */
-			input 0 velocityFinal read
-			input 1 inkTextureFinal read
-		}
-
-		pass compute
-		{
-			job VelocityAdvection
-			input 0 velocityTexture read
-			uav 0 velocityFinal write
 		}
 		
 		pass compute
 		{
-			job	InkAdvection
-			uav 0 inkTextureFinal write
-			input 0 velocityFinal read
-			input 1 inkTexture read
+			job VelocityAdvection
+			input 0 velTexture read
+			uav 0 velTexFinal write
 		}
-
+		
 		pass compute
 		{
 			job Divergence
 			uav 0 divergenceTexture write
-			input 0 velocityTexture read
+			input 0 velTexture read
 		}
 		
 		pass compute
@@ -273,6 +244,7 @@ compositor_node TestComputeNode
 			input 0 divergenceTexture read
 		}
 		
+		/*
 		pass compute
 		{
 			job JacobiPressure
@@ -432,27 +404,37 @@ compositor_node TestComputeNode
 			job JacobiPressure
 			uav 0 pressureTexture write
 			input 0 divergenceTexture read
-		}
-
-		pass compute
-		{
-			job BoundaryConditions
-			uav 0 velocityFinal read write
-			uav 1 pressureTexture read write
-			uav 2 inkTexture read write
-		}
+		}*/
 
 		pass compute
 		{
 			job SubtractPressureGradient
-			uav 0 velocityFinal write
+			uav 0 velTexFinal write
 			input 0 pressureTexture read
 		}
 
 		pass compute
 		{
+			job BoundaryConditions
+			uav 0 velTexFinal read write
+			uav 1 pressureTexture read write
+			uav 2 inkTexture read write
+			//uav 2 inkTextureFinal read write
+		}
+		
+		pass compute
+		{
+			job	InkAdvection
+			//uav 0 inkTextureFinal write
+			uav 0 inkTexture write
+			input 0 inkTextureSampler read
+			input 1 velTexFinal read
+		}
+
+		pass compute
+		{
 			job VorticityComputation
-			input 0 velocityFinal read
+			input 0 velTexFinal read
 			uav 0 vortTex write
 		}
 
@@ -460,26 +442,28 @@ compositor_node TestComputeNode
 		{
 			job VorticityConfinement
 			input 0 vortTex read
-			uav 0 velocityFinal write
+			uav 0 velTexFinal write
 		}
-
-		/*pass compute
+		
+		/*
+		pass compute
 		{
 			job ClearBuffers1
 			uav_buffer 0 inputUavBuffer write
 			uav 1 inkTexture write
-		}*/
+		}
+		*/
 		
 		pass compute
 		{
 			job	TestJob
 			uav_buffer 0 temporaryBuffer write
-			uav 1 velocityFinal read
-			uav 2 velocityTexture read
-			uav 3 tempInkTexture read
-			uav 4 vortTex read
-			uav 5 pressureTexture read
-			input 0 inkTextureFinal read
+			uav 1 velTexFinal read
+			uav 2 velTexture read
+			uav 3 vortTex read
+			uav 4 pressureTexture read
+			//input 0 inkTextureFinal read
+			input 0 inkTexture read
 		}
 		
 		pass compute
@@ -487,9 +471,9 @@ compositor_node TestComputeNode
 			job ClearBuffers2
 			uav_buffer 0 inputUavBuffer write
 			uav 1 inkTexture write
-			uav 2 inkTextureFinal write
-			uav 3 velocityFinal write
-			uav 4 velocityTexture write
+			//uav 2 inkTextureFinal write
+			uav 2 velTexFinal write
+			uav 3 velTexture write
 		}
 	}
 
@@ -567,26 +551,6 @@ workspace "Test Compute Workspace"
 		{
 			starting_slot 1
 			uav 0 inkTextureFinal read
-		}
-
-		pass render_quad
-		{
-			material CopyFromTexture
-			uses_uav 0 read
-		}
-
-		pass bind_uav 
-		{
-
-		}
-	}
-
-	target velocityTexture
-	{
-		pass bind_uav
-		{
-			starting_slot 1
-			uav 0 velocityFinal read
 		}
 
 		pass render_quad

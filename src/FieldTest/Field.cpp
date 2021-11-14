@@ -29,11 +29,11 @@ namespace MyThirdOgre
 		/*mColumnCount(columnCount),
 		mRowCount(rowCount),*/
 #if OGRE_DEBUG_MODE
-		mColumnCount(32),
+		mColumnCount(32), 
 		mRowCount(32),
 #else
-		mColumnCount(128),
-		mRowCount(128),
+		mColumnCount(64),
+		mRowCount(64),
 #endif
 		mGridLineMoDef(0),
 		mGridEntity(0),
@@ -51,7 +51,7 @@ namespace MyThirdOgre
 		mViscosity(0.0f),					// total guess
 		mFluidDensity(0.0f),				// water density = 997kg/m^3
 		mKinematicViscosity(mViscosity / mFluidDensity),
-		mVelocityDissipationConstant(1.0f),
+		mVelocityDissipationConstant(0.997f),
 		mInkDissipationConstant(0.991f),
 		mIsRunning(false),
 		mPressureSpreadHalfWidth(4),
@@ -66,7 +66,7 @@ namespace MyThirdOgre
 		mGridVisible(false),
 		mVelocityVisible(true),
 		mPressureGradientVisible(false),
-		mJacobiIterationsPressure(80),
+		mJacobiIterationsPressure(40),
 		mJacobiIterationsDiffusion(40),
 #endif
 		mImpulses(std::vector<std::pair<CellCoord, HandInfluence>> { }),
@@ -79,10 +79,10 @@ namespace MyThirdOgre
 		mReciprocalDeltaX = (float)1 / mDeltaX;
 		mHalfReciprocalDeltaX = 0.5f / mReciprocalDeltaX;
 
-		if (mGridVisible)
-			createGrid();
+		//if (mGridVisible)
+			//createGrid();
 
-		//if (!mUseComputeSystem)
+		if (!mUseComputeSystem)
 			createCells();
 
 		//mActiveCell = mCells[{0, 0, mRowCount / 2 - 1}];
@@ -182,6 +182,7 @@ namespace MyThirdOgre
 						mMaxCellVelocitySquared, 
 						mVelocityVisible,
 						mPressureGradientVisible,
+						mGridVisible,
 						mMaxInk,
 						mGameEntityManager);
 					mCells.insert({
@@ -246,7 +247,7 @@ namespace MyThirdOgre
 				state.insert({ c.second->getCellCoords() , c.second->getState() });
 
 				if (mHand) {
-					if (!c.second->getIsBoundary()) {
+					if (!c.second->getIsBoundary() && c.second->getBoundingSphere()) {
 						if (c.second->getBoundingSphere()->intersects(*mHand->getBoundingSphere())) {
 							mImpulses.push_back({ c.first, HandInfluence(mHand->getState().vVel, mHand->getState().rInk) });
 						}

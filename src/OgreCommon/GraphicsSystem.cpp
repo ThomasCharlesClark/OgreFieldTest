@@ -116,7 +116,7 @@ namespace MyThirdOgre
         mThreadGameEntityToUpdate( 0 ),
         mThreadWeight( 0 ),
         mQuit( false ),
-        mAlwaysAskForConfig( false ),
+        mAlwaysAskForConfig( true ),
         mUseHlmsDiskCache( true ),
         mUseMicrocodeCache( true ),
         mBackgroundColour( backgroundColour ),
@@ -1239,16 +1239,12 @@ namespace MyThirdOgre
 
                     personalDatablock->setSamplerblock(Ogre::PBSM_DIFFUSE, diffuseBlock);
 
-                    personalDatablock->setTransparency(1.0f, Ogre::HlmsPbsDatablock::TransparencyModes::Transparent, true, true);
-
-                    //Ogre::HlmsMacroblock macroBlock = Ogre::HlmsMacroblock();
-                    //macroBlock.mDepthWrite = true;
-                    //macroBlock.mDepthCheck = true;
-
-                    //personalDatablock->setMacroblock(macroBlock);
+                    personalDatablock->setTransparency(cge->gameEntity->mTransparency, Ogre::HlmsPbsDatablock::TransparencyModes::Transparent, true, true);
 
                     mo->getSection(0)->setDatablock(personalDatablock);
                 }
+
+                mo->setRenderQueueGroup(50u);
 
                 //if (mWireAabb)
                 //    mWireAabb->track(mo);
@@ -1459,7 +1455,7 @@ namespace MyThirdOgre
                         "primaryVelocityTexture",
                         "primaryVelocityTexture",
                         Ogre::GpuPageOutStrategy::Discard,
-                        Ogre::TextureFlags::ManualTexture | Ogre::TextureFlags::Uav,
+                        Ogre::TextureFlags::RenderToTexture | Ogre::TextureFlags::Uav,
                         fieldComputeSystem->getTextureType3D(),
                         Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME,
                         0u,
@@ -1470,7 +1466,7 @@ namespace MyThirdOgre
                         "secondaryVelocityTexture",
                         "secondaryVelocityTexture",
                         Ogre::GpuPageOutStrategy::Discard,
-                        Ogre::TextureFlags::ManualTexture | Ogre::TextureFlags::Uav,
+                        Ogre::TextureFlags::RenderToTexture | Ogre::TextureFlags::Reinterpretable | Ogre::TextureFlags::Uav,
                         fieldComputeSystem->getTextureType3D(),
                         Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME,
                         0u,

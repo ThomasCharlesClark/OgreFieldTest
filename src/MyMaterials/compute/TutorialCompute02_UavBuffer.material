@@ -69,7 +69,7 @@ fragment_program CopyFromTexture_ps_HLSL hlsl
 {
 	source CopyFromTexture_ps.hlsl
 	entry_point main
-	target ps_5_0
+	target ps_5_0 ps_4_0 ps_4_0_level_9_1 ps_4_0_level_9_3
 }
 
 // Unified definitions
@@ -96,6 +96,12 @@ material CopyFromTexture
 
 			fragment_program_ref CopyFromTexture_ps
 			{
+			}
+
+			texture_unit
+			{
+				filtering none
+				tex_address_mode clamp
 			}
 		}
 	}

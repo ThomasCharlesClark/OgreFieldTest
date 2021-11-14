@@ -165,6 +165,7 @@ protected:
 		bool mBoundary;
 		bool mVelocityArrowVisible;
 		bool mPressureGradientArrowVisible;
+		bool mTileVisible;
 
 		CellState					mState;
 		CellState					mOriginalState;
@@ -215,6 +216,7 @@ protected:
 			 float maxVelocitySquared,
 			 bool velocityArrowVisible,
 		  	 bool pressureGradientArrowVisible,
+			 bool tileVisible,
 			 float maxInk,
 			 GameEntityManager* geMgr);
 

@@ -32,6 +32,7 @@ namespace MyThirdOgre
         float maxVelocitySquared,
         bool velocityArrowVisible,
         bool pressureGradientArrowVisible,
+        bool tileVisible,
         float maxInk,
         GameEntityManager* geMgr
     ) :
@@ -45,6 +46,7 @@ namespace MyThirdOgre
         mPressureGradientArrowMoDef(0),
         mVelocityArrowVisible(velocityArrowVisible),
         mPressureGradientArrowVisible(pressureGradientArrowVisible),
+        mTileVisible(tileVisible),
         mPlaneEntity(0),
         mPlaneMoDef(0),
         mSphereEntity(0),
@@ -84,12 +86,13 @@ namespace MyThirdOgre
 
         createVelocityArrow();
 
-        //if (!mBoundary)
-        //    createPressureGradientArrow();
+        if (!mBoundary)
+            createPressureGradientArrow();
 
-        //createPressureIndicator();
-
-        //createBoundingSphere();
+        if (mTileVisible) {
+            createPressureIndicator();
+            createBoundingSphere();
+        }
 
         //createBoundingSphereDisplay();
 
@@ -167,35 +170,35 @@ namespace MyThirdOgre
         //    { 1, 4 }
         //};
 
-        //if (mBoundary) {
-        //    //outer edges:
-        //    if (mCellCoords.mIndexX == 0) { // x == 0 edge
-        //        mState.qRot = Ogre::Quaternion(0.5253, 0.0, 0.5253, 0.0);
-        //    }
-        //    else if (mCellCoords.mIndexX == mRowCount - 1) { // opposite x edge
-        //        mState.qRot = Ogre::Quaternion(0.5253, 0.0, -0.5253, 0.0);
-        //    }
-        //    else if (mCellCoords.mIndexZ == 0) {
-        //        mState.qRot = Ogre::Quaternion(0.0, 0.0, 1.0, 0.0);
-        //    }
-        //    else if (mCellCoords.mIndexZ == mColumnCount - 1) { // opposite z edge
-        //        mState.qRot = Ogre::Quaternion(1.0, 0.0, 0.0, 0.0);
-        //    }
+        if (mBoundary) {
+            //outer edges:
+            if (mCellCoords.mIndexX == 0) { // x == 0 edge
+                mState.qRot = Ogre::Quaternion(0.5253, 0.0, 0.5253, 0.0);
+            }
+            else if (mCellCoords.mIndexX == mRowCount - 1) { // opposite x edge
+                mState.qRot = Ogre::Quaternion(0.5253, 0.0, -0.5253, 0.0);
+            }
+            else if (mCellCoords.mIndexZ == 0) {
+                mState.qRot = Ogre::Quaternion(0.0, 0.0, 1.0, 0.0);
+            }
+            else if (mCellCoords.mIndexZ == mColumnCount - 1) { // opposite z edge
+                mState.qRot = Ogre::Quaternion(1.0, 0.0, 0.0, 0.0);
+            }
 
-        //    //corners:  // x == 0, z == 0
-        //    if (mCellCoords.mIndexX == 0 && mCellCoords.mIndexZ == 0) {
-        //        mState.qRot = Ogre::Quaternion(0.3827, 0.0, 0.9239, 0.0);
-        //    }           // x == max, z == 0
-        //    else if (mCellCoords.mIndexX == mRowCount - 1 && mCellCoords.mIndexZ == 0) {
-        //        mState.qRot = Ogre::Quaternion(-0.3827, 0.0, 0.9239, 0.0);
-        //    }           // x == 0, z == max
-        //    else if (mCellCoords.mIndexX == 0 && mCellCoords.mIndexZ == mColumnCount - 1) {
-        //        mState.qRot = Ogre::Quaternion(-0.9239, 0.0, -0.3827, 0.0);
-        //    }           // x == max, z == max
-        //    else if (mCellCoords.mIndexX == mRowCount - 1 && mCellCoords.mIndexZ == mColumnCount - 1) {
-        //        mState.qRot = Ogre::Quaternion(0.9239, 0.0, -0.3827, 0.0);
-        //    }
-        //}
+            //corners:  // x == 0, z == 0
+            if (mCellCoords.mIndexX == 0 && mCellCoords.mIndexZ == 0) {
+                mState.qRot = Ogre::Quaternion(0.3827, 0.0, 0.9239, 0.0);
+            }           // x == max, z == 0
+            else if (mCellCoords.mIndexX == mRowCount - 1 && mCellCoords.mIndexZ == 0) {
+                mState.qRot = Ogre::Quaternion(-0.3827, 0.0, 0.9239, 0.0);
+            }           // x == 0, z == max
+            else if (mCellCoords.mIndexX == 0 && mCellCoords.mIndexZ == mColumnCount - 1) {
+                mState.qRot = Ogre::Quaternion(-0.9239, 0.0, -0.3827, 0.0);
+            }           // x == max, z == max
+            else if (mCellCoords.mIndexX == mRowCount - 1 && mCellCoords.mIndexZ == mColumnCount - 1) {
+                mState.qRot = Ogre::Quaternion(0.9239, 0.0, -0.3827, 0.0);
+            }
+        }
 
         //Ogre::String name = "vA_";
 
@@ -429,7 +432,7 @@ namespace MyThirdOgre
 
             auto qNew = mVelocityArrowEntity->mTransform[prevIdx]->qRot;
 
-            auto q = GetRotation(Ogre::Vector3(0, 0, 1), mState.vVel.normalisedCopy(), Ogre::Vector3::UNIT_Y);
+            auto q = GetRotation(Ogre::Vector3(0, 1, 0), mState.vVel.normalisedCopy(), Ogre::Vector3::UNIT_Y);
 
             //auto vVelLen = mState.vVel.squaredLength();
 

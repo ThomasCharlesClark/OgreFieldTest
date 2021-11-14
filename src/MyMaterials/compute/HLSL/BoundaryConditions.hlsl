@@ -20,7 +20,7 @@ void main
     uint3 gl_GlobalInvocationID : SV_DispatchThreadId
 )
 {
-	//if( gl_GlobalInvocationID.x < texResolution.x && gl_GlobalInvocationID.y < texResolution.y)
+	if( gl_GlobalInvocationID.x < texResolution.x && gl_GlobalInvocationID.y < texResolution.y)
 	{
 		if (gl_GlobalInvocationID.x == 0) {
 

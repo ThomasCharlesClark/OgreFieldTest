@@ -6,7 +6,7 @@
 	***	threads_per_group_z	1
 	***	hlms_high_quality	0
 	***	typed_uav_load	1
-	***	num_thread_groups_y	128
+	***	num_thread_groups_y	33
 	***	glsles	1070293233
 	***	hlslvk	1841745752
 	***	syntax	-334286542
@@ -14,7 +14,7 @@
 	***	num_thread_groups_z	1
 	***	glslvk	-338983575
 	***	hlsl	-334286542
-	***	num_thread_groups_x	128
+	***	num_thread_groups_x	33
 	DONE DUMPING PROPERTIES
 	DONE DUMPING PIECES
 #endif
@@ -35,9 +35,8 @@ SamplerState TextureSampler
 RWStructuredBuffer<uint> pixelBuffer		: register(u0);
 RWTexture3D<float4> velocityTextureFinal	: register(u1);
 RWTexture3D<float4> velocityTexture			: register(u2);
-RWTexture3D<float> inkTemp					: register(u3);
-RWTexture3D<float> vortTex					: register(u4);
-RWTexture3D<float4> pressureTexture			: register(u5);
+RWTexture3D<float> vortTex					: register(u3);
+RWTexture3D<float4> pressureTexture			: register(u4);
 Texture3D<float4> inkTextureFinal			: register(t0);
 
 uniform float maxInk;
@@ -81,45 +80,26 @@ void main
 	{
 		uint idx = gl_GlobalInvocationID.y * texResolution.x + gl_GlobalInvocationID.x;
 
-		//float4 i = inkRead.Load(int4(gl_GlobalInvocationID, 1));
-
 		float width = texResolution.x;
 
 		int4 idx4 = int4(gl_GlobalInvocationID, 0);
 
-		//float4 inkColour = inkTextureFinal.Load(idx4);
-
-		float4 inkColour = inkTextureFinal.SampleLevel(TextureSampler, gl_GlobalInvocationID / width, 0);
+		float4 inkColour = inkTextureFinal.Load(idx4);
 
 		float4 v = velocityTextureFinal.Load(idx4);
-
-		float inkValue = inkTemp.Load(idx4);
 
 		float vortValue = vortTex.Load(idx4);
 
 		float4 p = pressureTexture.Load(idx4);
 
-		//inkColour.w = normaliseInkValue(inkValue);
 
-		//pixelBuffer[idx] = packUnorm4x8(float4(v.xyz, 1.0));
-
-		//pixelBuffer[idx] = packUnorm4x8(inkColour);
-
-		//pixelBuffer[idx] = packUnorm4x8(float4(v.xyz + normaliseInkValue(inkColour.z), 1.0f));
-
-		//inkTemp[gl_GlobalInvocationID] = 0;
-
-		//pixelBuffer[idx] = packUnorm4x8(float4(v.xyz + inkColour.xyz, normaliseInkValue(inkValue)));
+		float4 final = float4(0, 0, 0, 1);
 		
-		//pixelBuffer[idx] = packUnorm4x8(inkColour);
+		final.xyz += normalize(v.xyz);
 
-		//pixelBuffer[idx] = packUnorm4x8(float4(inkColour.xyz, 1.0f));
-
-		float4 final = float4(0, 0, 0, 1.0);
-		
 		//final.xyz = v.xyz;
 
-		final.xyz = abs(v.xyz);
+		//final.xyz = abs(v.xyz);
 
 		//final.xyz += p.xyz;
 		
@@ -134,7 +114,7 @@ void main
 		//	//final = float4(0, 0, 0, 1);
 		//}
 		
-		//final.xyz += inkColour.xyz;
+		//final.xyz += normalize(inkColour.xyz);
 
 		pixelBuffer[idx] = packUnorm4x8(final);
 	}

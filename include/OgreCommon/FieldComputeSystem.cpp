@@ -81,15 +81,19 @@ namespace MyThirdOgre
 		mBufferResolutionHeight = 23.0f;
 		mFieldWidth = 23.0f;
 		mFieldHeight = 23.0f;*/
-		mBufferResolutionWidth = 64.0f;
-		mBufferResolutionHeight = 64.0f;
+		mBufferResolutionWidth = 512.0f;
+		mBufferResolutionHeight = 512.0f;
 		mFieldWidth = 64.0f;
 		mFieldHeight = 64.0f;	
 #else
-		mBufferResolutionWidth = 128.0f;
+		/*mBufferResolutionWidth = 128.0f;
 		mBufferResolutionHeight = 128.0f;
 		mFieldWidth = 128.0f;
-		mFieldHeight = 128.0f;
+		mFieldHeight = 128.0f;*/
+		mBufferResolutionWidth = 512.0f;
+		mBufferResolutionHeight = 512.0f;
+		mFieldWidth = 64.0f;
+		mFieldHeight = 64.0f;
 #endif
 
 		resolution[0] = mBufferResolutionWidth;
@@ -202,7 +206,7 @@ namespace MyThirdOgre
 			Ogre::Quaternion::IDENTITY,
 			Ogre::Vector3::UNIT_SCALE,
 			true,
-			0.9f,
+			0.75f,
 			true,
 			Ogre::Vector3::ZERO,
 			mRenderTargetTexture);
@@ -704,8 +708,13 @@ namespace MyThirdOgre
 			if (!mHaveSetBoundaryConditionsComputeShaderParameters) {
 
 				Ogre::ShaderParams& shaderParams = mBoundaryConditionsComputeJob->getShaderParams("default");
-
+				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
+				Ogre::ShaderParams::Param* reciprocalDeltaX = shaderParams.findParameter("reciprocalDeltaX");
 				Ogre::ShaderParams::Param* texResolution = shaderParams.findParameter("texResolution");
+
+				tsl->setManualValue(timeSinceLast);
+
+				reciprocalDeltaX->setManualValue(1.0f);
 
 				texResolution->setManualValue(resolution, sizeof(resolution) / sizeof(Ogre::uint32));
 
@@ -808,6 +817,11 @@ namespace MyThirdOgre
 
 				mHaveSetInkAdvectionComputeShaderParameters = true;
 			}
+			else {
+				Ogre::ShaderParams& shaderParams = mInkAdvectionComputeJob->getShaderParams("default");
+				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
+				tsl->setManualValue(timeSinceLast);
+			}
 		}
 
 		if (mJacobiDiffusionComputeJob) {
@@ -901,7 +915,7 @@ namespace MyThirdOgre
 				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
 				texResolution->setManualValue(resolution, sizeof(resolution) / sizeof(Ogre::uint));
 				halfDeltaX->setManualValue(0.5f);
-				vortConfScale->setManualValue(0.58f);
+				vortConfScale->setManualValue(0.036f);
 				tsl->setManualValue(timeSinceLast);
 				shaderParams.setDirty();
 
@@ -1023,9 +1037,7 @@ namespace MyThirdOgre
 				}
 
 				if (leaves.size()) {
-
-					int f = 0;
-
+					
 					if (mGraphicsSystem) {
 						mGraphicsSystem->setAdditionalDebugText(
 							Ogre::String("\nIntersecting: ") + Ogre::StringConverter::toString(aabbIntersectionCount) + Ogre::String(" Leaf AaBbs") +
@@ -1036,6 +1048,8 @@ namespace MyThirdOgre
 
 					Ogre::Vector3 vHandPos = mHand->getBoundingSphere()->getCenter();
 
+					auto intersectors = std::vector<FieldComputeSystem_BufferIndexPosition>();
+
 					for (auto& l : leaves) {
 
 						float x = l.mAaBb.getMinimum().x;
@@ -1043,8 +1057,6 @@ namespace MyThirdOgre
 
 						float zOffset = 0;
 						float xOffset = 0;
-
-						auto intersectors = std::vector<FieldComputeSystem_BufferIndexPosition>();
 
 						for (size_t i = 0; i < l.mBufferIndices.size(); i++) {
 
@@ -1060,7 +1072,7 @@ namespace MyThirdOgre
 
 								auto& thisElement = mInkInputBuffer[index.mIndex];
 
-								thisElement.ink = 1.0f;
+								thisElement.ink = 10.0f;
 
 								thisElement.colour.x = 0.85f;
 								thisElement.colour.y = 0.2941176562f;
@@ -1136,9 +1148,9 @@ namespace MyThirdOgre
 								//buffer->upload(m_CpuInstanceBuffer, index.mIndex, 1);
 							}
 						}
-
-						int f = 0;
 					}
+
+					int f = 0;
 				}
 			}
 			//
@@ -1170,55 +1182,60 @@ namespace MyThirdOgre
 			buffer->upload(mCpuInstanceBuffer, 0u, buffer->getNumElements());
 		}
 
-		if (mParent && !isDownloadingViaTextureTicket()) {
-			getTextureTicket3D()->download(getSecondaryVelocityTexture(), 0, true);
-			setDownloadingTextureViaTicket(true);
-		}
-		else 
-		{
-			//if (textureTicketFrameCounter > 5) 
-			//{
-				if (getTextureTicket3D()->queryIsTransferDone())
-				{
-					setDownloadingTextureViaTicket(false);
+		#pragma region For Awesome Visual Debugging using Arrow.mesh instances
 
-					auto numSlices = getTextureTicket3D()->getNumSlices();
+#if OGRE_DEBUG_MODE
 
-					for (int i = 0; i < numSlices; i++) {
-						auto texBox = getTextureTicket3D()->map(i);
-						auto pFormat = getSecondaryVelocityTexture()->getPixelFormat();
+#else
 
-						for (int x = 0; x < mBufferResolutionWidth; x++) {
-							for (int z = 0; z < mBufferResolutionHeight; z++) {
+		//if (mParent && !isDownloadingViaTextureTicket()) {
+		//	getTextureTicket3D()->download(getSecondaryVelocityTexture(), 0, true);
+		//	setDownloadingTextureViaTicket(true);
+		//}
+		//else
+		//{
+		//	if (getTextureTicket3D()->queryIsTransferDone())
+		//	{
+		//		setDownloadingTextureViaTicket(false);
 
-								auto colourValue = texBox.getColourAt(x, z, 0, pFormat);
+		//		auto numSlices = getTextureTicket3D()->getNumSlices();
 
-								FieldComputeSystem_VelocityMessage velocityMessage = FieldComputeSystem_VelocityMessage({
-									CellCoord(x - (mBufferResolutionWidth / 2),
-											  0,
-											  z - (mBufferResolutionHeight / 2)),
-									HandInfluence(Ogre::Vector3(colourValue.r, colourValue.g, colourValue.b), 0.0f) });
+		//		for (int i = 0; i < numSlices; i++) {
+		//			auto texBox = getTextureTicket3D()->map(i);
+		//			auto pFormat = getSecondaryVelocityTexture()->getPixelFormat();
 
-								mGameEntityManager->mGraphicsSystem->queueSendMessage(
-									mGameEntityManager->mLogicSystem,
-									Mq::FIELD_COMPUTE_SYSTEM_WRITE_VELOCITIES,
-									velocityMessage);
-							}
-						}
+		//			for (int x = 0; x < mBufferResolutionWidth; x++) {
+		//				for (int z = 0; z < mBufferResolutionHeight; z++) {
 
-						int f = 0;
-						// Yay! I can read a texture which was written BY THE GPU!!!
-					}
-					getTextureTicket3D()->unmap();
+		//					auto colourValue = texBox.getColourAt(x, z, 0, pFormat);
 
-					textureTicketFrameCounter = 0;
-				}
-			/*}
-			else 
-			{
-				textureTicketFrameCounter++;
-			}*/
-		}
+		//					FieldComputeSystem_VelocityMessage velocityMessage = FieldComputeSystem_VelocityMessage({
+		//						CellCoord(x - (mBufferResolutionWidth / 2),
+		//									0,
+		//									z - (mBufferResolutionHeight / 2)),
+		//						HandInfluence(Ogre::Vector3(colourValue.r, colourValue.g, colourValue.b), 0.0f) });
+
+		//					mGameEntityManager->mGraphicsSystem->queueSendMessage(
+		//						mGameEntityManager->mLogicSystem,
+		//						Mq::FIELD_COMPUTE_SYSTEM_WRITE_VELOCITIES,
+		//						velocityMessage);
+		//				}
+		//			}
+
+		//			int f = 0;
+		//			// Yay! I can read a texture which was written BY THE GPU!!!
+		//		}
+		//		getTextureTicket3D()->unmap();
+
+		//		textureTicketFrameCounter = 0;
+		//	}
+		//}
+
+#endif
+		
+
+#pragma endregion
+
 	}
 
 	void FieldComputeSystem::traverseBoundingHierarchy(

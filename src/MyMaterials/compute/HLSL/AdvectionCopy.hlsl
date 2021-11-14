@@ -19,7 +19,7 @@ void main
     uint3 gl_GlobalInvocationID : SV_DispatchThreadId
 )
 {
-	if( gl_GlobalInvocationID.x < texResolution.x && gl_GlobalInvocationID.y < texResolution.y)
+	//if( gl_GlobalInvocationID.x < texResolution.x && gl_GlobalInvocationID.y < texResolution.y)
 	{
 		int4 idx4 = int4(gl_GlobalInvocationID, 0);
 		int3 idx3 = int3(gl_GlobalInvocationID);
@@ -27,6 +27,7 @@ void main
 		float width = texResolution.x;
 
 		//float4 value = source.SampleLevel(TextureSampler, gl_GlobalInvocationID / width, 0);
+		
 		float4 value = source.Load(idx4);
 
 		target[idx3] = value;
