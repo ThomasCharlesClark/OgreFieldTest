@@ -5,11 +5,10 @@ struct Particle
 	float3 velocity;
 }; 
 
-RWStructuredBuffer<Particle> handInputBuffer	: register(u0);
-RWTexture3D<float4> inkTexture					: register(u1);
-RWTexture3D<float4> inkTextureFinal				: register(u2);
-RWTexture3D<float4> velocityTexture				: register(u3);
-RWTexture3D<float4> velocityFinal				: register(u4);
+RWTexture3D<float4> inkTexture					: register(u0);
+RWTexture3D<float4> inkTextureFinal				: register(u1);
+RWTexture3D<float4> velocityTexture				: register(u2);
+RWTexture3D<float4> velocityFinal				: register(u3);
 
 uniform uint2 texResolution;
 
@@ -32,17 +31,17 @@ void main
 
 		//inkTexture[gl_GlobalInvocationID] *= 0.98; // float4(0, 0, 0, 1);
 
-		inkTexture[gl_GlobalInvocationID] *= 0.9998;
-		////inkTextureFinal[gl_GlobalInvocationID] *= 0.98;
+		inkTexture[gl_GlobalInvocationID] *= 0.998;
+		//inkTextureFinal[gl_GlobalInvocationID] *= 0.98;
 
 		//inkTexture[gl_GlobalInvocationID] = float4(0, 0, 0, 1);
-		//inkTextureFinal[gl_GlobalInvocationID] = float4(0, 0, 0, 1);
+		inkTextureFinal[gl_GlobalInvocationID] = float4(0, 0, 0, 1);
 
-		/*velocityFinal[gl_GlobalInvocationID] *= 0.9;
-		velocityTexture[gl_GlobalInvocationID] *= 0.9;*/
+		velocityFinal[gl_GlobalInvocationID] *= 0.99;
+		velocityTexture[gl_GlobalInvocationID] *= 0.99;
 
-		velocityFinal[gl_GlobalInvocationID] *= 0.999;
-		velocityTexture[gl_GlobalInvocationID] *= 0.999;
+		//velocityFinal[gl_GlobalInvocationID] *= 0.9997;
+		//velocityTexture[gl_GlobalInvocationID] *= 0.9997;
 
 		//velocityFinal[gl_GlobalInvocationID] = float4(0, 0, 0, 1);
 		//velocityTexture[gl_GlobalInvocationID] = float4(0, 0, 0, 1);

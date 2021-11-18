@@ -81,19 +81,19 @@ namespace MyThirdOgre
 		mBufferResolutionHeight = 23.0f;
 		mFieldWidth = 23.0f;
 		mFieldHeight = 23.0f;*/
-		mBufferResolutionWidth = 512.0f;
-		mBufferResolutionHeight = 512.0f;
-		mFieldWidth = 64.0f;
-		mFieldHeight = 64.0f;	
+		mBufferResolutionWidth = 32.0f;
+		mBufferResolutionHeight = 32.0f;
+		mFieldWidth = 32.0f;
+		mFieldHeight = 32.0f;	
 #else
 		/*mBufferResolutionWidth = 128.0f;
 		mBufferResolutionHeight = 128.0f;
 		mFieldWidth = 128.0f;
 		mFieldHeight = 128.0f;*/
-		mBufferResolutionWidth = 512.0f;
-		mBufferResolutionHeight = 512.0f;
-		mFieldWidth = 64.0f;
-		mFieldHeight = 64.0f;
+		mBufferResolutionWidth = 128.0f;
+		mBufferResolutionHeight = 128.0f;
+		mFieldWidth = 128.0f;
+		mFieldHeight = 128.0f;
 #endif
 
 		resolution[0] = mBufferResolutionWidth;
@@ -830,9 +830,11 @@ namespace MyThirdOgre
 
 				Ogre::ShaderParams& shaderParams = mJacobiDiffusionComputeJob->getShaderParams("default");
 				Ogre::ShaderParams::Param* texResolution = shaderParams.findParameter("texResolution");
-				Ogre::ShaderParams::Param* halfDeltaX = shaderParams.findParameter("reciprocalDeltaX");
+				Ogre::ShaderParams::Param* halfDeltaX = shaderParams.findParameter("halfDeltaX");
+				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
 				texResolution->setManualValue(resolution, sizeof(resolution) / sizeof(Ogre::uint));
 				halfDeltaX->setManualValue(0.5f);
+				tsl->setManualValue(timeSinceLast);
 				shaderParams.setDirty();
 
 				mJacobiDiffusionComputeJob->setNumThreadGroups(
@@ -841,6 +843,11 @@ namespace MyThirdOgre
 					1u);
 
 				mHaveSetJacobiDiffusionComputeShaderParameters = true;
+			}
+			else {
+				Ogre::ShaderParams& shaderParams = mJacobiDiffusionComputeJob->getShaderParams("default");
+				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
+				tsl->setManualValue(timeSinceLast);
 			}
 		}
 
@@ -915,7 +922,7 @@ namespace MyThirdOgre
 				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
 				texResolution->setManualValue(resolution, sizeof(resolution) / sizeof(Ogre::uint));
 				halfDeltaX->setManualValue(0.5f);
-				vortConfScale->setManualValue(0.036f);
+				vortConfScale->setManualValue(0.0005f);
 				tsl->setManualValue(timeSinceLast);
 				shaderParams.setDirty();
 
@@ -1170,8 +1177,8 @@ namespace MyThirdOgre
 				*instanceBuffer++ = iter.colour.w;// iter.colour.a;// (float)sin(mTimeAccumulator);
 
 				*instanceBuffer++ = iter.velocity.x;
-				*instanceBuffer++ = -iter.velocity.z;
 				*instanceBuffer++ = iter.velocity.y;
+				*instanceBuffer++ = iter.velocity.z;
 			}
 
 			auto tsb = buffer->getTotalSizeBytes();
@@ -1183,55 +1190,54 @@ namespace MyThirdOgre
 		}
 
 		#pragma region For Awesome Visual Debugging using Arrow.mesh instances
+//
+//#if OGRE_DEBUG_MODE
+//
+//#else
+		if (mParent && !isDownloadingViaTextureTicket()) {
+			getTextureTicket3D()->download(getSecondaryVelocityTexture(), 0, true);
+			setDownloadingTextureViaTicket(true);
+		}
+		else
+		{
+			if (getTextureTicket3D()->queryIsTransferDone())
+			{
+				setDownloadingTextureViaTicket(false);
 
-#if OGRE_DEBUG_MODE
+				auto numSlices = getTextureTicket3D()->getNumSlices();
 
-#else
+				for (int i = 0; i < numSlices; i++) {
+					auto texBox = getTextureTicket3D()->map(i);
+					auto pFormat = getSecondaryVelocityTexture()->getPixelFormat();
 
-		//if (mParent && !isDownloadingViaTextureTicket()) {
-		//	getTextureTicket3D()->download(getSecondaryVelocityTexture(), 0, true);
-		//	setDownloadingTextureViaTicket(true);
-		//}
-		//else
-		//{
-		//	if (getTextureTicket3D()->queryIsTransferDone())
-		//	{
-		//		setDownloadingTextureViaTicket(false);
+					for (int x = 0; x < mBufferResolutionWidth; x++) {
+						for (int z = 0; z < mBufferResolutionHeight; z++) {
 
-		//		auto numSlices = getTextureTicket3D()->getNumSlices();
+							auto colourValue = texBox.getColourAt(x, z, 0, pFormat);
 
-		//		for (int i = 0; i < numSlices; i++) {
-		//			auto texBox = getTextureTicket3D()->map(i);
-		//			auto pFormat = getSecondaryVelocityTexture()->getPixelFormat();
+							FieldComputeSystem_VelocityMessage velocityMessage = FieldComputeSystem_VelocityMessage({
+								CellCoord(x - (mBufferResolutionWidth / 2),
+											0,
+											z - (mBufferResolutionHeight / 2)),
+								HandInfluence(Ogre::Vector3(colourValue.r, colourValue.g, colourValue.b), 0.0f) });
 
-		//			for (int x = 0; x < mBufferResolutionWidth; x++) {
-		//				for (int z = 0; z < mBufferResolutionHeight; z++) {
+							mGameEntityManager->mGraphicsSystem->queueSendMessage(
+								mGameEntityManager->mLogicSystem,
+								Mq::FIELD_COMPUTE_SYSTEM_WRITE_VELOCITIES,
+								velocityMessage);
+						}
+					}
 
-		//					auto colourValue = texBox.getColourAt(x, z, 0, pFormat);
+					int f = 0;
+					// Yay! I can read a texture which was written BY THE GPU!!!
+				}
+				getTextureTicket3D()->unmap();
 
-		//					FieldComputeSystem_VelocityMessage velocityMessage = FieldComputeSystem_VelocityMessage({
-		//						CellCoord(x - (mBufferResolutionWidth / 2),
-		//									0,
-		//									z - (mBufferResolutionHeight / 2)),
-		//						HandInfluence(Ogre::Vector3(colourValue.r, colourValue.g, colourValue.b), 0.0f) });
+				textureTicketFrameCounter = 0;
+			}
+		}
 
-		//					mGameEntityManager->mGraphicsSystem->queueSendMessage(
-		//						mGameEntityManager->mLogicSystem,
-		//						Mq::FIELD_COMPUTE_SYSTEM_WRITE_VELOCITIES,
-		//						velocityMessage);
-		//				}
-		//			}
-
-		//			int f = 0;
-		//			// Yay! I can read a texture which was written BY THE GPU!!!
-		//		}
-		//		getTextureTicket3D()->unmap();
-
-		//		textureTicketFrameCounter = 0;
-		//	}
-		//}
-
-#endif
+//#endif
 		
 
 #pragma endregion

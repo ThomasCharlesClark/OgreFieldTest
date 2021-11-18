@@ -6,7 +6,7 @@
 	***	threads_per_group_z	1
 	***	hlms_high_quality	0
 	***	typed_uav_load	1
-	***	num_thread_groups_y	64
+	***	num_thread_groups_y	4
 	***	glsles	1070293233
 	***	hlslvk	1841745752
 	***	syntax	-334286542
@@ -14,7 +14,7 @@
 	***	num_thread_groups_z	1
 	***	glslvk	-338983575
 	***	hlsl	-334286542
-	***	num_thread_groups_x	64
+	***	num_thread_groups_x	4
 	DONE DUMPING PROPERTIES
 	DONE DUMPING PIECES
 #endif
@@ -62,6 +62,7 @@ void main
 		int4 idx4 = int4(gl_GlobalInvocationID.xyz, 0);
 
 		velocityTexture[gl_GlobalInvocationID] += velocity;
+		inkTexture[gl_GlobalInvocationID] += inputUavBuffer[rwIdx].colour;
 		inkTexture[gl_GlobalInvocationID] += inputUavBuffer[rwIdx].colour;
 		//inkTexture[gl_GlobalInvocationID] += inputUavBuffer[rwIdx].colour;
 	}

@@ -43,6 +43,7 @@ void main
 
 		velocityTexture[gl_GlobalInvocationID] += velocity;
 		inkTexture[gl_GlobalInvocationID] += inputUavBuffer[rwIdx].colour;
+		inkTexture[gl_GlobalInvocationID] += inputUavBuffer[rwIdx].colour;
 		//inkTexture[gl_GlobalInvocationID] += inputUavBuffer[rwIdx].colour;
 	}
 }

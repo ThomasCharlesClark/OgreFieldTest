@@ -1,12 +1,12 @@
 #if 0
-	***	threads_per_group_x	1
+	***	threads_per_group_x	8
 	***	fast_shader_build_hack	1
 	***	glsl	635204550
-	***	threads_per_group_y	1
+	***	threads_per_group_y	8
 	***	threads_per_group_z	1
 	***	hlms_high_quality	0
 	***	typed_uav_load	1
-	***	num_thread_groups_y	32
+	***	num_thread_groups_y	4
 	***	glsles	1070293233
 	***	hlslvk	1841745752
 	***	syntax	-334286542
@@ -14,7 +14,7 @@
 	***	num_thread_groups_z	1
 	***	glslvk	-338983575
 	***	hlsl	-334286542
-	***	num_thread_groups_x	32
+	***	num_thread_groups_x	4
 	DONE DUMPING PROPERTIES
 	DONE DUMPING PIECES
 #endif
@@ -35,9 +35,8 @@ SamplerState TextureSampler
 RWStructuredBuffer<uint> pixelBuffer		: register(u0);
 RWTexture3D<float4> velocityTextureFinal	: register(u1);
 RWTexture3D<float4> velocityTexture			: register(u2);
-RWTexture3D<float> inkTemp					: register(u3);
-RWTexture3D<float> vortTex					: register(u4);
-RWTexture3D<float4> pressureTexture			: register(u5);
+RWTexture3D<float> vortTex					: register(u3);
+RWTexture3D<float4> pressureTexture			: register(u4);
 Texture3D<float4> inkTextureFinal			: register(t0);
 
 uniform float maxInk;
@@ -70,14 +69,14 @@ float normaliseInkValue(float i)
 	return i / maxInk;
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(8, 8, 1)]
 void main
 (
     uint3 gl_LocalInvocationID : SV_GroupThreadID,
     uint3 gl_GlobalInvocationID : SV_DispatchThreadId
 )
 {
-	if( gl_GlobalInvocationID.x < texResolution.x && gl_GlobalInvocationID.y < texResolution.y )
+	//if( gl_GlobalInvocationID.x < texResolution.x && gl_GlobalInvocationID.y < texResolution.y )
 	{
 		uint idx = gl_GlobalInvocationID.y * texResolution.x + gl_GlobalInvocationID.x;
 
@@ -89,14 +88,11 @@ void main
 
 		float4 v = velocityTextureFinal.Load(idx4);
 
-		float inkValue = inkTemp.Load(idx4);
-
 		float vortValue = vortTex.Load(idx4);
 
 		float4 p = pressureTexture.Load(idx4);
 
-
-		float4 final = float4(0, 0, 0, 1);
+		float4 final = float4(0, 0, 0, 0.85);
 		
 		//final.xyz += normalize(v.xyz);
 
@@ -104,7 +100,7 @@ void main
 
 		//final.xyz = abs(v.xyz);
 
-		//final.xyz += p.xyz;
+		//final.xyz -= p.xyz;
 		
 		//final.xyz *= length(v);
 
@@ -117,7 +113,7 @@ void main
 		//	//final = float4(0, 0, 0, 1);
 		//}
 		
-		final.xyz += normalize(inkColour.xyz);
+		final.xyz += inkColour.xyz;
 
 		pixelBuffer[idx] = packUnorm4x8(final);
 	}

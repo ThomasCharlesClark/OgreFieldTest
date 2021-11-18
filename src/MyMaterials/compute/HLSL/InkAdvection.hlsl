@@ -47,11 +47,11 @@ void main
 
 		//float3 idxBackInTime = (idx3 - 1 / (timeSinceLast * reciprocalDeltaX * velocity.xyz));
 
-		//float3 idxBackInTime = (idx3 - (timeSinceLast * reciprocalDeltaX * velocity.xyz));
+		float3 idxBackInTime = (idx3 - (timeSinceLast * reciprocalDeltaX * velocity.xyz));
 
 		//float3 idxBackInTime = (idx3 - (reciprocalDeltaX * velocity.xyz));
 
-		float3 idxBackInTime = (idx3 - (velocity.xyz));
+		//float3 idxBackInTime = (idx3 - (velocity.xyz));
 
 		// at this point in time, inkTexture should contain the previous
 		// state of affairs

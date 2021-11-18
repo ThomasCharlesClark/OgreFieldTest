@@ -6,7 +6,7 @@
 	***	threads_per_group_z	1
 	***	hlms_high_quality	0
 	***	typed_uav_load	1
-	***	num_thread_groups_y	8
+	***	num_thread_groups_y	4
 	***	glsles	1070293233
 	***	hlslvk	1841745752
 	***	syntax	-334286542
@@ -14,7 +14,7 @@
 	***	num_thread_groups_z	1
 	***	glslvk	-338983575
 	***	hlsl	-334286542
-	***	num_thread_groups_x	8
+	***	num_thread_groups_x	4
 	DONE DUMPING PROPERTIES
 	DONE DUMPING PIECES
 #endif
@@ -76,7 +76,7 @@ void main
     uint3 gl_GlobalInvocationID : SV_DispatchThreadId
 )
 {
-	if( gl_GlobalInvocationID.x < texResolution.x && gl_GlobalInvocationID.y < texResolution.y )
+	//if( gl_GlobalInvocationID.x < texResolution.x && gl_GlobalInvocationID.y < texResolution.y )
 	{
 		uint idx = gl_GlobalInvocationID.y * texResolution.x + gl_GlobalInvocationID.x;
 
@@ -92,15 +92,15 @@ void main
 
 		float4 p = pressureTexture.Load(idx4);
 
-		float4 final = float4(0, 0, 0, 0);
+		float4 final = float4(0, 0, 0, 0.85);
 		
-		final.xyz += normalize(v.xyzw);
+		final.xyz += normalize(v.xyz);
 
 		//final.xyz = v.xyz;
 
 		//final.xyz = abs(v.xyz);
 
-		//final.xyz += p.xyz;
+		//final.xyz -= p.xyz;
 		
 		//final.xyz *= length(v);
 

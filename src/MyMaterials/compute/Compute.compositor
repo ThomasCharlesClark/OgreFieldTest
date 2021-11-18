@@ -28,12 +28,15 @@ compositor_node TestComputeNode
 		}
 	}
 
+
 	/*
-		pass compute
+		target velTexFinal
 		{
-			job AdvectionCopy
-			uav 0 velTexFinal write
-			input 0 velTexture read
+			pass render_quad 
+			{
+				material CopyFromTexture
+				input 0 velTexture
+			}
 		}
 	*/
 	
@@ -53,6 +56,288 @@ compositor_node TestComputeNode
 			job VelocityAdvection
 			input 0 velTexture read
 			uav 0 velTexFinal write
+		}
+		
+		pass compute
+		{
+			job JacobiDiffusion
+			uav 0 velTexFinal read write
+		}
+		
+		pass compute
+		{
+			job JacobiDiffusion
+			uav 0 velTexFinal read write
+		}
+		
+		pass compute
+		{
+			job JacobiDiffusion
+			uav 0 velTexFinal read write
+		}
+		
+		pass compute
+		{
+			job JacobiDiffusion
+			uav 0 velTexFinal read write
+		}
+		
+		pass compute
+		{
+			job JacobiDiffusion
+			uav 0 velTexFinal read write
+		}
+		
+		pass compute
+		{
+			job JacobiDiffusion
+			uav 0 velTexFinal read write
+		}
+		
+		pass compute
+		{
+			job JacobiDiffusion
+			uav 0 velTexFinal read write
+		}
+		
+		pass compute
+		{
+			job JacobiDiffusion
+			uav 0 velTexFinal read write
+		}
+		
+		pass compute
+		{
+			job JacobiDiffusion
+			uav 0 velTexFinal read write
+		}
+		
+		pass compute
+		{
+			job JacobiDiffusion
+			uav 0 velTexFinal read write
+		}
+		
+		pass compute
+		{
+			job JacobiDiffusion
+			uav 0 velTexFinal read write
+		}
+		
+		pass compute
+		{
+			job JacobiDiffusion
+			uav 0 velTexFinal read write
+		}
+		
+		pass compute
+		{
+			job JacobiDiffusion
+			uav 0 velTexFinal read write
+		}
+		
+		pass compute
+		{
+			job JacobiDiffusion
+			uav 0 velTexFinal read write
+		}
+		
+		pass compute
+		{
+			job JacobiDiffusion
+			uav 0 velTexFinal read write
+		}
+		
+		pass compute
+		{
+			job JacobiDiffusion
+			uav 0 velTexFinal read write
+		}
+		
+		pass compute
+		{
+			job JacobiDiffusion
+			uav 0 velTexFinal read write
+		}
+		
+		pass compute
+		{
+			job JacobiDiffusion
+			uav 0 velTexFinal read write
+		}
+		
+		pass compute
+		{
+			job JacobiDiffusion
+			uav 0 velTexFinal read write
+		}
+		
+		pass compute
+		{
+			job JacobiDiffusion
+			uav 0 velTexFinal read write
+		}
+		
+		pass compute
+		{
+			job JacobiDiffusion
+			uav 0 velTexFinal read write
+		}
+		
+		pass compute
+		{
+			job JacobiDiffusion
+			uav 0 velTexFinal read write
+		}
+		
+		pass compute
+		{
+			job JacobiDiffusion
+			uav 0 velTexFinal read write
+		}
+		
+		pass compute
+		{
+			job JacobiDiffusion
+			uav 0 velTexFinal read write
+		}
+		
+		pass compute
+		{
+			job JacobiDiffusion
+			uav 0 velTexFinal read write
+		}
+		
+		pass compute
+		{
+			job JacobiDiffusion
+			uav 0 velTexFinal read write
+		}
+		
+		pass compute
+		{
+			job JacobiDiffusion
+			uav 0 velTexFinal read write
+		}
+		
+		pass compute
+		{
+			job JacobiDiffusion
+			uav 0 velTexFinal read write
+		}
+		
+		pass compute
+		{
+			job JacobiDiffusion
+			uav 0 velTexFinal read write
+		}
+		
+		pass compute
+		{
+			job JacobiDiffusion
+			uav 0 velTexFinal read write
+		}
+		
+		pass compute
+		{
+			job JacobiDiffusion
+			uav 0 velTexFinal read write
+		}
+		
+		pass compute
+		{
+			job JacobiDiffusion
+			uav 0 velTexFinal read write
+		}
+		
+		pass compute
+		{
+			job JacobiDiffusion
+			uav 0 velTexFinal read write
+		}
+		
+		pass compute
+		{
+			job JacobiDiffusion
+			uav 0 velTexFinal read write
+		}
+		
+		pass compute
+		{
+			job JacobiDiffusion
+			uav 0 velTexFinal read write
+		}
+		
+		pass compute
+		{
+			job JacobiDiffusion
+			uav 0 velTexFinal read write
+		}
+		
+		pass compute
+		{
+			job JacobiDiffusion
+			uav 0 velTexFinal read write
+		}
+		
+		pass compute
+		{
+			job JacobiDiffusion
+			uav 0 velTexFinal read write
+		}
+		
+		pass compute
+		{
+			job JacobiDiffusion
+			uav 0 velTexFinal read write
+		}
+		
+		pass compute
+		{
+			job JacobiDiffusion
+			uav 0 velTexFinal read write
+		}
+		
+		pass compute
+		{
+			job JacobiDiffusion
+			uav 0 velTexFinal read write
+		}
+		
+		pass compute
+		{
+			job JacobiDiffusion
+			uav 0 velTexFinal read write
+		}
+		
+		pass compute
+		{
+			job JacobiDiffusion
+			uav 0 velTexFinal read write
+		}
+		
+		pass compute
+		{
+			job JacobiDiffusion
+			uav 0 velTexFinal read write
+		}
+		
+		pass compute
+		{
+			job JacobiDiffusion
+			uav 0 velTexFinal read write
+		}
+		
+		pass compute
+		{
+			job JacobiDiffusion
+			uav 0 velTexFinal read write
+		}
+		
+		pass compute
+		{
+			job JacobiDiffusion
+			uav 0 velTexFinal read write
 		}
 		
 		pass compute
@@ -243,8 +528,7 @@ compositor_node TestComputeNode
 			uav 0 pressureTexture write
 			input 0 divergenceTexture read
 		}
-		
-		/*
+	
 		pass compute
 		{
 			job JacobiPressure
@@ -404,13 +688,6 @@ compositor_node TestComputeNode
 			job JacobiPressure
 			uav 0 pressureTexture write
 			input 0 divergenceTexture read
-		}*/
-
-		pass compute
-		{
-			job SubtractPressureGradient
-			uav 0 velTexFinal write
-			input 0 pressureTexture read
 		}
 
 		pass compute
@@ -421,17 +698,16 @@ compositor_node TestComputeNode
 			uav 2 inkTexture read write
 			//uav 2 inkTextureFinal read write
 		}
-		
-		pass compute
-		{
-			job	InkAdvection
-			//uav 0 inkTextureFinal write
-			uav 0 inkTexture write
-			input 0 inkTextureSampler read
-			input 1 velTexFinal read
-		}
 
 		pass compute
+		{
+			job SubtractPressureGradient
+			uav 0 velTexFinal write
+			input 0 pressureTexture read
+		}
+
+
+		/*pass compute
 		{
 			job VorticityComputation
 			input 0 velTexFinal read
@@ -443,7 +719,7 @@ compositor_node TestComputeNode
 			job VorticityConfinement
 			input 0 vortTex read
 			uav 0 velTexFinal write
-		}
+		}*/
 		
 		/*
 		pass compute
@@ -456,24 +732,30 @@ compositor_node TestComputeNode
 		
 		pass compute
 		{
+			job	InkAdvection
+			uav 0 inkTexture write
+			input 0 inkTextureSampler read
+			input 1 velTexFinal read
+		}
+		
+		pass compute
+		{
 			job	TestJob
 			uav_buffer 0 temporaryBuffer write
 			uav 1 velTexFinal read
 			uav 2 velTexture read
 			uav 3 vortTex read
 			uav 4 pressureTexture read
-			//input 0 inkTextureFinal read
 			input 0 inkTexture read
 		}
 		
 		pass compute
 		{
 			job ClearBuffers2
-			uav_buffer 0 inputUavBuffer write
-			uav 1 inkTexture write
-			//uav 2 inkTextureFinal write
-			uav 2 velTexFinal write
-			uav 3 velTexture write
+			uav 0 inkTexture write
+			uav 1 inkTextureSampler write
+			uav 2 velTexture write
+			uav 3 velTexFinal write
 		}
 	}
 

@@ -242,10 +242,9 @@
       "threads_per_group": [ 8, 8, 1 ],
       "thread_groups": [ 1, 1, 1 ],
       "source": "JacobiDiffusion",
-      "uav_units": 2,
+      "uav_units": 1,
       "textures": [
-        {},
-        {}
+
       ],
       "params": [
         [
@@ -254,8 +253,13 @@
           "uint"
         ],
         [
-          "reciprocalDeltaX",
-          [ 1.0 ],
+          "halfDeltaX",
+          [ 0.5 ],
+          "float"
+        ],
+        [
+          "timeSinceLast",
+          [ 0 ],
           "float"
         ]
       ]

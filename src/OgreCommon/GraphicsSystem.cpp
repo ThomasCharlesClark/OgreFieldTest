@@ -116,7 +116,7 @@ namespace MyThirdOgre
         mThreadGameEntityToUpdate( 0 ),
         mThreadWeight( 0 ),
         mQuit( false ),
-        mAlwaysAskForConfig( true ),
+        mAlwaysAskForConfig( false ),
         mUseHlmsDiskCache( true ),
         mUseMicrocodeCache( true ),
         mBackgroundColour( backgroundColour ),
@@ -429,13 +429,9 @@ namespace MyThirdOgre
     //-----------------------------------------------------------------------------------
     void GraphicsSystem::update( float timeSinceLast )
     {
-       /* for (auto& iter : mFieldComputeSystems) {
+        for (auto& iter : mFieldComputeSystems) {
             iter->update(timeSinceLast);
-        }*/
-
-
-
-
+        }
 
         Ogre::WindowEventUtilities::messagePump();
 
@@ -536,11 +532,6 @@ namespace MyThirdOgre
 
                     //Get the new index the LogicSystem is telling us to use.
                     mCurrentTransformIdx = newIdx;
-                }
-
-                // sneaky but effective
-                for (auto& iter : mFieldComputeSystems) {
-                    iter->update(0.016f); // fixed arbitrary 1/60 timestep because... I said so
                 }
             }
             break;

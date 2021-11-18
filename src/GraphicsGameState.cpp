@@ -36,14 +36,14 @@ namespace MyThirdOgre
         //help, so don't show the weight as it is inaccurate.
         if (mDisplayHelpMode != 0)
         {
-            float weight = mGraphicsSystem->getAccumTimeSinceLastLogicFrame() / cFrametime;
+            /*float weight = mGraphicsSystem->getAccumTimeSinceLastLogicFrame() / cFrametime;
             weight = std::min(1.0f, weight);
 
             if (!mEnableInterpolation)
                 weight = 0;
 
             outText += "\nBlend weight: ";
-            outText += Ogre::StringConverter::toString(weight);
+            outText += Ogre::StringConverter::toString(weight);*/
 
             if (mGraphicsSystem->getAdditionalDebugText() != "") {
                 outText += "\n\n";

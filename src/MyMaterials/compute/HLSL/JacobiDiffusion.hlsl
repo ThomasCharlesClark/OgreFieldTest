@@ -1,7 +1,4 @@
-RWTexture3D<float3> velocityTexture : register(u0);
-RWTexture3D<float3> inkTexture : register(u1);
-Texture2D<float3> velocityRead : register(t0);
-Texture2D<float3> inkRead : register(t1);
+RWTexture3D<float4> velocityTexture : register(u0);
 
 SamplerState TextureSampler
 {
@@ -12,7 +9,7 @@ SamplerState TextureSampler
 
 uniform uint2 texResolution;
 uniform float timeSinceLast;
-uniform float reciprocalDeltaX;
+uniform float halfDeltaX;
 
 [numthreads(@value( threads_per_group_x ), @value( threads_per_group_y ), @value( threads_per_group_z ))]
 void main
@@ -23,6 +20,20 @@ void main
 {
 	if( gl_GlobalInvocationID.x < texResolution.x && gl_GlobalInvocationID.y < texResolution.y)
 	{
+		int3 idx = float3(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, gl_GlobalInvocationID.z);
 
+		float4 a = velocityTexture.Load(float4(idx.x - 1, idx.y, idx.z, 0));
+		float4 b = velocityTexture.Load(float4(idx.x + 1, idx.y, idx.z, 0));
+		float4 c = velocityTexture.Load(float4(idx.x, idx.y - 1, idx.z, 0));
+		float4 d = velocityTexture.Load(float4(idx.x, idx.y + 1, idx.z, 0));
+
+		float alpha = halfDeltaX * halfDeltaX / (2.865 * timeSinceLast);
+		float rBeta = 1 / (4 + alpha);
+		float4 beta = velocityTexture.Load(float4(idx.xyz, 0));
+
+
+		float4 vVel = (a + b + c + d + alpha * beta) * rBeta;
+
+		velocityTexture[idx] = vVel;
 	}
 }

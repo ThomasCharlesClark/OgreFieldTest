@@ -32,8 +32,8 @@ namespace MyThirdOgre
 		mColumnCount(32), 
 		mRowCount(32),
 #else
-		mColumnCount(64),
-		mRowCount(64),
+		mColumnCount(128),
+		mRowCount(128),
 #endif
 		mGridLineMoDef(0),
 		mGridEntity(0),
@@ -82,7 +82,7 @@ namespace MyThirdOgre
 		//if (mGridVisible)
 			//createGrid();
 
-		if (!mUseComputeSystem)
+		//if (!mUseComputeSystem)
 			createCells();
 
 		//mActiveCell = mCells[{0, 0, mRowCount / 2 - 1}];
