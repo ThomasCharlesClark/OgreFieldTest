@@ -21,7 +21,7 @@ namespace MyThirdOgre
         mConnectionHandle(0),
         mPreviousTrackingMessage(LEAP_CONNECTION_MESSAGE()),
         mRunning(false),
-        mVelocityScalingFactor(1.0f),
+        mVelocityScalingFactor(10.0f),
         mPositionScalingFactor(5.0f)
     {
 
@@ -92,7 +92,7 @@ namespace MyThirdOgre
 
                         //vVel.y = 0;
 
-                        Leap_MotionMessage vMsg = Leap_MotionMessage(timeSinceLast, vVel, vPos, msg.tracking_event->pHands[0].index.is_extended ? 1000.0f : 0.0f);
+                        Leap_MotionMessage vMsg = Leap_MotionMessage(timeSinceLast, vVel, vPos, msg.tracking_event->pHands[0].index.is_extended ? 10.0f : 0.0f);
 
                         this->queueSendMessage(mLogicSystem, Mq::LEAPFRAME_MOTION, vMsg);
 

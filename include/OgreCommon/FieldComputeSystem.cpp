@@ -82,8 +82,8 @@ namespace MyThirdOgre
 		mBufferResolutionHeight = 23.0f;
 		mFieldWidth = 23.0f;
 		mFieldHeight = 23.0f;*/
-		mBufferResolutionWidth = 64.0f;
-		mBufferResolutionHeight = 64.0f;
+		mBufferResolutionWidth = 512.0f;
+		mBufferResolutionHeight = 512.0f;
 		mFieldWidth = 64.0f;
 		mFieldHeight = 64.0f;
 #else
@@ -91,8 +91,8 @@ namespace MyThirdOgre
 		mBufferResolutionHeight = 128.0f;
 		mFieldWidth = 128.0f;
 		mFieldHeight = 128.0f;*/
-		mBufferResolutionWidth = 64.0f;
-		mBufferResolutionHeight = 64.0f;
+		mBufferResolutionWidth = 512.0f;
+		mBufferResolutionHeight = 512.0f;
 		mFieldWidth = 64.0f;
 		mFieldHeight = 64.0f;
 #endif
@@ -798,11 +798,6 @@ namespace MyThirdOgre
 				tsl->setManualValue(timeSinceLast);
 				shaderParams.setDirty();
 
-				mJacobiDiffusionComputeJob->setNumThreadGroups(
-					(res[0] + mJacobiDiffusionComputeJob->getThreadsPerGroupX() - 1u) / mJacobiDiffusionComputeJob->getThreadsPerGroupX(),
-					(res[1] + mJacobiDiffusionComputeJob->getThreadsPerGroupY() - 1u) / mJacobiDiffusionComputeJob->getThreadsPerGroupY(),
-					1u);
-
 				mHaveSetJacobiDiffusionComputeShaderParameters = true;
 			}
 			else {
@@ -823,11 +818,6 @@ namespace MyThirdOgre
 				halfDeltaX->setManualValue(0.5f);
 				shaderParams.setDirty();
 
-				mJacobiPressureComputeJob->setNumThreadGroups(
-					(res[0] + mJacobiPressureComputeJob->getThreadsPerGroupX() - 1u) / mJacobiPressureComputeJob->getThreadsPerGroupX(),
-					(res[1] + mJacobiPressureComputeJob->getThreadsPerGroupY() - 1u) / mJacobiPressureComputeJob->getThreadsPerGroupY(),
-					1u);
-
 				mHaveSetJacobiPressureComputeShaderParameters = true;
 			}
 		}
@@ -842,11 +832,6 @@ namespace MyThirdOgre
 				texResolution->setManualValue(resolution, sizeof(resolution) / sizeof(Ogre::uint));
 				halfDeltaX->setManualValue(0.5f);
 				shaderParams.setDirty();
-
-				mSubtractPressureGradientComputeJob->setNumThreadGroups(
-					(res[0] + mSubtractPressureGradientComputeJob->getThreadsPerGroupX() - 1u) / mSubtractPressureGradientComputeJob->getThreadsPerGroupX(),
-					(res[1] + mSubtractPressureGradientComputeJob->getThreadsPerGroupY() - 1u) / mSubtractPressureGradientComputeJob->getThreadsPerGroupY(),
-					1u);
 
 				mHaveSetSubtractPressureGradientComputeShaderParameters = true;
 			}
@@ -1031,6 +1016,9 @@ namespace MyThirdOgre
 								auto& thisElement = mInkInputBuffer[index.mIndex];
 
 								thisElement.ink += mHand->getState().rInk;
+
+								if (thisElement.ink > 500.0f)
+									thisElement.ink = 500.0f;
 
 								thisElement.colour.x = 0.85f;
 								thisElement.colour.y = 0.2941176562f;
