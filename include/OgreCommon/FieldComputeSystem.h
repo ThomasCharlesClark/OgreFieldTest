@@ -173,6 +173,7 @@ namespace MyThirdOgre
 			Ogre::TextureTypes::TextureTypes	mTextureType3D;
 			Ogre::PixelFormatGpu				mPixelFormat2D;
 			Ogre::PixelFormatGpu				mPixelFormat3D;
+			Ogre::PixelFormatGpu				mPixelFormatFloat3D;
 			Ogre::MaterialPtr					mDrawFromUavBufferMat;
 			Ogre::StagingTexture*				mVelocityStagingTexture;
 			Ogre::StagingTexture*				mInkStagingTexture;
@@ -267,6 +268,7 @@ namespace MyThirdOgre
 			Ogre::TextureTypes::TextureTypes getTextureType3D(void) { return mTextureType3D; };
 			Ogre::PixelFormatGpu getPixelFormat2D(void) { return mPixelFormat2D; };
 			Ogre::PixelFormatGpu getPixelFormat3D(void) { return mPixelFormat3D; };
+			Ogre::PixelFormatGpu getPixelFormatFloat3D(void) { return mPixelFormatFloat3D; };
 			Ogre::StagingTexture* getVelocityStagingTexture(void) { return mVelocityStagingTexture; };
 			Ogre::StagingTexture* getInkStagingTexture(void) { return mInkStagingTexture; };
 			float getBufferResolutionWidth(void) { return mBufferResolutionWidth; };

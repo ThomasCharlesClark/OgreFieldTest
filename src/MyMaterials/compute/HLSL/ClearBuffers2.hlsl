@@ -5,8 +5,8 @@ struct Particle
 	float3 velocity;
 }; 
 
-RWTexture3D<float4> inkTexture					: register(u0);
-RWTexture3D<float4> inkTextureFinal				: register(u1);
+RWTexture3D<float> inkTexture					: register(u0);
+RWTexture3D<float> inkTexFinal				: register(u1);
 RWTexture3D<float4> velocityTexture				: register(u2);
 RWTexture3D<float4> velocityFinal				: register(u3);
 
@@ -22,28 +22,21 @@ void main
 	if( gl_GlobalInvocationID.x < texResolution.x && gl_GlobalInvocationID.y < texResolution.y)
 	{
 		uint rwIdx = gl_GlobalInvocationID.y * texResolution.x + gl_GlobalInvocationID.x;
+		
+		inkTexture[gl_GlobalInvocationID] *= 0.992;
+		inkTexFinal[gl_GlobalInvocationID] *= 0.992;
 
-		//handInputBuffer[rwIdx].ink = 0.0;
-		//handInputBuffer[rwIdx].colour *= 0.98;// float4(0, 0, 0, 1);
-		//handInputBuffer[rwIdx].velocity *= 0.98;// float3(0, 0, 0);
+		//inkTexture[gl_GlobalInvocationID] = float4(0, 0, 0, 0);
+		//inkTexFinal[gl_GlobalInvocationID] = float4(0, 0, 0, 0);
 
-		//inkTextureFinal[gl_GlobalInvocationID] = float4(inkTextureFinal[gl_GlobalInvocationID].xyz * 0.97, 1.0);
+		velocityFinal[gl_GlobalInvocationID] *= 0.996;
+		velocityTexture[gl_GlobalInvocationID] *= 0.996;
 
-		//inkTexture[gl_GlobalInvocationID] *= 0.98; // float4(0, 0, 0, 1);
+		//velocityFinal[gl_GlobalInvocationID] *= 1.0002;
+		//velocityTexture[gl_GlobalInvocationID] *= 1.0002;
 
-		inkTexture[gl_GlobalInvocationID] *= 0.998;
-		//inkTextureFinal[gl_GlobalInvocationID] *= 0.98;
+		//velocityFinal[gl_GlobalInvocationID] = float4(0, 0, 0, 0);
+		//velocityTexture[gl_GlobalInvocationID] = float4(0, 0, 0, 0);
 
-		//inkTexture[gl_GlobalInvocationID] = float4(0, 0, 0, 1);
-		inkTextureFinal[gl_GlobalInvocationID] = float4(0, 0, 0, 1);
-
-		velocityFinal[gl_GlobalInvocationID] *= 0.99;
-		velocityTexture[gl_GlobalInvocationID] *= 0.99;
-
-		//velocityFinal[gl_GlobalInvocationID] *= 0.9997;
-		//velocityTexture[gl_GlobalInvocationID] *= 0.9997;
-
-		//velocityFinal[gl_GlobalInvocationID] = float4(0, 0, 0, 1);
-		//velocityTexture[gl_GlobalInvocationID] = float4(0, 0, 0, 1);
 	}
 }

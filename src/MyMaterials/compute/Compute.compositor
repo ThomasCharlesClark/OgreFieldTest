@@ -3,12 +3,14 @@ compositor_node TestComputeNode
 	in 0 renderTarget
 	in 1 velTexture
 	in 2 velTexFinal
+	in 3 inkTexture
+	in 4 inkTexFinal
 	in_buffer 0 inputUavBuffer
 
 	//texture velTexture			target_width target_height 1 PFG_RGBA32_FLOAT	uav keep_content 3d depth_pool 0 
 	//texture velocityFinal			target_width target_height 1 PFG_RGBA32_FLOAT	uav keep_content 3d depth_pool 0 
-	texture inkTexture				target_width target_height 1 PFG_RGBA32_FLOAT	uav keep_content 3d depth_pool 0  
-	texture inkTextureSampler		target_width target_height 1 PFG_RGBA32_FLOAT	uav keep_content 3d depth_pool 0 
+	//texture inkTexture			target_width target_height 1 PFG_R32_FLOAT	uav keep_content 3d depth_pool 0  
+	//texture inkTextureSampler		target_width target_height 1 PFG_R32_FLOAT	uav keep_content 3d depth_pool 0 
 	texture divergenceTexture		target_width target_height 1 PFG_RGBA32_FLOAT	uav keep_content 3d depth_pool 0 
 	texture pressureTexture			target_width target_height 1 PFG_RGBA32_FLOAT	uav keep_content 3d depth_pool 0 
 	texture vortTex					target_width target_height 1 PFG_R32_FLOAT		uav keep_content 3d depth_pool 0
@@ -18,31 +20,8 @@ compositor_node TestComputeNode
 	
 	texture nullDummy target_width target_height PFG_NULL
 	
-	/* This is now doing a perfect copy, exactly as intended */
-	target inkTextureSampler
-	{
-		pass render_quad 
-		{
-			material CopyFromTexture
-			input 0 inkTexture
-		}
-	}
-
-
-	/*
-		target velTexFinal
-		{
-			pass render_quad 
-			{
-				material CopyFromTexture
-				input 0 velTexture
-			}
-		}
-	*/
-	
 	target
 	{
-
 		pass compute
 		{
 			job	AddImpulses
@@ -51,6 +30,14 @@ compositor_node TestComputeNode
 			uav 2 inkTexture write
 		}
 		
+		pass compute
+		{
+			job	InkAdvection
+			input 0 inkTexture read
+			input 1 velTexFinal read
+			uav 0 inkTexFinal write
+		}
+
 		pass compute
 		{
 			job VelocityAdvection
@@ -63,277 +50,55 @@ compositor_node TestComputeNode
 			job JacobiDiffusion
 			uav 0 velTexFinal read write
 		}
-		
+
 		pass compute
 		{
 			job JacobiDiffusion
 			uav 0 velTexFinal read write
 		}
-		
+
 		pass compute
 		{
 			job JacobiDiffusion
 			uav 0 velTexFinal read write
 		}
-		
+
 		pass compute
 		{
 			job JacobiDiffusion
 			uav 0 velTexFinal read write
 		}
-		
+
 		pass compute
 		{
 			job JacobiDiffusion
 			uav 0 velTexFinal read write
 		}
-		
+
 		pass compute
 		{
 			job JacobiDiffusion
 			uav 0 velTexFinal read write
 		}
-		
+
 		pass compute
 		{
 			job JacobiDiffusion
 			uav 0 velTexFinal read write
 		}
-		
+
 		pass compute
 		{
 			job JacobiDiffusion
 			uav 0 velTexFinal read write
 		}
-		
+
 		pass compute
 		{
 			job JacobiDiffusion
 			uav 0 velTexFinal read write
 		}
-		
-		pass compute
-		{
-			job JacobiDiffusion
-			uav 0 velTexFinal read write
-		}
-		
-		pass compute
-		{
-			job JacobiDiffusion
-			uav 0 velTexFinal read write
-		}
-		
-		pass compute
-		{
-			job JacobiDiffusion
-			uav 0 velTexFinal read write
-		}
-		
-		pass compute
-		{
-			job JacobiDiffusion
-			uav 0 velTexFinal read write
-		}
-		
-		pass compute
-		{
-			job JacobiDiffusion
-			uav 0 velTexFinal read write
-		}
-		
-		pass compute
-		{
-			job JacobiDiffusion
-			uav 0 velTexFinal read write
-		}
-		
-		pass compute
-		{
-			job JacobiDiffusion
-			uav 0 velTexFinal read write
-		}
-		
-		pass compute
-		{
-			job JacobiDiffusion
-			uav 0 velTexFinal read write
-		}
-		
-		pass compute
-		{
-			job JacobiDiffusion
-			uav 0 velTexFinal read write
-		}
-		
-		pass compute
-		{
-			job JacobiDiffusion
-			uav 0 velTexFinal read write
-		}
-		
-		pass compute
-		{
-			job JacobiDiffusion
-			uav 0 velTexFinal read write
-		}
-		
-		pass compute
-		{
-			job JacobiDiffusion
-			uav 0 velTexFinal read write
-		}
-		
-		pass compute
-		{
-			job JacobiDiffusion
-			uav 0 velTexFinal read write
-		}
-		
-		pass compute
-		{
-			job JacobiDiffusion
-			uav 0 velTexFinal read write
-		}
-		
-		pass compute
-		{
-			job JacobiDiffusion
-			uav 0 velTexFinal read write
-		}
-		
-		pass compute
-		{
-			job JacobiDiffusion
-			uav 0 velTexFinal read write
-		}
-		
-		pass compute
-		{
-			job JacobiDiffusion
-			uav 0 velTexFinal read write
-		}
-		
-		pass compute
-		{
-			job JacobiDiffusion
-			uav 0 velTexFinal read write
-		}
-		
-		pass compute
-		{
-			job JacobiDiffusion
-			uav 0 velTexFinal read write
-		}
-		
-		pass compute
-		{
-			job JacobiDiffusion
-			uav 0 velTexFinal read write
-		}
-		
-		pass compute
-		{
-			job JacobiDiffusion
-			uav 0 velTexFinal read write
-		}
-		
-		pass compute
-		{
-			job JacobiDiffusion
-			uav 0 velTexFinal read write
-		}
-		
-		pass compute
-		{
-			job JacobiDiffusion
-			uav 0 velTexFinal read write
-		}
-		
-		pass compute
-		{
-			job JacobiDiffusion
-			uav 0 velTexFinal read write
-		}
-		
-		pass compute
-		{
-			job JacobiDiffusion
-			uav 0 velTexFinal read write
-		}
-		
-		pass compute
-		{
-			job JacobiDiffusion
-			uav 0 velTexFinal read write
-		}
-		
-		pass compute
-		{
-			job JacobiDiffusion
-			uav 0 velTexFinal read write
-		}
-		
-		pass compute
-		{
-			job JacobiDiffusion
-			uav 0 velTexFinal read write
-		}
-		
-		pass compute
-		{
-			job JacobiDiffusion
-			uav 0 velTexFinal read write
-		}
-		
-		pass compute
-		{
-			job JacobiDiffusion
-			uav 0 velTexFinal read write
-		}
-		
-		pass compute
-		{
-			job JacobiDiffusion
-			uav 0 velTexFinal read write
-		}
-		
-		pass compute
-		{
-			job JacobiDiffusion
-			uav 0 velTexFinal read write
-		}
-		
-		pass compute
-		{
-			job JacobiDiffusion
-			uav 0 velTexFinal read write
-		}
-		
-		pass compute
-		{
-			job JacobiDiffusion
-			uav 0 velTexFinal read write
-		}
-		
-		pass compute
-		{
-			job JacobiDiffusion
-			uav 0 velTexFinal read write
-		}
-		
-		pass compute
-		{
-			job JacobiDiffusion
-			uav 0 velTexFinal read write
-		}
-		
-		pass compute
-		{
-			job JacobiDiffusion
-			uav 0 velTexFinal read write
-		}
-		
+
 		pass compute
 		{
 			job JacobiDiffusion
@@ -416,278 +181,12 @@ compositor_node TestComputeNode
 			uav 0 pressureTexture write
 			input 0 divergenceTexture read
 		}
-		
+
 		pass compute
 		{
-			job JacobiPressure
-			uav 0 pressureTexture write
-			input 0 divergenceTexture read
-		}
-		
-		pass compute
-		{
-			job JacobiPressure
-			uav 0 pressureTexture write
-			input 0 divergenceTexture read
-		}
-		
-		pass compute
-		{
-			job JacobiPressure
-			uav 0 pressureTexture write
-			input 0 divergenceTexture read
-		}
-		
-		pass compute
-		{
-			job JacobiPressure
-			uav 0 pressureTexture write
-			input 0 divergenceTexture read
-		}
-		
-		pass compute
-		{
-			job JacobiPressure
-			uav 0 pressureTexture write
-			input 0 divergenceTexture read
-		}
-		
-		pass compute
-		{
-			job JacobiPressure
-			uav 0 pressureTexture write
-			input 0 divergenceTexture read
-		}
-		
-		pass compute
-		{
-			job JacobiPressure
-			uav 0 pressureTexture write
-			input 0 divergenceTexture read
-		}
-		
-		pass compute
-		{
-			job JacobiPressure
-			uav 0 pressureTexture write
-			input 0 divergenceTexture read
-		}
-		
-		pass compute
-		{
-			job JacobiPressure
-			uav 0 pressureTexture write
-			input 0 divergenceTexture read
-		}
-		
-		pass compute
-		{
-			job JacobiPressure
-			uav 0 pressureTexture write
-			input 0 divergenceTexture read
-		}
-		
-		pass compute
-		{
-			job JacobiPressure
-			uav 0 pressureTexture write
-			input 0 divergenceTexture read
-		}
-		
-		pass compute
-		{
-			job JacobiPressure
-			uav 0 pressureTexture write
-			input 0 divergenceTexture read
-		}
-		
-		pass compute
-		{
-			job JacobiPressure
-			uav 0 pressureTexture write
-			input 0 divergenceTexture read
-		}
-		
-		pass compute
-		{
-			job JacobiPressure
-			uav 0 pressureTexture write
-			input 0 divergenceTexture read
-		}
-		
-		pass compute
-		{
-			job JacobiPressure
-			uav 0 pressureTexture write
-			input 0 divergenceTexture read
-		}
-		
-		pass compute
-		{
-			job JacobiPressure
-			uav 0 pressureTexture write
-			input 0 divergenceTexture read
-		}
-	
-		pass compute
-		{
-			job JacobiPressure
-			uav 0 pressureTexture write
-			input 0 divergenceTexture read
-		}
-		
-		pass compute
-		{
-			job JacobiPressure
-			uav 0 pressureTexture write
-			input 0 divergenceTexture read
-		}
-		
-		pass compute
-		{
-			job JacobiPressure
-			uav 0 pressureTexture write
-			input 0 divergenceTexture read
-		}
-		
-		pass compute
-		{
-			job JacobiPressure
-			uav 0 pressureTexture write
-			input 0 divergenceTexture read
-		}
-		
-		pass compute
-		{
-			job JacobiPressure
-			uav 0 pressureTexture write
-			input 0 divergenceTexture read
-		}
-		
-		pass compute
-		{
-			job JacobiPressure
-			uav 0 pressureTexture write
-			input 0 divergenceTexture read
-		}
-		
-		pass compute
-		{
-			job JacobiPressure
-			uav 0 pressureTexture write
-			input 0 divergenceTexture read
-		}
-		
-		pass compute
-		{
-			job JacobiPressure
-			uav 0 pressureTexture write
-			input 0 divergenceTexture read
-		}
-		
-		pass compute
-		{
-			job JacobiPressure
-			uav 0 pressureTexture write
-			input 0 divergenceTexture read
-		}
-		
-		pass compute
-		{
-			job JacobiPressure
-			uav 0 pressureTexture write
-			input 0 divergenceTexture read
-		}
-		
-		pass compute
-		{
-			job JacobiPressure
-			uav 0 pressureTexture write
-			input 0 divergenceTexture read
-		}
-		
-		pass compute
-		{
-			job JacobiPressure
-			uav 0 pressureTexture write
-			input 0 divergenceTexture read
-		}
-		
-		pass compute
-		{
-			job JacobiPressure
-			uav 0 pressureTexture write
-			input 0 divergenceTexture read
-		}
-		
-		pass compute
-		{
-			job JacobiPressure
-			uav 0 pressureTexture write
-			input 0 divergenceTexture read
-		}
-		
-		pass compute
-		{
-			job JacobiPressure
-			uav 0 pressureTexture write
-			input 0 divergenceTexture read
-		}
-		
-		pass compute
-		{
-			job JacobiPressure
-			uav 0 pressureTexture write
-			input 0 divergenceTexture read
-		}
-		
-		pass compute
-		{
-			job JacobiPressure
-			uav 0 pressureTexture write
-			input 0 divergenceTexture read
-		}
-		
-		pass compute
-		{
-			job JacobiPressure
-			uav 0 pressureTexture write
-			input 0 divergenceTexture read
-		}
-		
-		pass compute
-		{
-			job JacobiPressure
-			uav 0 pressureTexture write
-			input 0 divergenceTexture read
-		}
-		
-		pass compute
-		{
-			job JacobiPressure
-			uav 0 pressureTexture write
-			input 0 divergenceTexture read
-		}
-		
-		pass compute
-		{
-			job JacobiPressure
-			uav 0 pressureTexture write
-			input 0 divergenceTexture read
-		}
-		
-		pass compute
-		{
-			job JacobiPressure
-			uav 0 pressureTexture write
-			input 0 divergenceTexture read
-		}
-		
-		pass compute
-		{
-			job JacobiPressure
-			uav 0 pressureTexture write
-			input 0 divergenceTexture read
+			job SubtractPressureGradient
+			uav 0 velTexFinal write
+			input 0 pressureTexture read
 		}
 
 		pass compute
@@ -701,14 +200,6 @@ compositor_node TestComputeNode
 
 		pass compute
 		{
-			job SubtractPressureGradient
-			uav 0 velTexFinal write
-			input 0 pressureTexture read
-		}
-
-
-		/*pass compute
-		{
 			job VorticityComputation
 			input 0 velTexFinal read
 			uav 0 vortTex write
@@ -719,7 +210,7 @@ compositor_node TestComputeNode
 			job VorticityConfinement
 			input 0 vortTex read
 			uav 0 velTexFinal write
-		}*/
+		}
 		
 		/*
 		pass compute
@@ -732,28 +223,20 @@ compositor_node TestComputeNode
 		
 		pass compute
 		{
-			job	InkAdvection
-			uav 0 inkTexture write
-			input 0 inkTextureSampler read
-			input 1 velTexFinal read
-		}
-		
-		pass compute
-		{
 			job	TestJob
 			uav_buffer 0 temporaryBuffer write
 			uav 1 velTexFinal read
 			uav 2 velTexture read
 			uav 3 vortTex read
 			uav 4 pressureTexture read
-			input 0 inkTexture read
+			input 0 inkTexFinal read
 		}
 		
 		pass compute
 		{
 			job ClearBuffers2
 			uav 0 inkTexture write
-			uav 1 inkTextureSampler write
+			uav 1 inkTexFinal write
 			uav 2 velTexture write
 			uav 3 velTexFinal write
 		}
@@ -766,17 +249,6 @@ compositor_node TestComputeNode
 			colour_value 0 0 0 1
 		}
 	}
-
-
-	/*
-	~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	
-
-
-
-	
-	~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	*/
 
 	target renderTarget 
 	{
@@ -812,6 +284,8 @@ workspace "Test Compute Workspace"
 	connect_buffer_external 0 TestComputeNode 0
 	connect_external 1 TestComputeNode 1
 	connect_external 2 TestComputeNode 2
+	connect_external 3 TestComputeNode 3
+	connect_external 4 TestComputeNode 4
 
 	connect_output TestComputeNode 0
 }

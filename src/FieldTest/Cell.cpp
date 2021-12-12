@@ -215,9 +215,9 @@ namespace MyThirdOgre
             //mBoundary ? "UnlitRed" : "UnlitWhite",
             Ogre::Vector3(mState.vPos.x, 0.0f, mState.vPos.z),
             mState.qRot,
-            Ogre::Vector3::UNIT_SCALE * 0.5f,// mScale,
-            false,
-            1.0f,
+            Ogre::Vector3::UNIT_SCALE,// mScale,
+            true,
+            0.56f,
             mVelocityArrowVisible
         );
     }
@@ -430,31 +430,34 @@ namespace MyThirdOgre
     {
         if (mVelocityArrowEntity) {
 
-            auto qNew = mVelocityArrowEntity->mTransform[prevIdx]->qRot;
-
             auto q = GetRotation(Ogre::Vector3(0, 1, 0), mState.vVel.normalisedCopy(), Ogre::Vector3::UNIT_Y);
 
-            //auto vVelLen = mState.vVel.squaredLength();
+            auto vVelLen = mState.vVel.squaredLength() * 0.0005;
 
-            //if (isnan(vVelLen) || isinf(vVelLen))
-            //    vVelLen = 0;
+            if (isnan(vVelLen) || isinf(vVelLen))
+                vVelLen = 0;
+
+            if (vVelLen < 0.5f)
+                vVelLen = 0.5f;
 
             //if (vVelLen > 1.5f)
             //    vVelLen = 1.5f;
 
-            //mVelocityArrowEntity->mTransform[currIdx]->vScale.x = vVelLen;
-            //mVelocityArrowEntity->mTransform[currIdx]->vScale.y = vVelLen;
-            //mVelocityArrowEntity->mTransform[currIdx]->vScale.z = vVelLen;
+            mVelocityArrowEntity->mTransform[currIdx]->vScale.x = vVelLen;
+            mVelocityArrowEntity->mTransform[currIdx]->vScale.y = vVelLen;
+            mVelocityArrowEntity->mTransform[currIdx]->vScale.z = vVelLen;
 
-            //mPlaneEntity->mTransform[currIdx]->vPos.y = mState.rPressure;
-            //mPlaneEntity->mTransform[currIdx]->vPos.y = 1 / (mState.rMaxInk / (mState.rInk == 0 ? 1 : mState.rInk));
-            
             q.normalise();
 
             if (isnan(q.w) && isnan(q.x) && isnan(q.y) && isnan(q.z))
                 q = Ogre::Quaternion::IDENTITY;
 
             mVelocityArrowEntity->mTransform[currIdx]->qRot = q;
+        }
+
+        if (mPlaneEntity) {
+            mPlaneEntity->mTransform[currIdx]->vPos.y = mState.rPressure;
+            mPlaneEntity->mTransform[currIdx]->vPos.y = 1 / (mState.rMaxInk / (mState.rInk == 0 ? 1 : mState.rInk));
         }
 
         if (mPressureGradientArrowEntity) {

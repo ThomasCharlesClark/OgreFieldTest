@@ -33,7 +33,10 @@ void main
     uint3 gl_GlobalInvocationID : SV_DispatchThreadId
 )
 {
-	if( gl_GlobalInvocationID.x < texResolution.x && gl_GlobalInvocationID.y < texResolution.y)
+	if(gl_GlobalInvocationID.x > 0 &&
+		gl_GlobalInvocationID.x < texResolution.x && 
+		gl_GlobalInvocationID.y > 0 &&
+		gl_GlobalInvocationID.y < texResolution.y)
 	{
 		int3 idx3 = int3(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, gl_GlobalInvocationID.z);
 		int4 idx4 = int4(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, gl_GlobalInvocationID.z, 0);
@@ -42,15 +45,11 @@ void main
 
 		float width = texResolution.x;
 
-		//float4 velocity = velocityTexture.SampleLevel(TextureSampler, idx3 / width, 0);
-
 		float4 velocity = velocityTexture.Load(idx4);
 
 		float4 idxBackInTime = (idx4 - (timeSinceLast * reciprocalDeltaX * velocity));
 
 		float4 v = velocityTexture.SampleLevel(TextureSampler, idxBackInTime / width, 0);
-
-		//float4 v = velocityTexture.Load(idxBackInTime);
 
 		velocityFinal[idx3] = v;
 	}

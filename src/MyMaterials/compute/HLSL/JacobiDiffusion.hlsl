@@ -18,22 +18,29 @@ void main
     uint3 gl_GlobalInvocationID : SV_DispatchThreadId
 )
 {
-	if( gl_GlobalInvocationID.x < texResolution.x && gl_GlobalInvocationID.y < texResolution.y)
+	if (gl_GlobalInvocationID.x > 0 &&
+		gl_GlobalInvocationID.x < texResolution.x &&
+		gl_GlobalInvocationID.y > 0 &&
+		gl_GlobalInvocationID.y < texResolution.y)
 	{
 		int3 idx = float3(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, gl_GlobalInvocationID.z);
 
-		float4 a = velocityTexture.Load(float4(idx.x - 1, idx.y, idx.z, 0));
-		float4 b = velocityTexture.Load(float4(idx.x + 1, idx.y, idx.z, 0));
-		float4 c = velocityTexture.Load(float4(idx.x, idx.y - 1, idx.z, 0));
-		float4 d = velocityTexture.Load(float4(idx.x, idx.y + 1, idx.z, 0));
+		//for (int i = 0; i < 80; i++) {
 
-		float alpha = halfDeltaX * halfDeltaX / (2.865 * timeSinceLast);
-		float rBeta = 1 / (4 + alpha);
-		float4 beta = velocityTexture.Load(float4(idx.xyz, 0));
+			float4 a = velocityTexture.Load(float4(idx.x - 1, idx.y, idx.z, 0));
+			float4 b = velocityTexture.Load(float4(idx.x + 1, idx.y, idx.z, 0));
+			float4 c = velocityTexture.Load(float4(idx.x, idx.y - 1, idx.z, 0));
+			float4 d = velocityTexture.Load(float4(idx.x, idx.y + 1, idx.z, 0));
+
+			float alpha = halfDeltaX * halfDeltaX / (10.0 * timeSinceLast);
+			float rBeta = 1 / (4 + alpha);
+			float4 beta = velocityTexture.Load(float4(idx.xyz, 0));
 
 
-		float4 vVel = (a + b + c + d + alpha * beta) * rBeta;
+			float4 vVel = (a + b + c + d + alpha * beta) * rBeta;
 
-		velocityTexture[idx] = vVel;
+			velocityTexture[idx] = vVel;
+
+		//}
 	}
 }

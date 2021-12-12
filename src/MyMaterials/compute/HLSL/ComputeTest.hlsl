@@ -17,7 +17,7 @@ RWTexture3D<float4> velocityTextureFinal	: register(u1);
 RWTexture3D<float4> velocityTexture			: register(u2);
 RWTexture3D<float> vortTex					: register(u3);
 RWTexture3D<float4> pressureTexture			: register(u4);
-Texture3D<float4> inkTextureFinal			: register(t0);
+Texture3D<float> inkTextureFinal			: register(t0);
 
 uniform float maxInk;
 uniform uint2 texResolution;
@@ -64,7 +64,7 @@ void main
 
 		int4 idx4 = int4(gl_GlobalInvocationID, 0);
 
-		float4 inkColour = inkTextureFinal.Load(idx4);
+		float ink = inkTextureFinal.Load(idx4);
 
 		float4 v = velocityTextureFinal.Load(idx4);
 
@@ -72,13 +72,13 @@ void main
 
 		float4 p = pressureTexture.Load(idx4);
 
-		float4 final = float4(0, 0, 0, 0.85);
+		float4 final = float4(ink, 0, 0, 0.84);
 		
 		//final.xyz += normalize(v.xyz);
 
 		//final.xyz = v.xyz;
 
-		//final.xyz = abs(v.xyz);
+		//final.xyz += normalize(abs(v.xyz));
 
 		//final.xyz -= p.xyz;
 		
@@ -92,8 +92,18 @@ void main
 		//else {
 		//	//final = float4(0, 0, 0, 1);
 		//}
-		
-		final.xyz += inkColour.xyz;
+
+		//https://stackoverflow.com/questions/929103/convert-a-number-range-to-another-range-maintaining-ratio#answer-929107
+		//NewValue = (((OldValue - OldMin) * (NewMax - NewMin)) / (OldMax - OldMin)) + NewMin
+
+
+		//if (ink != 0)
+		//	final += float4(0.85, 0.2941176562, 0, ink);
+
+
+		//final.xyz = inkColour.xyz;
+
+		//final += inkColour.xyz;
 
 		pixelBuffer[idx] = packUnorm4x8(final);
 	}

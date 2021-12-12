@@ -23,7 +23,8 @@ namespace MyThirdOgre
     //-----------------------------------------------------------------------------------
     void GraphicsGameState::generateDebugText(float timeSinceLast, Ogre::String& outText)
     {
-        //TutorialGameState::generateDebugText(timeSinceLast, outText);
+        TutorialGameState::generateDebugText(timeSinceLast, outText);
+
        /* outText += "\nPress F2 to fake a GPU bottleneck (frame skip). ";
         outText += gFakeFrameskip ? "[On]" : "[Off]";
         outText += "\nPress F3 to fake a CPU Logic bottleneck. ";

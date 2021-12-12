@@ -18,7 +18,10 @@ void main
     uint3 gl_GlobalInvocationID : SV_DispatchThreadId
 )
 {
-	if( gl_GlobalInvocationID.x < texResolution.x && gl_GlobalInvocationID.y < texResolution.y)
+	if (gl_GlobalInvocationID.x > 0 &&
+		gl_GlobalInvocationID.x < texResolution.x &&
+		gl_GlobalInvocationID.y > 0 &&
+		gl_GlobalInvocationID.y < texResolution.y)
 	{
 		float3 idx = float3(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, gl_GlobalInvocationID.z);
 

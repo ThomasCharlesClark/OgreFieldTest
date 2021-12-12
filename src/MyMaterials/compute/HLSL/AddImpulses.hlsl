@@ -7,7 +7,9 @@ struct Particle
 
 RWStructuredBuffer<Particle> inputUavBuffer		: register(u0); // inputUavBuffer
 RWTexture3D<float4> velocityTexture				: register(u1); // velocityTexture
-RWTexture3D<float4> inkTexture					: register(u2); // inkTexture
+RWTexture3D<float> inkTexture					: register(u2); // inkTexture
+RWTexture3D<float> inkTextureSampler			: register(u3); // inkTextureSampler
+
 
 SamplerState TextureSampler
 {
@@ -29,21 +31,13 @@ void main
 	{
 		uint rwIdx = gl_GlobalInvocationID.y * texResolution.x + gl_GlobalInvocationID.x;
 
-		//float4 velocity = float4(
-		//	inputUavBuffer[rwIdx].velocity.x,
-		//	inputUavBuffer[rwIdx].velocity.y,
-		//	inputUavBuffer[rwIdx].velocity.z,
-		//	1.0);
+		int4 idx4 = int4(gl_GlobalInvocationID.xyz, 0);
 
 		float4 velocity = float4(inputUavBuffer[rwIdx].velocity, 1.0);
 
 		float width = texResolution.x;
 
-		int4 idx4 = int4(gl_GlobalInvocationID.xyz, 0);
-
 		velocityTexture[gl_GlobalInvocationID] += velocity;
-		inkTexture[gl_GlobalInvocationID] += inputUavBuffer[rwIdx].colour;
-		inkTexture[gl_GlobalInvocationID] += inputUavBuffer[rwIdx].colour;
-		//inkTexture[gl_GlobalInvocationID] += inputUavBuffer[rwIdx].colour;
+		inkTexture[gl_GlobalInvocationID] += inputUavBuffer[rwIdx].ink;
 	}
 }

@@ -16,10 +16,10 @@ using namespace MyThirdOgre;
 namespace MyThirdOgre
 {
 	Field::Field(
-		GameEntityManager* geMgr, 
-		float scale, 
-		int columnCount, 
-		int rowCount, 
+		GameEntityManager* geMgr,
+		float scale,
+		int columnCount,
+		int rowCount,
 		float maxInk) :
 		mGameEntityManager(geMgr),
 		mScale(scale),
@@ -28,13 +28,6 @@ namespace MyThirdOgre
 		mHalfDeltaX(0.5f),
 		/*mColumnCount(columnCount),
 		mRowCount(rowCount),*/
-#if OGRE_DEBUG_MODE
-		mColumnCount(32), 
-		mRowCount(32),
-#else
-		mColumnCount(128),
-		mRowCount(128),
-#endif
 		mGridLineMoDef(0),
 		mGridEntity(0),
 		mLayerCount(1),
@@ -57,17 +50,21 @@ namespace MyThirdOgre
 		mPressureSpreadHalfWidth(4),
 		mVelocitySpreadHalfWidth(2),
 #if OGRE_DEBUG_MODE
+		mColumnCount(64),
+		mRowCount(64),
 		mGridVisible(false),
-		mVelocityVisible(true),
-		mPressureGradientVisible(true),
+		mVelocityVisible(false),
+		mPressureGradientVisible(false),
 		mJacobiIterationsPressure(20),
 		mJacobiIterationsDiffusion(20),
 #else
+		mColumnCount(64),
+		mRowCount(64),
 		mGridVisible(false),
-		mVelocityVisible(true),
+		mVelocityVisible(false),
 		mPressureGradientVisible(false),
-		mJacobiIterationsPressure(40),
-		mJacobiIterationsDiffusion(40),
+		mJacobiIterationsPressure(80),
+		mJacobiIterationsDiffusion(80),
 #endif
 		mImpulses(std::vector<std::pair<CellCoord, HandInfluence>> { }),
 		mHand(0),
@@ -79,21 +76,23 @@ namespace MyThirdOgre
 		mReciprocalDeltaX = (float)1 / mDeltaX;
 		mHalfReciprocalDeltaX = 0.5f / mReciprocalDeltaX;
 
-		//if (mGridVisible)
-			//createGrid();
+		if (mGridVisible)
+			createGrid();
 
-		//if (!mUseComputeSystem)
+		if (mVelocityVisible)
 			createCells();
 
 		//mActiveCell = mCells[{0, 0, mRowCount / 2 - 1}];
 
-		//mActiveCell = mCells[{0, 0, 0}];
+		mActiveCell = mCells[{0, 0, 0}];
 
 		if (mActiveCell)
 			mActiveCell->setActive();
 
 		if (mUseComputeSystem)
 			createFieldComputeSystem();
+
+		mIsRunning = !mUseComputeSystem;
 	}
 
 	Field::~Field() {
@@ -233,14 +232,6 @@ namespace MyThirdOgre
 
 		if (mIsRunning) 
 		{
-
-			// Noooooooooooooooo don't do that here
-			// Let the Graphics thread do all the updating of the field compute system
-			// otherwise BAD THINGS
-			/*if (mFieldComputeSystem) {
-				mFieldComputeSystem->update(timeSinceLast);
-			}*/
-			
 			std::unordered_map<CellCoord, CellState> state;
 
 			for (const auto& c : mCells) {
@@ -264,7 +255,7 @@ namespace MyThirdOgre
 
 			divergence(timeSinceLast, state);
 
-			jacobiPressure(timeSinceLast, state);
+			jacobiPressure(timeSinceLast, state); 
 
 			boundaryConditions(timeSinceLast, state);
 

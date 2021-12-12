@@ -1100,7 +1100,7 @@ namespace MyThirdOgre
                     }
                 }
 
-                item->setRenderQueueGroup(49u);
+                //item->setRenderQueueGroup(49u);
 
                 //if (mWireAabb)
                 //    mWireAabb->track(item);
@@ -1457,7 +1457,7 @@ namespace MyThirdOgre
                         "secondaryVelocityTexture",
                         "secondaryVelocityTexture",
                         Ogre::GpuPageOutStrategy::Discard,
-                        Ogre::TextureFlags::RenderToTexture | Ogre::TextureFlags::Reinterpretable | Ogre::TextureFlags::Uav,
+                        Ogre::TextureFlags::RenderToTexture | Ogre::TextureFlags::Uav,
                         fieldComputeSystem->getTextureType3D(),
                         Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME,
                         0u,
@@ -1606,11 +1606,11 @@ namespace MyThirdOgre
 
                 fieldComputeSystem->getPrimaryInkTexture()->setNumMipmaps(1);
                 fieldComputeSystem->getPrimaryInkTexture()->setResolution(fieldComputeSystem->getBufferResolutionWidth(), fieldComputeSystem->getBufferResolutionHeight());
-                fieldComputeSystem->getPrimaryInkTexture()->setPixelFormat(fieldComputeSystem->getPixelFormat3D());
+                fieldComputeSystem->getPrimaryInkTexture()->setPixelFormat(fieldComputeSystem->getPixelFormatFloat3D());
 
                 fieldComputeSystem->getSecondaryInkTexture()->setNumMipmaps(1);
                 fieldComputeSystem->getSecondaryInkTexture()->setResolution(fieldComputeSystem->getBufferResolutionWidth(), fieldComputeSystem->getBufferResolutionHeight());
-                fieldComputeSystem->getSecondaryInkTexture()->setPixelFormat(fieldComputeSystem->getPixelFormat3D());
+                fieldComputeSystem->getSecondaryInkTexture()->setPixelFormat(fieldComputeSystem->getPixelFormatFloat3D());
 
                 //Ogre::DescriptorSetUav::TextureSlot uavSlot(Ogre::DescriptorSetUav::TextureSlot::makeEmpty());
 
@@ -1888,11 +1888,11 @@ namespace MyThirdOgre
                         fieldComputeSystem->getRenderTargetTexture(),
                         fieldComputeSystem->getPrimaryVelocityTexture(),
                         fieldComputeSystem->getSecondaryVelocityTexture(),
+                        fieldComputeSystem->getPrimaryInkTexture(),
+                        fieldComputeSystem->getSecondaryInkTexture(),
                         fieldComputeSystem->getPressureTexture(),
                         fieldComputeSystem->getPressureGradientTexture(),
-                        fieldComputeSystem->getDivergenceTexture(),
-                        fieldComputeSystem->getPrimaryInkTexture(),
-                        fieldComputeSystem->getSecondaryInkTexture()
+                        fieldComputeSystem->getDivergenceTexture()
                     });
 
                 auto workspace = compositorManager->addWorkspace(

@@ -18,7 +18,10 @@ void main
     uint3 gl_GlobalInvocationID : SV_DispatchThreadId
 )
 {
-	if( gl_GlobalInvocationID.x < texResolution.x && gl_GlobalInvocationID.y < texResolution.y)
+	if (gl_GlobalInvocationID.x > 0 &&
+		gl_GlobalInvocationID.x < texResolution.x &&
+		gl_GlobalInvocationID.y > 0 &&
+		gl_GlobalInvocationID.y < texResolution.y)
 	{
 		float3 idx = float3(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, gl_GlobalInvocationID.z);
 
@@ -32,5 +35,7 @@ void main
 		float3 grad = float3(a.x - b.x, c.y - d.y, 0) * halfDeltaX;
 
 		velocityTexture[idx] -= grad;
+
+		//velocityTexture[idx] = float3(velocityTexture[idx].x, 0, velocityTexture[idx].z);
 	}
 }

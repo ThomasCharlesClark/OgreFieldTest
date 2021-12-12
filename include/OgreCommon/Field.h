@@ -135,5 +135,7 @@ namespace MyThirdOgre
 
 		virtual void togglePressureGradientIndicators(void);
 		virtual void toggleVelocityIndicators(void);
+
+		virtual bool getVelocityVisible(void) { return mVelocityVisible; };
 	};
 }
