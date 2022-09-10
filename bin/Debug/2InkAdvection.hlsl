@@ -1,8 +1,8 @@
 #if 0
-	***	threads_per_group_x	1
+	***	threads_per_group_x	32
 	***	fast_shader_build_hack	1
 	***	glsl	635204550
-	***	threads_per_group_y	1
+	***	threads_per_group_y	32
 	***	threads_per_group_z	1
 	***	hlms_high_quality	0
 	***	typed_uav_load	1
@@ -36,7 +36,7 @@ uniform float reciprocalDeltaX;
 uniform float velocityDissipationConstant;
 uniform float inkDissipationConstant;
 
-[numthreads(1, 1, 1)]
+[numthreads(32, 32, 1)]
 void main
 (
     uint3 gl_LocalInvocationID : SV_GroupThreadID,
@@ -56,7 +56,11 @@ void main
 
 		float4 velocity = velocityTexture.Load(idx4);
 
+		//velocity.x = 0;
+
+		//float3 idxBackInTime = (idx3 - (velocity * 1000));
 		float3 idxBackInTime = (idx3 - (timeSinceLast * reciprocalDeltaX * velocity));
+		//float3 idxBackInTime = (idx3 - (timeSinceLast * velocity));
 
 		float4 v = velocityTexture.SampleLevel(TextureSampler, idxBackInTime / width, 0);
 

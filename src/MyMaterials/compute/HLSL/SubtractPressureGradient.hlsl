@@ -19,10 +19,10 @@ void main
 )
 {
 	if (gl_GlobalInvocationID.x > 0 &&
-		gl_GlobalInvocationID.x < texResolution.x &&
+		gl_GlobalInvocationID.x < texResolution.x - 1 &&
 		gl_GlobalInvocationID.y > 0 &&
-		gl_GlobalInvocationID.y < texResolution.y)
-	{
+		gl_GlobalInvocationID.y < texResolution.y - 1) {
+
 		float3 idx = float3(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, gl_GlobalInvocationID.z);
 
 		float width = texResolution.x;
@@ -34,8 +34,8 @@ void main
 
 		float3 grad = float3(a.x - b.x, c.y - d.y, 0) * halfDeltaX;
 
-		velocityTexture[idx] -= grad;
+		float3 vel = velocityTexture[idx] - grad;
 
-		//velocityTexture[idx] = float3(velocityTexture[idx].x, 0, velocityTexture[idx].z);
+		velocityTexture[idx] = vel;
 	}
 }

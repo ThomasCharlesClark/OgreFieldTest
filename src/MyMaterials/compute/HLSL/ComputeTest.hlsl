@@ -56,26 +56,33 @@ void main
     uint3 gl_GlobalInvocationID : SV_DispatchThreadId
 )
 {
-	if( gl_GlobalInvocationID.x < texResolution.x && gl_GlobalInvocationID.y < texResolution.y )
-	{
-		uint idx = gl_GlobalInvocationID.y * texResolution.x + gl_GlobalInvocationID.x;
+	uint idx = gl_GlobalInvocationID.y * texResolution.x + gl_GlobalInvocationID.x;
 
-		float width = texResolution.x;
+	float width = texResolution.x;
 
-		int4 idx4 = int4(gl_GlobalInvocationID, 0);
+	int4 idx4 = int4(gl_GlobalInvocationID, 0);
 
-		float ink = inkTextureFinal.Load(idx4);
+	float ink = inkTextureFinal.Load(idx4);
 
-		float4 velocity = velocityTextureFinal.Load(idx4);
+	float4 velocity = velocityTextureFinal.Load(idx4);
 
-		float vorticityValue = vortTex.Load(idx4);
+	float vorticityValue = vortTex.Load(idx4);
 
-		float4 pressure = pressureTexture.Load(idx4);
+	float4 pressure = pressureTexture.Load(idx4);
+
+	//float4 final = float4(0.0, 0.0, 0.0, 0.84);
+
+	float4 final = float4(ink, 0.0, 0.0, 0.84);
+
+	//float4 final = float4(ink, 0.0, vorticityValue, 0.84);
+
+	//float4 final = float4(ink, 0.0, vorticityValue, 0.84);
+
 		
-		float4 final = float4(ink, 0.0, vorticityValue, 0.84);
-		
-		//final.xyz += normalize(velocity.xyz);
+	//final.xyz += normalize(velocity.xyz);
 
-		pixelBuffer[idx] = packUnorm4x8(final);
-	}
+	final.xyz += velocity.xyz;
+
+	pixelBuffer[idx] = packUnorm4x8(final);
+	
 }

@@ -2,7 +2,7 @@
   "compute": {
     "TestJob": {
       "threads_per_group": [ 1, 1, 1 ],
-      "thread_groups": [ 512, 512, 1 ],
+      "thread_groups": [ 1, 1, 1 ],
       "source": "ComputeTest",
       "uav_units": 5,
       "textures": [
@@ -11,12 +11,12 @@
       "params": [
           [
             "texResolution",
-            [ 256, 256 ],
+            [ 64, 64 ],
             "uint"
           ],
           [
             "timeSinceLast",
-            [ 0 ],
+            [ 0.0167 ],
             "float"
           ],
           [
@@ -28,7 +28,7 @@
     },
     "AdvectionCopy": {
       "threads_per_group": [ 1, 1, 1 ],
-      "thread_groups": [ 512, 512, 1 ],
+      "thread_groups": [ 1, 1, 1 ],
       "source": "AdvectionCopy",
       "uav_units": 1,
       "textures": [
@@ -37,8 +37,13 @@
       "params": [
         [
           "texResolution",
-          [ 256, 256 ],
+          [ 64, 64 ],
           "uint"
+        ],
+        [
+          "timeSinceLast",
+          [ 0.0167 ],
+          "float"
         ],
         [
           "reciprocalDeltaX",
@@ -49,7 +54,7 @@
     },
     "BoundaryConditions": {
       "threads_per_group": [ 1, 1, 1 ],
-      "thread_groups": [ 512, 512, 1 ],
+      "thread_groups": [ 1, 1, 1 ],
       "source": "BoundaryConditions",
       "uav_units": 3,
       "textures": [
@@ -57,12 +62,12 @@
       "params": [
         [
           "texResolution",
-          [ 256, 256 ],
+          [ 64, 64 ],
           "uint"
         ],
         [
           "timeSinceLast",
-          [ 0 ],
+          [ 0.0167 ],
           "float"
         ],
         [
@@ -74,21 +79,22 @@
     },
     "VelocityAdvection": {
       "threads_per_group": [ 1, 1, 1 ],
-      "thread_groups": [ 512, 512, 1 ],
+      "thread_groups": [ 1, 1, 1 ],
       "source": "VelocityAdvection",
-      "uav_units": 1,
+      "uav_units": 2,
       "textures": [
+        {},
         {}
       ],
       "params": [
         [
           "texResolution",
-          [ 256, 256 ],
+          [ 64, 64 ],
           "uint"
         ],
         [
           "timeSinceLast",
-          [ 0 ],
+          [ 0.0167 ],
           "float"
         ],
         [
@@ -110,7 +116,7 @@
     },
     "InkAdvection": {
       "threads_per_group": [ 1, 1, 1 ],
-      "thread_groups": [ 512, 512, 1 ],
+      "thread_groups": [ 1, 1, 1 ],
       "source": "InkAdvection",
       "uav_units": 1,
       "textures": [
@@ -120,7 +126,7 @@
       "params": [
         [
           "texResolution",
-          [ 256, 256 ],
+          [ 64, 64 ],
           "uint"
         ],
         [
@@ -147,7 +153,7 @@
     },
     "AddImpulses": {
       "threads_per_group": [ 1, 1, 1 ],
-      "thread_groups": [ 512, 512, 1 ],
+      "thread_groups": [ 1, 1, 1 ],
       "source": "AddImpulses",
       "uav_units": 3,
       "textures": [
@@ -155,12 +161,12 @@
       "params": [
         [
           "texResolution",
-          [ 256, 256 ],
+          [ 64, 64 ],
           "uint"
         ],
         [
           "timeSinceLast",
-          [ 0 ],
+          [ 0.0167 ],
           "float"
         ],
         [
@@ -172,33 +178,43 @@
     },
     "ClearBuffers1": {
       "threads_per_group": [ 1, 1, 1 ],
-      "thread_groups": [ 512, 512, 1 ],
+      "thread_groups": [ 1, 1, 1 ],
       "source": "ClearBuffers1",
       "uav_units": 2,
       "params": [
         [
           "texResolution",
-          [ 256, 256 ],
+          [ 64, 64 ],
           "uint"
+        ],
+        [
+          "timeSinceLast",
+          [ 0.0167 ],
+          "float"
         ]
       ]
     },
     "ClearBuffers2": {
       "threads_per_group": [ 1, 1, 1 ],
-      "thread_groups": [ 512, 512, 1 ],
+      "thread_groups": [ 1, 1, 1 ],
       "source": "ClearBuffers2",
       "uav_units": 4,
       "params": [
         [
           "texResolution",
-          [ 256, 256 ],
+          [ 64, 64 ],
           "uint"
+        ],
+        [
+          "timeSinceLast",
+          [ 0.0167 ],
+          "float"
         ]
       ]
     },
     "Divergence": {
       "threads_per_group": [ 1, 1, 1 ],
-      "thread_groups": [ 512, 512, 1 ],
+      "thread_groups": [ 1, 1, 1 ],
       "source": "Divergence",
       "uav_units": 1,
       "textures": [
@@ -207,8 +223,13 @@
       "params": [
         [
           "texResolution",
-          [ 256, 256 ],
+          [ 64, 64 ],
           "uint"
+        ],
+        [
+          "timeSinceLast",
+          [ 0.0167 ],
+          "float"
         ],
         [
           "halfDeltaX",
@@ -219,7 +240,7 @@
     },
     "JacobiPressure": {
       "threads_per_group": [ 1, 1, 1 ],
-      "thread_groups": [ 512, 512, 1 ],
+      "thread_groups": [ 1, 1, 1 ],
       "source": "JacobiPressure",
       "uav_units": 1,
       "textures": [
@@ -228,8 +249,13 @@
       "params": [
         [
           "texResolution",
-          [ 256, 256 ],
+          [ 64, 64 ],
           "uint"
+        ],
+        [
+          "timeSinceLast",
+          [ 0.0167 ],
+          "float"
         ],
         [
           "halfDeltaX",
@@ -240,7 +266,7 @@
     },
     "JacobiDiffusion": {
       "threads_per_group": [ 1, 1, 1 ],
-      "thread_groups": [ 512, 512, 1 ],
+      "thread_groups": [ 1, 1, 1 ],
       "source": "JacobiDiffusion",
       "uav_units": 1,
       "textures": [
@@ -249,24 +275,24 @@
       "params": [
         [
           "texResolution",
-          [ 256, 256 ],
+          [ 64, 64 ],
           "uint"
+        ],
+        [
+          "timeSinceLast",
+          [ 0.0167 ],
+          "float"
         ],
         [
           "halfDeltaX",
           [ 0.5 ],
-          "float"
-        ],
-        [
-          "timeSinceLast",
-          [ 0 ],
           "float"
         ]
       ]
     },
     "SubtractPressureGradient": {
       "threads_per_group": [ 1, 1, 1 ],
-      "thread_groups": [ 512, 512, 1 ],
+      "thread_groups": [ 1, 1, 1 ],
       "source": "SubtractPressureGradient",
       "uav_units": 1,
       "textures": [
@@ -275,8 +301,13 @@
       "params": [
         [
           "texResolution",
-          [ 256, 256 ],
+          [ 64, 64 ],
           "uint"
+        ],
+        [
+          "timeSinceLast",
+          [ 0.0167 ],
+          "float"
         ],
         [
           "halfDeltaX",
@@ -287,7 +318,7 @@
     },
     "VorticityComputation": {
       "threads_per_group": [ 1, 1, 1 ],
-      "thread_groups": [ 512, 512, 1 ],
+      "thread_groups": [ 1, 1, 1 ],
       "source": "VorticityComputation",
       "uav_units": 1,
       "textures": [
@@ -296,8 +327,13 @@
       "params": [
         [
           "texResolution",
-          [ 256, 256 ],
+          [ 64, 64 ],
           "uint"
+        ],
+        [
+          "timeSinceLast",
+          [ 0.0167 ],
+          "float"
         ],
         [
           "halfDeltaX",
@@ -308,7 +344,7 @@
     },
     "VorticityConfinement": {
       "threads_per_group": [ 1, 1, 1 ],
-      "thread_groups": [ 512, 512, 1 ],
+      "thread_groups": [ 1, 1, 1 ],
       "source": "VorticityConfinement",
       "uav_units": 1,
       "textures": [
@@ -317,7 +353,7 @@
       "params": [
         [
           "texResolution",
-          [ 256, 256 ],
+          [ 64, 64 ],
           "uint"
         ],
         [
@@ -332,7 +368,7 @@
         ],
         [
           "timeSinceLast",
-          [ 0 ],
+          [ 0.0167 ],
           "float"
         ]
       ]

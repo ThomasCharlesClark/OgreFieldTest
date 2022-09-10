@@ -16,49 +16,83 @@ uniform float reciprocalDeltaX;
 [numthreads(@value( threads_per_group_x ), @value( threads_per_group_y ), @value( threads_per_group_z ))]
 void main
 (
-    uint3 gl_LocalInvocationID : SV_GroupThreadID,
-    uint3 gl_GlobalInvocationID : SV_DispatchThreadId
+	uint3 gl_LocalInvocationID : SV_GroupThreadID,
+	uint3 gl_GlobalInvocationID : SV_DispatchThreadId
 )
 {
-	/*if (gl_GlobalInvocationID.x < texResolution.x && gl_GlobalInvocationID.y < texResolution.y)
-	{*/
-		if (gl_GlobalInvocationID.x == 0) {
-			/*||
-			(gl_GlobalInvocationID.x == texResolution.x - 1) || 
-			(gl_GlobalInvocationID.y == 0) ||
-			(gl_GlobalInvocationID.y == texResolution.y - 1)) {*/
+	if (gl_GlobalInvocationID.x == 0) {
+		float3 neighbourIdx = float3(gl_GlobalInvocationID.x + 1, gl_GlobalInvocationID.y, gl_GlobalInvocationID.z);
 
-			float3 neighbourIdx = float3(gl_GlobalInvocationID.x + 1, gl_GlobalInvocationID.y, gl_GlobalInvocationID.z);
+		//velocityTexture[gl_GlobalInvocationID] = float3(1, 0, 0);
 
-			velocityTexture[gl_GlobalInvocationID] = -1 * velocityTexture[neighbourIdx];
-			pressureTexture[gl_GlobalInvocationID] = pressureTexture[neighbourIdx];
-			inkTexture[gl_GlobalInvocationID] = inkTexture[neighbourIdx];
-		}
-		
-		if (gl_GlobalInvocationID.x == texResolution.x - 1) {
+		velocityTexture[gl_GlobalInvocationID] = -velocityTexture[neighbourIdx];
+		pressureTexture[gl_GlobalInvocationID] = pressureTexture[neighbourIdx];
+		inkTexture[gl_GlobalInvocationID] = inkTexture[neighbourIdx];
+	}
 
-			float3 neighbourIdx = float3(gl_GlobalInvocationID.x - 1, gl_GlobalInvocationID.y, gl_GlobalInvocationID.z);
+	if (gl_GlobalInvocationID.x == texResolution.x - 1) {
 
-			velocityTexture[gl_GlobalInvocationID] = -1 * velocityTexture[neighbourIdx];
-			pressureTexture[gl_GlobalInvocationID] = pressureTexture[neighbourIdx];
-			inkTexture[gl_GlobalInvocationID] = inkTexture[neighbourIdx];
-		}
-		
-		if (gl_GlobalInvocationID.y == 0) {
-			float3 neighbourIdx = float3(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y + 1, gl_GlobalInvocationID.z);
+		float3 neighbourIdx = float3(gl_GlobalInvocationID.x - 1, gl_GlobalInvocationID.y, gl_GlobalInvocationID.z);
 
-			velocityTexture[gl_GlobalInvocationID] = -1 * velocityTexture[neighbourIdx];
-			pressureTexture[gl_GlobalInvocationID] = pressureTexture[neighbourIdx];
-			inkTexture[gl_GlobalInvocationID] = inkTexture[neighbourIdx];
-		}
-		
-		if (gl_GlobalInvocationID.y == texResolution.y - 1) {
+		//velocityTexture[gl_GlobalInvocationID] = float3(1, 0, 0);
 
-			float3 neighbourIdx = float3(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y - 1, gl_GlobalInvocationID.z);
+		velocityTexture[gl_GlobalInvocationID] = -1 * velocityTexture[neighbourIdx];
+		pressureTexture[gl_GlobalInvocationID] = pressureTexture[neighbourIdx];
+		inkTexture[gl_GlobalInvocationID] = inkTexture[neighbourIdx];
+	}
 
-			velocityTexture[gl_GlobalInvocationID] = -1 *   velocityTexture[neighbourIdx];
-			pressureTexture[gl_GlobalInvocationID] = pressureTexture[neighbourIdx];
-			inkTexture[gl_GlobalInvocationID] = inkTexture[neighbourIdx];
-		}
-	//}
+	if (gl_GlobalInvocationID.y == 0) {
+		float3 neighbourIdx = float3(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y + 1, gl_GlobalInvocationID.z);
+
+		//velocityTexture[gl_GlobalInvocationID] = float3(1, 0, 0);
+
+		velocityTexture[gl_GlobalInvocationID] = -1 * velocityTexture[neighbourIdx];
+		pressureTexture[gl_GlobalInvocationID] = pressureTexture[neighbourIdx];
+		inkTexture[gl_GlobalInvocationID] = inkTexture[neighbourIdx];
+	}
+
+	if (gl_GlobalInvocationID.y == texResolution.y - 1) {
+
+		float3 neighbourIdx = float3(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y - 1, gl_GlobalInvocationID.z);
+
+		//velocityTexture[gl_GlobalInvocationID] = float3(1, 0, 0);
+
+		velocityTexture[gl_GlobalInvocationID] = -1 * velocityTexture[neighbourIdx];
+		pressureTexture[gl_GlobalInvocationID] = pressureTexture[neighbourIdx];
+		inkTexture[gl_GlobalInvocationID] = inkTexture[neighbourIdx];
+	}
+
+
+	// corners
+	if (gl_GlobalInvocationID.x == 0 && gl_GlobalInvocationID.y == 0) {
+		float3 neighbourIdx = float3(1, 1, 0);
+
+		velocityTexture[gl_GlobalInvocationID] = -1 * velocityTexture[neighbourIdx];
+		pressureTexture[gl_GlobalInvocationID] = pressureTexture[neighbourIdx];
+		inkTexture[gl_GlobalInvocationID] = inkTexture[neighbourIdx];
+	}
+
+	if (gl_GlobalInvocationID.x == texResolution.x - 1 && gl_GlobalInvocationID.y == 0) {
+		float3 neighbourIdx = float3(texResolution.x - 2, 1, 0);
+
+		velocityTexture[gl_GlobalInvocationID] = -1 * velocityTexture[neighbourIdx];
+		pressureTexture[gl_GlobalInvocationID] = pressureTexture[neighbourIdx];
+		inkTexture[gl_GlobalInvocationID] = inkTexture[neighbourIdx];
+	}
+
+	if (gl_GlobalInvocationID.x == 0 && gl_GlobalInvocationID.y == texResolution.y - 1) {
+		float3 neighbourIdx = float3(1, texResolution.y - 2, 0);
+
+		velocityTexture[gl_GlobalInvocationID] = -1 * velocityTexture[neighbourIdx];
+		pressureTexture[gl_GlobalInvocationID] = pressureTexture[neighbourIdx];
+		inkTexture[gl_GlobalInvocationID] = inkTexture[neighbourIdx];
+	}
+
+	if (gl_GlobalInvocationID.x == texResolution.x - 1 && gl_GlobalInvocationID.y == texResolution.y - 1) {
+		float3 neighbourIdx = float3(texResolution.x - 2, texResolution.y - 2, 0);
+
+		velocityTexture[gl_GlobalInvocationID] = -1 * velocityTexture[neighbourIdx];
+		pressureTexture[gl_GlobalInvocationID] = pressureTexture[neighbourIdx];
+		inkTexture[gl_GlobalInvocationID] = inkTexture[neighbourIdx];
+	}
 }

@@ -50,21 +50,21 @@ namespace MyThirdOgre
 		mPressureSpreadHalfWidth(4),
 		mVelocitySpreadHalfWidth(2),
 #if OGRE_DEBUG_MODE
-		mColumnCount(64),
-		mRowCount(64),
-		mGridVisible(false),
+		mColumnCount(16), // for the CPU implementation please use an odd number
+		mRowCount(16), // for the CPU implementation please use an odd number
+		mGridVisible(false), // belongs to the CPU implementation
 		mVelocityVisible(false),
 		mPressureGradientVisible(false),
 		mJacobiIterationsPressure(20),
 		mJacobiIterationsDiffusion(20),
 #else
-		mColumnCount(64),
-		mRowCount(64),
+		mColumnCount(64),  // don't forget to change threadspergroup x,y to match these
+		mRowCount(64),		// in ComputeJobs.material.json
 		mGridVisible(false),
 		mVelocityVisible(false),
 		mPressureGradientVisible(false),
-		mJacobiIterationsPressure(80),
-		mJacobiIterationsDiffusion(80),
+		mJacobiIterationsPressure(20),
+		mJacobiIterationsDiffusion(20),
 #endif
 		mImpulses(std::vector<std::pair<CellCoord, HandInfluence>> { }),
 		mHand(0),
@@ -210,7 +210,11 @@ namespace MyThirdOgre
 			Ogre::Vector3::UNIT_SCALE, // What does it mean to even scale an abstract concept... 
 									  // but it ISN'T an abstract concept: this is a concrete THING which exists at a POSITION and DOES STUFF.
 									  // might be sensible to try to avoid the notion of scaling it just yet, though.
-			this
+			false,
+			0.0f,
+			true,
+			mColumnCount,
+			mRowCount
 		);
 	}
 
@@ -293,6 +297,7 @@ namespace MyThirdOgre
 
 	void Field::advect(float timeSinceLast, std::unordered_map<CellCoord, CellState>& state)
 	{
+		// velocities seem reasonable: within about -10 to +10 on any given axis
 		for (const auto& cell : state) {
 
 			if (!cell.second.bIsBoundary) {
@@ -340,7 +345,7 @@ namespace MyThirdOgre
 				else 
 				{
 					ax = floor(vPos.x); // floor moves left along the number line
-					az = ceil(vPos.z);	// ceil  moves right along the number line
+					az = ceil(vPos.z);	// ceil moves right along the number line
 
 					bx = floor(vPos.x);
 					bz = floor(vPos.z);

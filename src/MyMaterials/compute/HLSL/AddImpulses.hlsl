@@ -27,17 +27,15 @@ void main
 	uint3 gl_GlobalInvocationID : SV_DispatchThreadId
 )
 {
-	if (gl_GlobalInvocationID.x < texResolution.x && gl_GlobalInvocationID.y < texResolution.y)
-	{
-		uint rwIdx = gl_GlobalInvocationID.y * texResolution.x + gl_GlobalInvocationID.x;
+	uint rwIdx = gl_GlobalInvocationID.y * texResolution.x + gl_GlobalInvocationID.x;
 
-		int4 idx4 = int4(gl_GlobalInvocationID.xyz, 0);
+	int4 idx4 = int4(gl_GlobalInvocationID.xyz, 0);
 
-		float4 velocity = float4(inputUavBuffer[rwIdx].velocity, 1.0);
+	float4 velocity = float4(inputUavBuffer[rwIdx].velocity, 1.0);
 
-		float width = texResolution.x;
+	float width = texResolution.x;
 
-		velocityTexture[gl_GlobalInvocationID] += velocity;
-		inkTexture[gl_GlobalInvocationID] += inputUavBuffer[rwIdx].ink;
-	}
+	velocityTexture[gl_GlobalInvocationID] += velocity;
+	inkTexture[gl_GlobalInvocationID] += inputUavBuffer[rwIdx].ink;
+	
 }

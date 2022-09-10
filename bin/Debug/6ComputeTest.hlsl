@@ -6,7 +6,7 @@
 	***	threads_per_group_z	1
 	***	hlms_high_quality	0
 	***	typed_uav_load	1
-	***	num_thread_groups_y	33
+	***	num_thread_groups_y	16
 	***	glsles	1070293233
 	***	hlslvk	1841745752
 	***	syntax	-334286542
@@ -14,7 +14,7 @@
 	***	num_thread_groups_z	1
 	***	glslvk	-338983575
 	***	hlsl	-334286542
-	***	num_thread_groups_x	33
+	***	num_thread_groups_x	16
 	DONE DUMPING PROPERTIES
 	DONE DUMPING PIECES
 #endif
@@ -37,7 +37,7 @@ RWTexture3D<float4> velocityTextureFinal	: register(u1);
 RWTexture3D<float4> velocityTexture			: register(u2);
 RWTexture3D<float> vortTex					: register(u3);
 RWTexture3D<float4> pressureTexture			: register(u4);
-Texture3D<float4> inkTextureFinal			: register(t0);
+Texture3D<float> inkTextureFinal			: register(t0);
 
 uniform float maxInk;
 uniform uint2 texResolution;
@@ -76,46 +76,33 @@ void main
     uint3 gl_GlobalInvocationID : SV_DispatchThreadId
 )
 {
-	if( gl_GlobalInvocationID.x < texResolution.x && gl_GlobalInvocationID.y < texResolution.y )
-	{
-		uint idx = gl_GlobalInvocationID.y * texResolution.x + gl_GlobalInvocationID.x;
+	uint idx = gl_GlobalInvocationID.y * texResolution.x + gl_GlobalInvocationID.x;
 
-		float width = texResolution.x;
+	float width = texResolution.x;
 
-		int4 idx4 = int4(gl_GlobalInvocationID, 0);
+	int4 idx4 = int4(gl_GlobalInvocationID, 0);
 
-		float4 inkColour = inkTextureFinal.Load(idx4);
+	float ink = inkTextureFinal.Load(idx4);
 
-		float4 v = velocityTextureFinal.Load(idx4);
+	float4 velocity = velocityTextureFinal.Load(idx4);
 
-		float vortValue = vortTex.Load(idx4);
+	float vorticityValue = vortTex.Load(idx4);
 
-		float4 p = pressureTexture.Load(idx4);
+	float4 pressure = pressureTexture.Load(idx4);
 
+	float4 final = float4(0.0, 0.0, 0.0, 0.84);
 
-		float4 final = float4(0, 0, 0, 1);
+	//float4 final = float4(ink, 0.0, 0.0, 0.84);
+
+	//float4 final = float4(ink, 0.0, vorticityValue, 0.84);
+
+	//float4 final = float4(ink, 0.0, vorticityValue, 0.84);
+
 		
-		final.xyz += normalize(v.xyz);
+	//final.xyz += normalize(velocity.xyz);
 
-		//final.xyz = v.xyz;
+	final.xyz += velocity.xyz;
 
-		//final.xyz = abs(v.xyz);
-
-		//final.xyz += p.xyz;
-		
-		//final.xyz *= length(v);
-
-		//final.z += vortValue;
-
-		//if (gl_GlobalInvocationID.x == 0 && gl_GlobalInvocationID.y == 0) {
-		//	final = float4(1, 0, 0, 1);
-		//}
-		//else {
-		//	//final = float4(0, 0, 0, 1);
-		//}
-		
-		//final.xyz += normalize(inkColour.xyz);
-
-		pixelBuffer[idx] = packUnorm4x8(final);
-	}
+	pixelBuffer[idx] = packUnorm4x8(final);
+	
 }

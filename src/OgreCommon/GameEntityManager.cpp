@@ -236,10 +236,19 @@ namespace MyThirdOgre
         const Ogre::Vector3& initialScale,
         const bool useAlpha,
         const float alpha,
-        const bool visible)
+        const bool visible,
+        const int columnCount,
+        const int rowCount)
     {
 
-        FieldComputeSystem* gameEntity = new FieldComputeSystem(mCurrentId++, moDefinition, type, this);
+        FieldComputeSystem* gameEntity = new FieldComputeSystem(
+            mCurrentId++, 
+            moDefinition, 
+            type, 
+            this, 
+            columnCount,
+            rowCount);
+
         gameEntity->mTransparency = alpha;
 
         CreatedGameEntity cge;

@@ -221,7 +221,9 @@ namespace MyThirdOgre
 			FieldComputeSystem(Ogre::uint32 id, 
 				const MovableObjectDefinition* moDefinition,
 				Ogre::SceneMemoryMgrTypes type,
-				GameEntityManager* geMgr);
+				GameEntityManager* geMgr,
+				const int columnCount,
+				const int rowCount);
 			~FieldComputeSystem();
 
 			virtual void _notifyGraphicsSystem(GraphicsSystem* gs);

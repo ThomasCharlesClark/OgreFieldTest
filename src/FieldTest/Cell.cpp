@@ -208,94 +208,22 @@ namespace MyThirdOgre
         //name += "_";
         //name += Ogre::StringConverter::toString(mCellCoords.mIndexZ);
 
+        auto offset = Ogre::Vector3(0.5f, 0, 0.5f);
+
         mVelocityArrowEntity = mGameEntityManager->addGameEntity(
             "",
             Ogre::SceneMemoryMgrTypes::SCENE_DYNAMIC,
             mVelocityArrowMoDef,
             //mBoundary ? "UnlitRed" : "UnlitWhite",
-            Ogre::Vector3(mState.vPos.x, 0.0f, mState.vPos.z),
+            Ogre::Vector3(mState.vPos.x, 0.0f, mState.vPos.z) + offset,
             mState.qRot,
             Ogre::Vector3::UNIT_SCALE,// mScale,
+            //Ogre::Vector3(0.00001f, 0.00001f, 0.00001f),
             true,
             0.56f,
             mVelocityArrowVisible
         );
     }
-
-    //void Cell::createVelocityArrow(void) 
-    //{
-    //    mVelocityArrowMoDef = new MovableObjectDefinition();
-    //    mVelocityArrowMoDef->meshName = "";
-    //    mVelocityArrowMoDef->resourceGroup = Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME;
-    //    mVelocityArrowMoDef->moType = MoTypeDynamicManualLineList;
-
-    //    ManualObjectLineListDefinition arrowLineList;
-
-    //    arrowLineList.points = std::vector<Ogre::Vector3>
-    //    {
-    //        Ogre::Vector3(0.0f, 0.0f, -0.25f),
-    //        Ogre::Vector3(0.0f, 0.f, 0.25f),
-    //        Ogre::Vector3(0.0f, 0.0f, 0.25f),
-    //        Ogre::Vector3(0.2f, 0.0f, 0.0f),
-    //        Ogre::Vector3(-0.2f, 0.0f, 0.0f)
-    //    };
-
-    //    arrowLineList.lines = std::vector<std::pair<int, int>>
-    //    {
-    //        { 0, 1 },
-    //        { 2, 3 },
-    //        { 1, 4 }
-    //    };
-
-    //    if (mBoundary) {
-    //        //outer edges:
-    //        if (mCellCoords.mIndexX == 0) { // x == 0 edge
-    //            mState.qRot = Ogre::Quaternion(0.5253, 0.0, 0.5253, 0.0);
-    //        } else if (mCellCoords.mIndexX == mRowCount - 1) { // opposite x edge
-    //            mState.qRot = Ogre::Quaternion(0.5253, 0.0, -0.5253, 0.0);
-    //        } else if (mCellCoords.mIndexZ == 0) {
-    //            mState.qRot = Ogre::Quaternion(0.0, 0.0, 1.0, 0.0);
-    //        } else if (mCellCoords.mIndexZ == mColumnCount - 1) { // opposite z edge
-    //            mState.qRot = Ogre::Quaternion(1.0, 0.0, 0.0, 0.0);
-    //        }
-
-    //        //corners:  // x == 0, z == 0
-    //        if (mCellCoords.mIndexX == 0 && mCellCoords.mIndexZ == 0) {
-    //            mState.qRot = Ogre::Quaternion(0.3827, 0.0, 0.9239, 0.0);
-    //        }           // x == max, z == 0
-    //        else if (mCellCoords.mIndexX == mRowCount - 1 && mCellCoords.mIndexZ == 0) { 
-    //            mState.qRot = Ogre::Quaternion(-0.3827, 0.0, 0.9239, 0.0);
-    //        }           // x == 0, z == max
-    //        else if (mCellCoords.mIndexX == 0 && mCellCoords.mIndexZ == mColumnCount - 1) { 
-    //            mState.qRot = Ogre::Quaternion(-0.9239, 0.0, -0.3827, 0.0);
-    //        }           // x == max, z == max
-    //        else if (mCellCoords.mIndexX == mRowCount - 1 && mCellCoords.mIndexZ == mColumnCount - 1) { 
-    //            mState.qRot = Ogre::Quaternion(0.9239, 0.0, -0.3827, 0.0);
-    //        }
-    //    }
-
-    //    Ogre::String name = "vA_";
-
-    //    name += Ogre::StringConverter::toString(mCellCoords.mIndexX);
-    //    name += "_";
-    //    name += Ogre::StringConverter::toString(mCellCoords.mIndexY);
-    //    name += "_";
-    //    name += Ogre::StringConverter::toString(mCellCoords.mIndexZ);
-
-    //    mVelocityArrowEntity = mGameEntityManager->addGameEntity(
-    //        name,
-    //        Ogre::SceneMemoryMgrTypes::SCENE_DYNAMIC,
-    //        mVelocityArrowMoDef,
-    //        mBoundary ? "UnlitRed" : "UnlitWhite",
-    //        arrowLineList,
-    //        Ogre::Vector3(mState.vPos.x, 0.01f, mState.vPos.z),
-    //        mState.qRot,
-    //        Ogre::Vector3::UNIT_SCALE * mScale,
-    //        false,
-    //        1.0f, 
-    //        mVelocityArrowVisible
-    //    );
-    //}
 
     void Cell::createPressureGradientArrow(void)
     {
@@ -430,22 +358,29 @@ namespace MyThirdOgre
     {
         if (mVelocityArrowEntity) {
 
-            auto q = GetRotation(Ogre::Vector3(0, 1, 0), mState.vVel.normalisedCopy(), Ogre::Vector3::UNIT_Y);
+            auto vel = mState.vVel;
 
-            auto vVelLen = mState.vVel.squaredLength() * 0.0005;
+            auto q = GetRotation(Ogre::Vector3(0, 1, 0), vel, Ogre::Vector3::UNIT_Y);
 
-            if (isnan(vVelLen) || isinf(vVelLen))
-                vVelLen = 0;
+            auto vScale = vel.normalisedCopy();// squaredLength();
+            //auto vScale = mState.vVel.squaredLength();
 
-            if (vVelLen < 0.5f)
-                vVelLen = 0.5f;
+            //if (isnan(vScale) || isinf(vScale))
+            //    vScale = 0;
 
-            //if (vVelLen > 1.5f)
-            //    vVelLen = 1.5f;
+            //if (vScale < 0.5f)
+            //    vScale = 0.5f;
 
-            mVelocityArrowEntity->mTransform[currIdx]->vScale.x = vVelLen;
-            mVelocityArrowEntity->mTransform[currIdx]->vScale.y = vVelLen;
-            mVelocityArrowEntity->mTransform[currIdx]->vScale.z = vVelLen;
+            //if (vScale > 3.5f)
+            //    vScale = 3.5f;
+
+            //mVelocityArrowEntity->mTransform[currIdx]->vScale.x = vScale.x;
+            //mVelocityArrowEntity->mTransform[currIdx]->vScale.y = vScale.y;
+            //mVelocityArrowEntity->mTransform[currIdx]->vScale.z = vScale.z;
+
+            //mVelocityArrowEntity->mTransform[currIdx]->vScale.x = vScale;
+            //mVelocityArrowEntity->mTransform[currIdx]->vScale.y = vScale;
+            //mVelocityArrowEntity->mTransform[currIdx]->vScale.z = vScale;
 
             q.normalise();
 

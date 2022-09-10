@@ -1,5 +1,7 @@
-Texture3D<float4> velocityTexture				: register(t0);
-RWTexture3D<float4> velocityFinal				: register(u0);
+Texture3D<float4> velocityTexture			: register(t0);
+Texture3D<float4> inkTexture				: register(t1);
+RWTexture3D<float4> velocityFinal			: register(u0);
+RWTexture3D<float4> inkFinal				: register(u1);
 
 
 SamplerState TextureSampler
@@ -33,11 +35,11 @@ void main
     uint3 gl_GlobalInvocationID : SV_DispatchThreadId
 )
 {
-	if(gl_GlobalInvocationID.x > 0 &&
-		gl_GlobalInvocationID.x < texResolution.x && 
+	if (gl_GlobalInvocationID.x > 0 &&
+		gl_GlobalInvocationID.x < texResolution.x - 1 &&
 		gl_GlobalInvocationID.y > 0 &&
-		gl_GlobalInvocationID.y < texResolution.y)
-	{
+		gl_GlobalInvocationID.y < texResolution.y - 1) {
+
 		int3 idx3 = int3(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, gl_GlobalInvocationID.z);
 		int4 idx4 = int4(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, gl_GlobalInvocationID.z, 0);
 
@@ -50,7 +52,9 @@ void main
 		float4 idxBackInTime = (idx4 - (timeSinceLast * reciprocalDeltaX * velocity));
 
 		float4 v = velocityTexture.SampleLevel(TextureSampler, idxBackInTime / width, 0);
+		float i = inkTexture.SampleLevel(TextureSampler, idxBackInTime / width, 0).x;
 
 		velocityFinal[idx3] = v;
+		inkFinal[idx3] = i;
 	}
 }
