@@ -140,6 +140,11 @@ namespace MyThirdOgre
 			float						mLeafHeight;
 			float						mLeafResolutionX;
 			float						mLeafResolutionZ;
+			float						mVelocityDissipationConstant;
+			int							mColumnCount;
+			int							mRowCount;
+			int							mThreadGroupsX;
+			int							mThreadGroupsY;
 			int							mLeafCountX;
 			int							mLeafCountZ;
 			float						mBufferResolutionDepth;

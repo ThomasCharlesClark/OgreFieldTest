@@ -34,6 +34,7 @@ namespace MyThirdOgre
         bool pressureGradientArrowVisible,
         bool tileVisible,
         float maxInk,
+        Ogre::Vector3 gridOffset,
         GameEntityManager* geMgr
     ) :
         mScale(scale),
@@ -54,6 +55,7 @@ namespace MyThirdOgre
         mSphere(0),
         mMaxVelocitySquared(maxVelocitySquared),
         mMaxPressure(maxPressure),
+        mGridOffset(gridOffset),
         mGameEntityManager(geMgr)
         // interesting pressure - based surfaces:
         // (0.2 * ((rowIndex * rowIndex) - (2 * (rowIndex * columnIndex))) + 3)
@@ -208,14 +210,12 @@ namespace MyThirdOgre
         //name += "_";
         //name += Ogre::StringConverter::toString(mCellCoords.mIndexZ);
 
-        auto offset = Ogre::Vector3(0.5f, 0, 0.5f);
-
         mVelocityArrowEntity = mGameEntityManager->addGameEntity(
             "",
             Ogre::SceneMemoryMgrTypes::SCENE_DYNAMIC,
             mVelocityArrowMoDef,
             //mBoundary ? "UnlitRed" : "UnlitWhite",
-            Ogre::Vector3(mState.vPos.x, 0.0f, mState.vPos.z) + offset,
+            Ogre::Vector3(mState.vPos.x, 0.0f, mState.vPos.z) + mGridOffset,
             mState.qRot,
             Ogre::Vector3::UNIT_SCALE,// mScale,
             //Ogre::Vector3(0.00001f, 0.00001f, 0.00001f),

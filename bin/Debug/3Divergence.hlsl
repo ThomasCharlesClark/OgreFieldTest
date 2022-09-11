@@ -6,7 +6,7 @@
 	***	threads_per_group_z	1
 	***	hlms_high_quality	0
 	***	typed_uav_load	1
-	***	num_thread_groups_y	16
+	***	num_thread_groups_y	64
 	***	glsles	1070293233
 	***	hlslvk	1841745752
 	***	syntax	-334286542
@@ -14,7 +14,7 @@
 	***	num_thread_groups_z	1
 	***	glslvk	-338983575
 	***	hlsl	-334286542
-	***	num_thread_groups_x	16
+	***	num_thread_groups_x	64
 	DONE DUMPING PROPERTIES
 	DONE DUMPING PIECES
 #endif
@@ -38,22 +38,27 @@ void main
     uint3 gl_GlobalInvocationID : SV_DispatchThreadId
 )
 {
-	float3 idx = float3(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, gl_GlobalInvocationID.z);
+	if (gl_GlobalInvocationID.x > 0 &&
+		gl_GlobalInvocationID.x < texResolution.x - 1 &&
+		gl_GlobalInvocationID.y > 0 &&
+		gl_GlobalInvocationID.y < texResolution.y - 1) {
 
-	float width = texResolution.x;
+		float3 idx = float3(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, gl_GlobalInvocationID.z);
 
-	float3 a = velocityRead.SampleLevel(TextureSampler, float3(idx.x - 1, idx.y,	 idx.z) / width, 0);
-	float3 b = velocityRead.SampleLevel(TextureSampler, float3(idx.x + 1, idx.y,	 idx.z) / width, 0);
-	float3 c = velocityRead.SampleLevel(TextureSampler, float3(idx.x,	  idx.y + 1, idx.z) / width, 0);
-	float3 d = velocityRead.SampleLevel(TextureSampler, float3(idx.x,	  idx.y - 1, idx.z) / width, 0);
+		float width = texResolution.x;
 
-	float3 div = float3(
-		((a.x - b.x) + (c.y - d.y)) * halfDeltaX,
-		0,
-		0);
+		float3 a = velocityRead.SampleLevel(TextureSampler, float3(idx.x - 1, idx.y, idx.z) / width, 0);
+		float3 b = velocityRead.SampleLevel(TextureSampler, float3(idx.x + 1, idx.y, idx.z) / width, 0);
+		float3 c = velocityRead.SampleLevel(TextureSampler, float3(idx.x, idx.y + 1, idx.z) / width, 0);
+		float3 d = velocityRead.SampleLevel(TextureSampler, float3(idx.x, idx.y - 1, idx.z) / width, 0);
+
+		float3 div = float3(
+			((a.x - b.x) + (c.y - d.y)) * halfDeltaX,
+			0,
+			0);
 		/*((a.x - b.x) + (c.y - d.y)) * halfDeltaX,
 		((a.x - b.x) + (c.y - d.y)) * halfDeltaX);*/
 
-	divergenceTexture[idx] = div;
-	
+		divergenceTexture[idx] = div;
+	}
 }

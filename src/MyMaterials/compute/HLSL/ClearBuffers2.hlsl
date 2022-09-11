@@ -12,6 +12,7 @@ RWTexture3D<float4> velocityFinal				: register(u3);
 
 uniform uint2 texResolution;
 uniform float timeSinceLast;
+uniform float velocityDissipationConstant;
 
 [numthreads(@value( threads_per_group_x ), @value( threads_per_group_y ), @value( threads_per_group_z ))]
 void main
@@ -39,6 +40,6 @@ void main
 	//velocityTexture[gl_GlobalInvocationID] = float4(0, 0, 0, 0);
 
 	//inkTexture[gl_GlobalInvocationID] *= timeSinceLast;
-	velocityTexture[gl_GlobalInvocationID] *= 1 - timeSinceLast;
+	//velocityTexture[gl_GlobalInvocationID] *= velocityDissipationConstant;
 	
 }

@@ -6,7 +6,7 @@
 	***	threads_per_group_z	1
 	***	hlms_high_quality	0
 	***	typed_uav_load	1
-	***	num_thread_groups_y	16
+	***	num_thread_groups_y	512
 	***	glsles	1070293233
 	***	hlslvk	1841745752
 	***	syntax	-334286542
@@ -14,7 +14,7 @@
 	***	num_thread_groups_z	1
 	***	glslvk	-338983575
 	***	hlsl	-334286542
-	***	num_thread_groups_x	16
+	***	num_thread_groups_x	512
 	DONE DUMPING PROPERTIES
 	DONE DUMPING PIECES
 #endif
@@ -32,6 +32,7 @@ RWTexture3D<float4> velocityFinal				: register(u3);
 
 uniform uint2 texResolution;
 uniform float timeSinceLast;
+uniform float velocityDissipationConstant;
 
 [numthreads(1, 1, 1)]
 void main
@@ -56,9 +57,9 @@ void main
 
 	//velocityFinal[gl_GlobalInvocationID] = float4(0, 0, 0, 0);
 
-	velocityTexture[gl_GlobalInvocationID] = float4(0, 0, 0, 0);
+	//velocityTexture[gl_GlobalInvocationID] = float4(0, 0, 0, 0);
 
 	//inkTexture[gl_GlobalInvocationID] *= timeSinceLast;
-	//velocityTexture[gl_GlobalInvocationID] *= timeSinceLast;
+	//velocityTexture[gl_GlobalInvocationID] *= velocityDissipationConstant;
 	
 }

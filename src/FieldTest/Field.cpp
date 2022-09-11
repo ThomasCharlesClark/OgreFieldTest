@@ -50,8 +50,8 @@ namespace MyThirdOgre
 		mPressureSpreadHalfWidth(4),
 		mVelocitySpreadHalfWidth(2),
 #if OGRE_DEBUG_MODE
-		mColumnCount(16), // for the CPU implementation please use an odd number
-		mRowCount(16), // for the CPU implementation please use an odd number
+		mColumnCount(64), // for the CPU implementation please use an odd number
+		mRowCount(64), // for the CPU implementation please use an odd number
 		mGridVisible(false), // belongs to the CPU implementation
 		mVelocityVisible(false),
 		mPressureGradientVisible(false),
@@ -75,6 +75,8 @@ namespace MyThirdOgre
 	{
 		mReciprocalDeltaX = (float)1 / mDeltaX;
 		mHalfReciprocalDeltaX = 0.5f / mReciprocalDeltaX;
+
+		mGridOffset = mUseComputeSystem ? Ogre::Vector3(0.5f, 0.0f, 0.5f) : Ogre::Vector3::ZERO;
 
 		if (mGridVisible)
 			createGrid();
@@ -159,7 +161,7 @@ namespace MyThirdOgre
 			mGridLineMoDef,
 			"UnlitBlack",
 			gridLineList,
-			Ogre::Vector3::ZERO,
+			mGridOffset,
 			Ogre::Quaternion::IDENTITY,
 			Ogre::Vector3::UNIT_SCALE
 		);
@@ -183,6 +185,7 @@ namespace MyThirdOgre
 						mPressureGradientVisible,
 						mGridVisible,
 						mMaxInk,
+						mGridOffset,
 						mGameEntityManager);
 					mCells.insert({
 						c->getCellCoords(),

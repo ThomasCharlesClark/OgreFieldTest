@@ -6,7 +6,7 @@
 	***	threads_per_group_z	1
 	***	hlms_high_quality	0
 	***	typed_uav_load	1
-	***	num_thread_groups_y	16
+	***	num_thread_groups_y	512
 	***	glsles	1070293233
 	***	hlslvk	1841745752
 	***	syntax	-334286542
@@ -14,7 +14,7 @@
 	***	num_thread_groups_z	1
 	***	glslvk	-338983575
 	***	hlsl	-334286542
-	***	num_thread_groups_x	16
+	***	num_thread_groups_x	512
 	DONE DUMPING PROPERTIES
 	DONE DUMPING PIECES
 #endif
@@ -76,33 +76,39 @@ void main
     uint3 gl_GlobalInvocationID : SV_DispatchThreadId
 )
 {
-	uint idx = gl_GlobalInvocationID.y * texResolution.x + gl_GlobalInvocationID.x;
+	//if (gl_GlobalInvocationID.x > 0 &&
+	//	gl_GlobalInvocationID.x < texResolution.x - 1 &&
+	//	gl_GlobalInvocationID.y > 0 &&
+	//	gl_GlobalInvocationID.y < texResolution.y - 1) {
 
-	float width = texResolution.x;
+		uint idx = gl_GlobalInvocationID.y * texResolution.x + gl_GlobalInvocationID.x;
 
-	int4 idx4 = int4(gl_GlobalInvocationID, 0);
+		float width = texResolution.x;
 
-	float ink = inkTextureFinal.Load(idx4);
+		int4 idx4 = int4(gl_GlobalInvocationID, 0);
 
-	float4 velocity = velocityTextureFinal.Load(idx4);
+		float ink = inkTextureFinal.Load(idx4);
 
-	float vorticityValue = vortTex.Load(idx4);
+		float4 velocity = velocityTextureFinal.Load(idx4);
 
-	float4 pressure = pressureTexture.Load(idx4);
+		float vorticityValue = vortTex.Load(idx4);
 
-	//float4 final = float4(0.0, 0.0, 0.0, 0.84);
+		float4 pressure = pressureTexture.Load(idx4);
 
-	float4 final = float4(ink, 0.0, 0.0, 0.84);
+		//float4 final = float4(0.0, 0.0, 0.0, 0.84);
 
-	//float4 final = float4(ink, 0.0, vorticityValue, 0.84);
+		float4 final = float4(ink, 0.0, 0.0, 0.84);
 
-	//float4 final = float4(ink, 0.0, vorticityValue, 0.84);
+		//float4 final = float4(ink, 0.0, vorticityValue, 0.84);
 
-		
-	//final.xyz += normalize(velocity.xyz);
+		//float4 final = float4(ink, 0.0, vorticityValue, 0.84);
 
-	//final.xyz += velocity.xyz;
 
-	pixelBuffer[idx] = packUnorm4x8(final);
-	
+		//final.xyz += normalize(velocity.xyz);
+
+		//final.xyz += velocity.xyz;
+
+		pixelBuffer[idx] = packUnorm4x8(final);
+
+	//}
 }

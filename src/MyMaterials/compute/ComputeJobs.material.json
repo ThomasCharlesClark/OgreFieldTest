@@ -81,9 +81,8 @@
       "threads_per_group": [ 1, 1, 1 ],
       "thread_groups": [ 1, 1, 1 ],
       "source": "VelocityAdvection",
-      "uav_units": 2,
+      "uav_units": 1,
       "textures": [
-        {},
         {}
       ],
       "params": [
@@ -207,6 +206,11 @@
         ],
         [
           "timeSinceLast",
+          [ 0.0167 ],
+          "float"
+        ],
+        [
+          "velocityDissipationConstant",
           [ 0.0167 ],
           "float"
         ]

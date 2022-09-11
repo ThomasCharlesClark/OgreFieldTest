@@ -79,7 +79,13 @@ namespace MyThirdOgre
                     if (msg.tracking_event->nHands >= 1)
                     {
 
-                        Ogre::Vector3 vVel = Ogre::Vector3(msg.tracking_event->pHands[0].palm.velocity.v);
+                        //Ogre::Vector3 vVel = Ogre::Vector3(msg.tracking_event->pHands[0].palm.velocity.v);
+                        Ogre::Vector3 vVel = Ogre::Vector3(
+                            msg.tracking_event->pHands[0].palm.velocity.x,
+                            //msg.tracking_event->pHands[0].palm.velocity.y,
+                            msg.tracking_event->pHands[0].palm.velocity.z,
+                            msg.tracking_event->pHands[0].palm.velocity.z
+                            );
 
                         Ogre::Vector3 vPos = Ogre::Vector3(msg.tracking_event->pHands[0].palm.position.v);
 
@@ -93,7 +99,8 @@ namespace MyThirdOgre
 
                         //vVel.y = 0;
 
-                        Leap_MotionMessage vMsg = Leap_MotionMessage(timeSinceLast, vVel, vPos, msg.tracking_event->pHands[0].index.is_extended ? 1000.0f : 0.0f);
+                        //Leap_MotionMessage vMsg = Leap_MotionMessage(timeSinceLast, vVel, vPos, msg.tracking_event->pHands[0].index.is_extended ? 1000.0f : 0.0f);
+                        Leap_MotionMessage vMsg = Leap_MotionMessage(timeSinceLast, vVel, vPos, 1000.0f);
 
                         this->queueSendMessage(mLogicSystem, Mq::LEAPFRAME_MOTION, vMsg);
 

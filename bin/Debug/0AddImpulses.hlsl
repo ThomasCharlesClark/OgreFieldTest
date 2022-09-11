@@ -6,7 +6,7 @@
 	***	threads_per_group_z	1
 	***	hlms_high_quality	0
 	***	typed_uav_load	1
-	***	num_thread_groups_y	16
+	***	num_thread_groups_y	512
 	***	glsles	1070293233
 	***	hlslvk	1841745752
 	***	syntax	-334286542
@@ -14,7 +14,7 @@
 	***	num_thread_groups_z	1
 	***	glslvk	-338983575
 	***	hlsl	-334286542
-	***	num_thread_groups_x	16
+	***	num_thread_groups_x	512
 	DONE DUMPING PROPERTIES
 	DONE DUMPING PIECES
 #endif
@@ -47,15 +47,20 @@ void main
 	uint3 gl_GlobalInvocationID : SV_DispatchThreadId
 )
 {
-	uint rwIdx = gl_GlobalInvocationID.y * texResolution.x + gl_GlobalInvocationID.x;
+	if (gl_GlobalInvocationID.x > 0 &&
+		gl_GlobalInvocationID.x < texResolution.x - 1 &&
+		gl_GlobalInvocationID.y > 0 &&
+		gl_GlobalInvocationID.y < texResolution.y - 1) {
 
-	int4 idx4 = int4(gl_GlobalInvocationID.xyz, 0);
+		uint rwIdx = gl_GlobalInvocationID.y * texResolution.x + gl_GlobalInvocationID.x;
 
-	float4 velocity = float4(inputUavBuffer[rwIdx].velocity, 1.0);
+		int4 idx4 = int4(gl_GlobalInvocationID.xyz, 0);
 
-	float width = texResolution.x;
+		float4 velocity = float4(inputUavBuffer[rwIdx].velocity, 1.0);
 
-	velocityTexture[gl_GlobalInvocationID] += velocity;
-	inkTexture[gl_GlobalInvocationID] += inputUavBuffer[rwIdx].ink;
-	
+		float width = texResolution.x;
+
+		velocityTexture[gl_GlobalInvocationID] += velocity;
+		inkTexture[gl_GlobalInvocationID] += inputUavBuffer[rwIdx].ink;
+	}
 }

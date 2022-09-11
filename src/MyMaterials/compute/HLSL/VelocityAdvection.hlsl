@@ -1,7 +1,5 @@
 Texture3D<float4> velocityTexture			: register(t0);
-Texture3D<float4> inkTexture				: register(t1);
 RWTexture3D<float4> velocityFinal			: register(u0);
-RWTexture3D<float4> inkFinal				: register(u1);
 
 
 SamplerState TextureSampler
@@ -49,12 +47,10 @@ void main
 
 		float4 velocity = velocityTexture.Load(idx4);
 
-		float4 idxBackInTime = (idx4 - (timeSinceLast * reciprocalDeltaX * velocity));
+		float4 idxBackInTime = (idx4 - (reciprocalDeltaX * velocity));
 
 		float4 v = velocityTexture.SampleLevel(TextureSampler, idxBackInTime / width, 0);
-		float i = inkTexture.SampleLevel(TextureSampler, idxBackInTime / width, 0).x;
 
 		velocityFinal[idx3] = v;
-		inkFinal[idx3] = i;
 	}
 }
