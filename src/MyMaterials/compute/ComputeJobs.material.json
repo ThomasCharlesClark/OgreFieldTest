@@ -1,7 +1,7 @@
 {
   "compute": {
     "TestJob": {
-      "threads_per_group": [ 1, 1, 1 ],
+      "threads_per_group": [ 4, 4, 1 ],
       "thread_groups": [ 1, 1, 1 ],
       "source": "ComputeTest",
       "uav_units": 5,
@@ -27,7 +27,7 @@
         ]
     },
     "AdvectionCopy": {
-      "threads_per_group": [ 1, 1, 1 ],
+      "threads_per_group": [ 4, 4, 1 ],
       "thread_groups": [ 1, 1, 1 ],
       "source": "AdvectionCopy",
       "uav_units": 1,
@@ -53,7 +53,7 @@
       ]
     },
     "BoundaryConditions": {
-      "threads_per_group": [ 1, 1, 1 ],
+      "threads_per_group": [ 4, 4, 1 ],
       "thread_groups": [ 1, 1, 1 ],
       "source": "BoundaryConditions",
       "uav_units": 3,
@@ -78,7 +78,7 @@
       ]
     },
     "VelocityAdvection": {
-      "threads_per_group": [ 1, 1, 1 ],
+      "threads_per_group": [ 4, 4, 1 ],
       "thread_groups": [ 1, 1, 1 ],
       "source": "VelocityAdvection",
       "uav_units": 1,
@@ -114,7 +114,7 @@
       ]
     },
     "InkAdvection": {
-      "threads_per_group": [ 1, 1, 1 ],
+      "threads_per_group": [ 4, 4, 1 ],
       "thread_groups": [ 1, 1, 1 ],
       "source": "InkAdvection",
       "uav_units": 1,
@@ -151,7 +151,7 @@
       ]
     },
     "AddImpulses": {
-      "threads_per_group": [ 1, 1, 1 ],
+      "threads_per_group": [ 4, 4, 1 ],
       "thread_groups": [ 1, 1, 1 ],
       "source": "AddImpulses",
       "uav_units": 3,
@@ -176,7 +176,7 @@
       ]
     },
     "ClearBuffers1": {
-      "threads_per_group": [ 1, 1, 1 ],
+      "threads_per_group": [ 4, 4, 1 ],
       "thread_groups": [ 1, 1, 1 ],
       "source": "ClearBuffers1",
       "uav_units": 2,
@@ -194,7 +194,7 @@
       ]
     },
     "ClearBuffers2": {
-      "threads_per_group": [ 1, 1, 1 ],
+      "threads_per_group": [ 4, 4, 1 ],
       "thread_groups": [ 1, 1, 1 ],
       "source": "ClearBuffers2",
       "uav_units": 4,
@@ -217,7 +217,7 @@
       ]
     },
     "Divergence": {
-      "threads_per_group": [ 1, 1, 1 ],
+      "threads_per_group": [ 4, 4, 1 ],
       "thread_groups": [ 1, 1, 1 ],
       "source": "Divergence",
       "uav_units": 1,
@@ -243,7 +243,7 @@
       ]
     },
     "JacobiPressure": {
-      "threads_per_group": [ 1, 1, 1 ],
+      "threads_per_group": [ 4, 4, 1 ],
       "thread_groups": [ 1, 1, 1 ],
       "source": "JacobiPressure",
       "uav_units": 1,
@@ -269,7 +269,7 @@
       ]
     },
     "JacobiDiffusion": {
-      "threads_per_group": [ 1, 1, 1 ],
+      "threads_per_group": [ 4, 4, 1 ],
       "thread_groups": [ 1, 1, 1 ],
       "source": "JacobiDiffusion",
       "uav_units": 1,
@@ -295,7 +295,7 @@
       ]
     },
     "SubtractPressureGradient": {
-      "threads_per_group": [ 1, 1, 1 ],
+      "threads_per_group": [ 4, 4, 1 ],
       "thread_groups": [ 1, 1, 1 ],
       "source": "SubtractPressureGradient",
       "uav_units": 1,
@@ -321,7 +321,7 @@
       ]
     },
     "VorticityComputation": {
-      "threads_per_group": [ 1, 1, 1 ],
+      "threads_per_group": [ 4, 4, 1 ],
       "thread_groups": [ 1, 1, 1 ],
       "source": "VorticityComputation",
       "uav_units": 1,
@@ -347,7 +347,7 @@
       ]
     },
     "VorticityConfinement": {
-      "threads_per_group": [ 1, 1, 1 ],
+      "threads_per_group": [ 4, 4, 1 ],
       "thread_groups": [ 1, 1, 1 ],
       "source": "VorticityConfinement",
       "uav_units": 1,

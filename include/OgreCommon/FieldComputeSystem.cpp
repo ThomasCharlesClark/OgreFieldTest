@@ -1048,7 +1048,7 @@ namespace MyThirdOgre
 				// the input buffer MUST be cleared as often as possible
 				//iter.colour = Ogre::Vector4(0.0f, 0.0f, 0.0f, 0.0f);
 				//iter.colour = Ogre::Vector4(0.0450033244f, 0.1421513113f, 0.4302441212f, 0.0f);
-				//iter.ink = 0.0f;
+				iter.ink = 0.0f;
 				iter.velocity = Ogre::Vector3::ZERO;
 			}
 
@@ -1123,8 +1123,8 @@ namespace MyThirdOgre
 								//dir.y = 0;
 								//dir.z = 0;
 
-								//auto vel = dir; //+(mHand->getState().vVel * timeSinceLast);
-								auto vel = (mHand->getState().vVel);
+								auto vel = dir; //+(mHand->getState().vVel * timeSinceLast);
+								//auto vel = (mHand->getState().vVel.normalisedCopy());
 
 								//if (mHand->getState().vVel != Ogre::Vector3::ZERO) {
 								//	vel.normalise();
@@ -1138,7 +1138,8 @@ namespace MyThirdOgre
 								//	int f = 0;
 								//}
 
-								thisElement.velocity += vel;
+								//thisElement.velocity += vel;
+								thisElement.velocity = dir;
 
 								//thisElement.velocity += mHand->getState().vVel.normalisedCopy();
 
@@ -1199,7 +1200,7 @@ namespace MyThirdOgre
 				*instanceBuffer++ = iter.colour.w;// iter.colour.a;// (float)sin(mTimeAccumulator);
 
 				*instanceBuffer++ = iter.velocity.x;
-				*instanceBuffer++ = 0;// iter.velocity.y;
+				*instanceBuffer++ = iter.velocity.y;
 				*instanceBuffer++ = iter.velocity.z;
 			}
 

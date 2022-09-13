@@ -35,7 +35,7 @@ void main
 		float width = texResolution.x;
 
 		//float4 velocity = velocityTexture.Load(idx4);
-		float4 velocity = velocityTexture.SampleLevel(TextureSampler, idx4 / width, 0) * 100;
+		float4 velocity = velocityTexture.SampleLevel(TextureSampler, idx4 / width, 0) * 10;
 
 		//velocity.x = 0;
 

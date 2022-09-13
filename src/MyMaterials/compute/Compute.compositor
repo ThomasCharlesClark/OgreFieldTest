@@ -37,14 +37,12 @@ compositor_node TestComputeNode
 			uav 0 velTexFinal write
 		}
 
-		/*
 		pass compute
 		{
 			job JacobiDiffusion
 			uav 0 velTexFinal read write
 		}
-		*/
-
+		
 		pass compute
 		{
 			job Divergence
@@ -94,13 +92,13 @@ compositor_node TestComputeNode
 			input 0 pressureTexture read
 		}
 		
-		pass compute
+		/*pass compute
 		{
 			job InkAdvection
 			input 0 velTexFinal read
 			input 1 inkTexture read
 			uav 0 inkTexFinal write
-		}
+		}*/
 
 		pass compute
 		{
@@ -110,7 +108,7 @@ compositor_node TestComputeNode
 			uav 2 inkTexFinal read write
 		}
 		
-		pass compute
+		/*pass compute
 		{
 			job VorticityComputation
 			input 0 velTexFinal read
@@ -122,7 +120,7 @@ compositor_node TestComputeNode
 			job VorticityConfinement
 			input 0 vortTex read
 			uav 0 velTexFinal write
-		}
+		}*/
 
 		pass compute
 		{
@@ -134,6 +132,17 @@ compositor_node TestComputeNode
 			uav 4 pressureTexture read
 			input 0 inkTexFinal read
 		}
+		
+		pass compute
+		{
+			job ClearBuffers2
+			uav 0 inkTexture write
+			uav 1 inkTexFinal write
+			uav 2 velTexture write
+			uav 3 velTexFinal write
+		}
+
+
 	}
 
 	target vortTex 

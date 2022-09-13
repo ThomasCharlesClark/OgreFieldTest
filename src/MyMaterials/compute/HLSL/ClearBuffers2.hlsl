@@ -35,7 +35,7 @@ void main
 	//velocityFinal[gl_GlobalInvocationID] *= 1.0002;
 	//velocityTexture[gl_GlobalInvocationID] *= 1.0002;
 
-	//velocityFinal[gl_GlobalInvocationID] = float4(0, 0, 0, 0);
+	velocityFinal[gl_GlobalInvocationID] = float4(0, 0, 0, 0);
 
 	//velocityTexture[gl_GlobalInvocationID] = float4(0, 0, 0, 0);
 
