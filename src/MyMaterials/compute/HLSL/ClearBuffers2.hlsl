@@ -23,14 +23,14 @@ void main
 	{
 		uint rwIdx = gl_GlobalInvocationID.y * texResolution.x + gl_GlobalInvocationID.x;
 		
-		inkTexture[gl_GlobalInvocationID] *= 0.992;
-		inkTexFinal[gl_GlobalInvocationID] *= 0.999992;
+		//inkTexture[gl_GlobalInvocationID] *= 0.992;
+		inkTexFinal[gl_GlobalInvocationID] *= 0.02;
 
-		//inkTexture[gl_GlobalInvocationID] = float4(0, 0, 0, 0);
+		inkTexture[gl_GlobalInvocationID] = float4(0, 0, 0, 0);
 		//inkTexFinal[gl_GlobalInvocationID] = float4(0, 0, 0, 0);
 
-		velocityFinal[gl_GlobalInvocationID] *= 0.996;
-		velocityTexture[gl_GlobalInvocationID] *= 0.996;
+		velocityFinal[gl_GlobalInvocationID] *= 0.96;
+		//velocityTexture[gl_GlobalInvocationID] *= 0.996;
 
 		//velocityFinal[gl_GlobalInvocationID] *= 1.0002;
 		//velocityTexture[gl_GlobalInvocationID] *= 1.0002;

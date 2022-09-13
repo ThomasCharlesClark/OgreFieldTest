@@ -1100,7 +1100,7 @@ namespace MyThirdOgre
                     }
                 }
 
-                //item->setRenderQueueGroup(49u);
+                item->setRenderQueueGroup(51u);
 
                 //if (mWireAabb)
                 //    mWireAabb->track(item);

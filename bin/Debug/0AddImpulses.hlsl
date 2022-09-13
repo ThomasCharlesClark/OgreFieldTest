@@ -47,7 +47,10 @@ void main
 	uint3 gl_GlobalInvocationID : SV_DispatchThreadId
 )
 {
-	if (gl_GlobalInvocationID.x < texResolution.x && gl_GlobalInvocationID.y < texResolution.y)
+	if (gl_GlobalInvocationID.x > 0 && 
+		gl_GlobalInvocationID.x < texResolution.x - 1 && 
+		gl_GlobalInvocationID.y > 0 &&
+		gl_GlobalInvocationID.y < texResolution.y - 1)
 	{
 		uint rwIdx = gl_GlobalInvocationID.y * texResolution.x + gl_GlobalInvocationID.x;
 

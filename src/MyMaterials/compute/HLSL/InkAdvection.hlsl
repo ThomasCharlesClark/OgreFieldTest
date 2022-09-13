@@ -1,5 +1,5 @@
-RWTexture3D<float> inkTexFinal			: register(u0);
-Texture3D<float> inkTexture				: register(t0);
+RWTexture3D<float4> inkTexFinal			: register(u0);
+Texture3D<float4> inkTexture				: register(t0);
 Texture3D<float4> velocityTexture		: register(t1);
 
 SamplerState TextureSampler
@@ -24,9 +24,9 @@ void main
 )
 {
 	if (gl_GlobalInvocationID.x > 0 &&
-		gl_GlobalInvocationID.x < texResolution.x &&
+		gl_GlobalInvocationID.x < texResolution.x - 1 &&
 		gl_GlobalInvocationID.y > 0 &&
-		gl_GlobalInvocationID.y < texResolution.y)
+		gl_GlobalInvocationID.y < texResolution.y - 1)
 	{
 		int3 idx3 = int3(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, gl_GlobalInvocationID.z);
 
@@ -36,13 +36,13 @@ void main
 
 		float4 velocity = velocityTexture.Load(idx4);
 
-		float3 idxBackInTime = (idx3 - (velocity));
+		float3 idxBackInTime = (idx3 - (timeSinceLast * velocity));
 
 		float4 v = velocityTexture.SampleLevel(TextureSampler, idxBackInTime / width, 0);
 
 		//float i = inkTexture.Load(int4(idxBackInTime, 0));
-		float i = inkTexture.SampleLevel(TextureSampler, idxBackInTime / width, 0);
+		float4 i = inkTexture.SampleLevel(TextureSampler, idxBackInTime / width, 0);
 		
-		inkTexFinal[idx3] = i;
+		inkTexFinal[idx3] += i;
 	}
 }

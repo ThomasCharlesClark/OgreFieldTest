@@ -19,9 +19,9 @@ void main
 )
 {
 	if (gl_GlobalInvocationID.x > 0 &&
-		gl_GlobalInvocationID.x < texResolution.x &&
+		gl_GlobalInvocationID.x < texResolution.x - 1 &&
 		gl_GlobalInvocationID.y > 0 &&
-		gl_GlobalInvocationID.y < texResolution.y)
+		gl_GlobalInvocationID.y < texResolution.y - 1)
 	{
 		float3 idx = float3(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, gl_GlobalInvocationID.z);
 

@@ -53,7 +53,7 @@ namespace MyThirdOgre
 		mColumnCount(64),
 		mRowCount(64),
 		mGridVisible(false),
-		mVelocityVisible(false),
+		mVelocityVisible(true),
 		mPressureGradientVisible(false),
 		mJacobiIterationsPressure(20),
 		mJacobiIterationsDiffusion(20),

@@ -82,8 +82,8 @@ namespace MyThirdOgre
 		mBufferResolutionHeight = 23.0f;
 		mFieldWidth = 23.0f;
 		mFieldHeight = 23.0f;*/
-		mBufferResolutionWidth = 512.0f;
-		mBufferResolutionHeight = 512.0f;
+		mBufferResolutionWidth = 64.0f;
+		mBufferResolutionHeight = 64.0f;
 		mFieldWidth = 64.0f;
 		mFieldHeight = 64.0f;
 #else
@@ -91,7 +91,7 @@ namespace MyThirdOgre
 		mBufferResolutionHeight = 128.0f;
 		mFieldWidth = 128.0f;
 		mFieldHeight = 128.0f;*/
-		mBufferResolutionWidth = 512.0f;
+		mBufferResolutionWidth = 512.0f; // 512.0f // not above 64 if in release mode visualising velocity arrows
 		mBufferResolutionHeight = 512.0f;
 		mFieldWidth = 64.0f;
 		mFieldHeight = 64.0f;
@@ -661,7 +661,7 @@ namespace MyThirdOgre
 				tsl->setManualValue(timeSinceLast);
 				texResolution->setManualValue(resolution, sizeof(resolution) / sizeof(Ogre::uint));
 				reciprocalDeltaX->setManualValue(1.0f);
-				velocityDissipationConstant->setManualValue(1.0f);
+				velocityDissipationConstant->setManualValue(0.97f);
 				inkDissipationConstant->setManualValue(1.0f);
 				shaderParams.setDirty();
 
@@ -962,7 +962,7 @@ namespace MyThirdOgre
 				// the input buffer MUST be cleared as often as possible
 				iter.colour = Ogre::Vector4(0.0f, 0.0f, 0.0f, 0.0f);
 				//iter.colour = Ogre::Vector4(0.0450033244f, 0.1421513113f, 0.4302441212f, 0.0f);
-				iter.ink = 0.0f;
+				//iter.ink = 0.0f;
 				iter.velocity = Ogre::Vector3::ZERO;
 			}
 
@@ -1104,7 +1104,7 @@ namespace MyThirdOgre
 				*instanceBuffer++ = iter.colour.z;
 				*instanceBuffer++ = iter.colour.w;// iter.colour.a;// (float)sin(mTimeAccumulator);
 
-				*instanceBuffer++ = iter.velocity.x;
+				*instanceBuffer++ = iter.velocity.x; // FUCKING COORDINATE SYSTEM FRIEND
 				*instanceBuffer++ = iter.velocity.y;
 				*instanceBuffer++ = iter.velocity.z;
 			}

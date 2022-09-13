@@ -19,9 +19,9 @@ void main
 )
 {
 	if (gl_GlobalInvocationID.x > 0 &&
-		gl_GlobalInvocationID.x < texResolution.x &&
+		gl_GlobalInvocationID.x < texResolution.x - 1 &&
 		gl_GlobalInvocationID.y > 0 &&
-		gl_GlobalInvocationID.y < texResolution.y)
+		gl_GlobalInvocationID.y < texResolution.y - 1)
 	{
 		int3 idx = float3(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, gl_GlobalInvocationID.z);
 
@@ -32,10 +32,10 @@ void main
 			float width = texResolution.x;
 			float3 beta = divergenceRead.SampleLevel(TextureSampler, idx / width, 1.0);
 
-			float4 a = pressureTexture.Load(float4(idx.x - 1, idx.y, idx.z, 0));
-			float4 b = pressureTexture.Load(float4(idx.x + 1, idx.y, idx.z, 0));
-			float4 c = pressureTexture.Load(float4(idx.x, idx.y - 1, idx.z, 0));
-			float4 d = pressureTexture.Load(float4(idx.x, idx.y + 1, idx.z, 0));
+			float4 a = pressureTexture.Load(float4(idx.x - 1, idx.y,	 idx.z, 0));
+			float4 b = pressureTexture.Load(float4(idx.x + 1, idx.y,	 idx.z, 0));
+			float4 c = pressureTexture.Load(float4(idx.x,	  idx.y - 1, idx.z, 0));
+			float4 d = pressureTexture.Load(float4(idx.x,	  idx.y + 1, idx.z, 0));
 
 			float4 p = float4(
 				(a.x + b.x + c.x + d.x + alpha * beta.x) * rBeta,
@@ -43,7 +43,7 @@ void main
 				(a.x + b.x + c.x + d.x + alpha * beta.x) * rBeta,
 				0);
 
-			pressureTexture[idx] = p;
+			pressureTexture[idx] = p * 0.998;
 
 		//}
 	}

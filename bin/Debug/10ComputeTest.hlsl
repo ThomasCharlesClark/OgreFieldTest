@@ -76,7 +76,7 @@ void main
     uint3 gl_GlobalInvocationID : SV_DispatchThreadId
 )
 {
-	//if( gl_GlobalInvocationID.x < texResolution.x && gl_GlobalInvocationID.y < texResolution.y )
+	if( gl_GlobalInvocationID.x < texResolution.x && gl_GlobalInvocationID.y < texResolution.y)
 	{
 		uint idx = gl_GlobalInvocationID.y * texResolution.x + gl_GlobalInvocationID.x;
 
@@ -86,44 +86,16 @@ void main
 
 		float ink = inkTextureFinal.Load(idx4);
 
-		float4 v = velocityTextureFinal.Load(idx4);
+		float4 velocity = velocityTextureFinal.Load(idx4);
 
-		float vortValue = vortTex.Load(idx4);
+		float vorticityValue = vortTex.Load(idx4);
 
-		float4 p = pressureTexture.Load(idx4);
-
-		float4 final = float4(ink, 0, 0, 0.84);
+		float4 pressure = pressureTexture.Load(idx4);
 		
-		//final.xyz += normalize(v.xyz);
-
-		//final.xyz = v.xyz;
-
-		//final.xyz += normalize(abs(v.xyz));
-
-		//final.xyz -= p.xyz;
+		//float4 final = float4(ink, 0.0, vorticityValue, 0.84);
+		float4 final = float4(0.0, 0.0, 0.0, 0.84);
 		
-		//final.xyz *= length(v);
-
-		//final.z += vortValue;
-
-		//if (gl_GlobalInvocationID.x == 0 && gl_GlobalInvocationID.y == 0) {
-		//	final = float4(1, 0, 0, 1);
-		//}
-		//else {
-		//	//final = float4(0, 0, 0, 1);
-		//}
-
-		//https://stackoverflow.com/questions/929103/convert-a-number-range-to-another-range-maintaining-ratio#answer-929107
-		//NewValue = (((OldValue - OldMin) * (NewMax - NewMin)) / (OldMax - OldMin)) + NewMin
-
-
-		//if (ink != 0)
-		//	final += float4(0.85, 0.2941176562, 0, ink);
-
-
-		//final.xyz = inkColour.xyz;
-
-		//final += inkColour.xyz;
+		final.xyz += normalize(velocity.xyz);
 
 		pixelBuffer[idx] = packUnorm4x8(final);
 	}

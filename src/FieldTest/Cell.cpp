@@ -217,7 +217,7 @@ namespace MyThirdOgre
             mState.qRot,
             Ogre::Vector3::UNIT_SCALE,// mScale,
             true,
-            0.56f,
+            0.16f,
             mVelocityArrowVisible
         );
     }
@@ -440,8 +440,8 @@ namespace MyThirdOgre
             if (vVelLen < 0.5f)
                 vVelLen = 0.5f;
 
-            //if (vVelLen > 1.5f)
-            //    vVelLen = 1.5f;
+            if (vVelLen > 2.5f)
+                vVelLen = 2.5f;
 
             mVelocityArrowEntity->mTransform[currIdx]->vScale.x = vVelLen;
             mVelocityArrowEntity->mTransform[currIdx]->vScale.y = vVelLen;
