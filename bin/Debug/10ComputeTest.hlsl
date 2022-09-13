@@ -1,12 +1,12 @@
 #if 0
-	***	threads_per_group_x	8
+	***	threads_per_group_x	1
 	***	fast_shader_build_hack	1
 	***	glsl	635204550
-	***	threads_per_group_y	8
+	***	threads_per_group_y	1
 	***	threads_per_group_z	1
 	***	hlms_high_quality	0
 	***	typed_uav_load	1
-	***	num_thread_groups_y	128
+	***	num_thread_groups_y	512
 	***	glsles	1070293233
 	***	hlslvk	1841745752
 	***	syntax	-334286542
@@ -14,7 +14,7 @@
 	***	num_thread_groups_z	1
 	***	glslvk	-338983575
 	***	hlsl	-334286542
-	***	num_thread_groups_x	128
+	***	num_thread_groups_x	512
 	DONE DUMPING PROPERTIES
 	DONE DUMPING PIECES
 #endif
@@ -69,14 +69,14 @@ float normaliseInkValue(float i)
 	return i / maxInk;
 }
 
-[numthreads(8, 8, 1)]
+[numthreads(1, 1, 1)]
 void main
 (
     uint3 gl_LocalInvocationID : SV_GroupThreadID,
     uint3 gl_GlobalInvocationID : SV_DispatchThreadId
 )
 {
-	if( gl_GlobalInvocationID.x < texResolution.x && gl_GlobalInvocationID.y < texResolution.y )
+	if( gl_GlobalInvocationID.x < texResolution.x && gl_GlobalInvocationID.y < texResolution.y)
 	{
 		uint idx = gl_GlobalInvocationID.y * texResolution.x + gl_GlobalInvocationID.x;
 
@@ -92,9 +92,8 @@ void main
 
 		float4 pressure = pressureTexture.Load(idx4);
 		
-		float4 final = float4(ink, 0.0, vorticityValue, 0.84);
-
-		//float4 final = float4(ink / 100, 0.0, 0.0, 0.84);
+		//float4 final = float4(ink, 0.0, vorticityValue, 0.84);
+		float4 final = float4(0.0, 0.0, 0.0, 0.84);
 		
 		final.xyz += normalize(velocity.xyz);
 

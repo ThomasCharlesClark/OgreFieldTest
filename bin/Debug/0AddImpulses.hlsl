@@ -47,11 +47,11 @@ void main
 	uint3 gl_GlobalInvocationID : SV_DispatchThreadId
 )
 {
-	if (gl_GlobalInvocationID.x > 0 &&
-		gl_GlobalInvocationID.x < texResolution.x - 1 &&
+	if (gl_GlobalInvocationID.x > 0 && 
+		gl_GlobalInvocationID.x < texResolution.x - 1 && 
 		gl_GlobalInvocationID.y > 0 &&
-		gl_GlobalInvocationID.y < texResolution.y - 1) {
-
+		gl_GlobalInvocationID.y < texResolution.y - 1)
+	{
 		uint rwIdx = gl_GlobalInvocationID.y * texResolution.x + gl_GlobalInvocationID.x;
 
 		int4 idx4 = int4(gl_GlobalInvocationID.xyz, 0);

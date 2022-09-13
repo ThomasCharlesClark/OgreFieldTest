@@ -6,7 +6,7 @@
 	***	threads_per_group_z	1
 	***	hlms_high_quality	0
 	***	typed_uav_load	1
-	***	num_thread_groups_y	64
+	***	num_thread_groups_y	512
 	***	glsles	1070293233
 	***	hlslvk	1841745752
 	***	syntax	-334286542
@@ -14,13 +14,13 @@
 	***	num_thread_groups_z	1
 	***	glslvk	-338983575
 	***	hlsl	-334286542
-	***	num_thread_groups_x	64
+	***	num_thread_groups_x	512
 	DONE DUMPING PROPERTIES
 	DONE DUMPING PIECES
 #endif
-Texture3D<float4> velocityTexture			: register(t0);
-Texture3D<float4> inkTexture				: register(t1);
-RWTexture3D<float4> inkTexFinal				: register(u0);
+RWTexture3D<float4> inkTexFinal			: register(u0);
+Texture3D<float4> inkTexture				: register(t0);
+Texture3D<float4> velocityTexture		: register(t1);
 
 SamplerState TextureSampler
 {
@@ -54,21 +54,15 @@ void main
 
 		float width = texResolution.x;
 
-		//float4 velocity = velocityTexture.Load(idx4);
-		float4 velocity = velocityTexture.SampleLevel(TextureSampler, idx4 / width, 0);
+		float4 velocity = velocityTexture.Load(idx4);
 
-		//velocity.x = 0;
-
-		//float3 idxBackInTime = (idx3 - velocity);
-		//float3 idxBackInTime = (idx3 - (timeSinceLast * reciprocalDeltaX * velocity));
-		float3 idxBackInTime = (idx3 - (timeSinceLast * reciprocalDeltaX * velocity));
+		float3 idxBackInTime = (idx3 - (velocity));
 
 		float4 v = velocityTexture.SampleLevel(TextureSampler, idxBackInTime / width, 0);
 
 		//float i = inkTexture.Load(int4(idxBackInTime, 0));
 		float4 i = inkTexture.SampleLevel(TextureSampler, idxBackInTime / width, 0);
 		
-		//inkTexFinal[idx3] = normalize(v.x);
-		inkTexFinal[idx3] = i;
+		inkTexFinal[idx3] += i;
 	}
 }

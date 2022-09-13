@@ -21,8 +21,7 @@ namespace MyThirdOgre
         mConnectionHandle(0),
         mPreviousTrackingMessage(LEAP_CONNECTION_MESSAGE()),
         mRunning(false),
-        //mVelocityScalingFactor(0.001f),
-        mVelocityScalingFactor(1.0f),
+        mVelocityScalingFactor(10.0f),
         mPositionScalingFactor(5.0f)
     {
 
@@ -80,6 +79,10 @@ namespace MyThirdOgre
                     {
 
                         Ogre::Vector3 vVel = Ogre::Vector3(msg.tracking_event->pHands[0].palm.velocity.v);
+                     
+                        /*Ogre::Vector3 vVel = Ogre::Vector3(msg.tracking_event->pHands[0].palm.velocity.x,
+                            0,
+                            0);*/
 
                         Ogre::Vector3 vPos = Ogre::Vector3(msg.tracking_event->pHands[0].palm.position.v);
 
@@ -88,13 +91,13 @@ namespace MyThirdOgre
                         vPos.y -= 50;
 
                         //vVel.normalise();
-                         
+
                         vVel *= mVelocityScalingFactor;
 
                         //vVel.y = 0;
 
-                        //Leap_MotionMessage vMsg = Leap_MotionMessage(timeSinceLast, vVel, vPos, msg.tracking_event->pHands[0].index.is_extended ? 1000.0f : 0.0f);
-                        Leap_MotionMessage vMsg = Leap_MotionMessage(timeSinceLast, vVel, vPos, 10.0f);
+                        //Leap_MotionMessage vMsg = Leap_MotionMessage(timeSinceLast, vVel, vPos, msg.tracking_event->pHands[0].index.is_extended ? 10.0f : 0.0f);
+                        Leap_MotionMessage vMsg = Leap_MotionMessage(timeSinceLast, vVel, vPos, 5.0f);
 
                         this->queueSendMessage(mLogicSystem, Mq::LEAPFRAME_MOTION, vMsg);
 

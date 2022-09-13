@@ -6,7 +6,7 @@
 	***	threads_per_group_z	1
 	***	hlms_high_quality	0
 	***	typed_uav_load	1
-	***	num_thread_groups_y	64
+	***	num_thread_groups_y	512
 	***	glsles	1070293233
 	***	hlslvk	1841745752
 	***	syntax	-334286542
@@ -14,7 +14,7 @@
 	***	num_thread_groups_z	1
 	***	glslvk	-338983575
 	***	hlsl	-334286542
-	***	num_thread_groups_x	64
+	***	num_thread_groups_x	512
 	DONE DUMPING PROPERTIES
 	DONE DUMPING PIECES
 #endif
@@ -41,26 +41,30 @@ void main
 	if (gl_GlobalInvocationID.x > 0 &&
 		gl_GlobalInvocationID.x < texResolution.x - 1 &&
 		gl_GlobalInvocationID.y > 0 &&
-		gl_GlobalInvocationID.y < texResolution.y - 1) {
-
+		gl_GlobalInvocationID.y < texResolution.y - 1)
+	{
 		int3 idx = float3(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, gl_GlobalInvocationID.z);
 
-		float alpha = -halfDeltaX * halfDeltaX;
-		float rBeta = 0.25;
-		float width = texResolution.x;
-		float3 beta = divergenceRead.SampleLevel(TextureSampler, idx / width, 1.0);
+		//for (int i = 0; i < 80; i++) {
 
-		float4 a = pressureTexture.Load(float4(idx.x - 1, idx.y, idx.z, 0));
-		float4 b = pressureTexture.Load(float4(idx.x + 1, idx.y, idx.z, 0));
-		float4 c = pressureTexture.Load(float4(idx.x, idx.y - 1, idx.z, 0));
-		float4 d = pressureTexture.Load(float4(idx.x, idx.y + 1, idx.z, 0));
+			float alpha = -halfDeltaX * halfDeltaX;
+			float rBeta = 0.25;
+			float width = texResolution.x;
+			float3 beta = divergenceRead.SampleLevel(TextureSampler, idx / width, 1.0);
 
-		float4 p = float4(
-			(a.x + b.x + c.x + d.x + alpha * beta.x) * rBeta,
-			(a.x + b.x + c.x + d.x + alpha * beta.x) * rBeta,
-			(a.x + b.x + c.x + d.x + alpha * beta.x) * rBeta,
-			0);
+			float4 a = pressureTexture.Load(float4(idx.x - 1, idx.y,	 idx.z, 0));
+			float4 b = pressureTexture.Load(float4(idx.x + 1, idx.y,	 idx.z, 0));
+			float4 c = pressureTexture.Load(float4(idx.x,	  idx.y - 1, idx.z, 0));
+			float4 d = pressureTexture.Load(float4(idx.x,	  idx.y + 1, idx.z, 0));
 
-		pressureTexture[idx] = p;
+			float4 p = float4(
+				(a.x + b.x + c.x + d.x + alpha * beta.x) * rBeta,
+				(a.x + b.x + c.x + d.x + alpha * beta.x) * rBeta,
+				(a.x + b.x + c.x + d.x + alpha * beta.x) * rBeta,
+				0);
+
+			pressureTexture[idx] = p;
+
+		//}
 	}
 }

@@ -17,7 +17,7 @@ RWTexture3D<float4> velocityTextureFinal	: register(u1);
 RWTexture3D<float4> velocityTexture			: register(u2);
 RWTexture3D<float> vortTex					: register(u3);
 RWTexture3D<float4> pressureTexture			: register(u4);
-Texture3D<float> inkTextureFinal			: register(t0);
+RWTexture3D<float4> inkTextureFinal			: register(u5);
 
 uniform float maxInk;
 uniform uint2 texResolution;
@@ -56,15 +56,13 @@ void main
     uint3 gl_GlobalInvocationID : SV_DispatchThreadId
 )
 {
-	if (gl_GlobalInvocationID.x > 0 &&
-		gl_GlobalInvocationID.x < texResolution.x - 1 &&
-		gl_GlobalInvocationID.y > 0 &&
-		gl_GlobalInvocationID.y < texResolution.y - 1) {
-
+	if( gl_GlobalInvocationID.x < texResolution.x && gl_GlobalInvocationID.y < texResolution.y)
+	{
 		uint idx = gl_GlobalInvocationID.y * texResolution.x + gl_GlobalInvocationID.x;
 
 		float width = texResolution.x;
 
+		int3 idx3 = int3(gl_GlobalInvocationID);
 		int4 idx4 = int4(gl_GlobalInvocationID, 0);
 
 		float ink = inkTextureFinal.Load(idx4);
@@ -74,23 +72,18 @@ void main
 		float vorticityValue = vortTex.Load(idx4);
 
 		float4 pressure = pressureTexture.Load(idx4);
-
+		
+		//float4 final = float4(ink, 0.0, vorticityValue, 0.84);
 		//float4 final = float4(0.0, 0.0, 0.0, 0.84);
-
-		float4 final = float4(0.0, 0.0, 0.0, 0.84);
-
-		//float4 final = float4(ink, 0.0, vorticityValue, 0.84);
-
-		//float4 final = float4(ink, 0.0, vorticityValue, 0.84);
-
-
-		final.xyz = normalize(velocity.xyz);
-
-		//final.x += ink;
-
-		//final.xyz += velocity.xyz;
+		float4 final = float4(normalize(ink), normalize(ink) / 24, 0, 0.84);
+		
+		//final.xyz += normalize(velocity.xyz);
+		//final.xyz += normalize(velocity.xyz);
 
 		pixelBuffer[idx] = packUnorm4x8(final);
 
+		velocityTextureFinal[idx3] = float4(velocity.xyz, 0);
+
+		inkTextureFinal[idx3] = float4(ink, 0, 0, 0);
 	}
 }

@@ -21,23 +21,23 @@ void main
 	if (gl_GlobalInvocationID.x > 0 &&
 		gl_GlobalInvocationID.x < texResolution.x - 1 &&
 		gl_GlobalInvocationID.y > 0 &&
-		gl_GlobalInvocationID.y < texResolution.y - 1) {
-
+		gl_GlobalInvocationID.y < texResolution.y - 1)
+	{
 		float3 idx = float3(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, gl_GlobalInvocationID.z);
 
 		float width = texResolution.x;
 
-		float3 a = velocityRead.SampleLevel(TextureSampler, float3(idx.x - 1, idx.y, idx.z) / width, 0);
-		float3 b = velocityRead.SampleLevel(TextureSampler, float3(idx.x + 1, idx.y, idx.z) / width, 0);
-		float3 c = velocityRead.SampleLevel(TextureSampler, float3(idx.x, idx.y + 1, idx.z) / width, 0);
-		float3 d = velocityRead.SampleLevel(TextureSampler, float3(idx.x, idx.y - 1, idx.z) / width, 0);
+		float3 a = velocityRead.SampleLevel(TextureSampler, float3(idx.x - 1, idx.y,	 idx.z) / width, 0);
+		float3 b = velocityRead.SampleLevel(TextureSampler, float3(idx.x + 1, idx.y,	 idx.z) / width, 0);
+		float3 c = velocityRead.SampleLevel(TextureSampler, float3(idx.x,	  idx.y - 1, idx.z) / width, 0);
+		float3 d = velocityRead.SampleLevel(TextureSampler, float3(idx.x,	  idx.y + 1, idx.z) / width, 0);
 
 		float3 div = float3(
 			((a.x - b.x) + (c.y - d.y)) * halfDeltaX,
 			0,
 			0);
-		/*((a.x - b.x) + (c.y - d.y)) * halfDeltaX,
-		((a.x - b.x) + (c.y - d.y)) * halfDeltaX);*/
+			/*((a.x - b.x) + (c.y - d.y)) * halfDeltaX,
+			((a.x - b.x) + (c.y - d.y)) * halfDeltaX);*/
 
 		divergenceTexture[idx] = div;
 	}
