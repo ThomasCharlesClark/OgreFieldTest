@@ -82,7 +82,7 @@ void main
 
 		pixelBuffer[idx] = packUnorm4x8(final);
 
-		velocityTextureFinal[idx3] = float4(velocity.xyz, 0);
+		velocityTextureFinal[idx3] += float4(velocity.xyz, 0);
 
 		inkTextureFinal[idx3] = float4(ink, 0, 0, 0);
 	}

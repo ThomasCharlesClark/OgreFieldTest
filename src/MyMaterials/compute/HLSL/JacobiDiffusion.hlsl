@@ -40,7 +40,7 @@ void main
 			float4 v = (a + b + c + d + alpha * beta) * rBeta;
 
 			//velocityTexture[idx] = float4(v.x, 0, v.z, 0);
-			velocityTexture[idx] = float4(v.xyz, 0);
+			velocityTexture[idx]= float4(v.xyz, 0);
 
 		//}
 	}

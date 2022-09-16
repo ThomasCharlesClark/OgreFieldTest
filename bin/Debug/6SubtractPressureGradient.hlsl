@@ -53,8 +53,9 @@ void main
 		float3 d = pressureRead.SampleLevel(TextureSampler, float3(idx.x,	  idx.y + 1, idx.z) / width, 0);
 
 		float3 grad = float3(a.x - b.x, c.y - d.y, 0) * halfDeltaX;
-
-		velocityTexture[idx] -= float3(grad.x, 0, 0);
+		
+		//velocityTexture[idx] -= float3(grad.x, 0, 0);
+		velocityTexture[idx] -= grad.xyz;
 
 		//velocityTexture[idx] = float3(velocityTexture[idx].x, 0, velocityTexture[idx].z);
 	}
