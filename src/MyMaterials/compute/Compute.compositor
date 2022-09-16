@@ -239,6 +239,7 @@ compositor_node TestComputeNode
 			uav 1 inkTexFinal write
 			uav 2 velTexture write
 			uav 3 velTexFinal write
+			uav 4 divergenceTexture write
 		}
 	}
 

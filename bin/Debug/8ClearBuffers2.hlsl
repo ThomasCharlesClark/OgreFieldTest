@@ -46,10 +46,10 @@ void main
 		//inkTexture[gl_GlobalInvocationID] *= 0.992;
 		inkTexFinal[gl_GlobalInvocationID] *= 0.02;
 
-		//inkTexture[gl_GlobalInvocationID] = float4(0, 0, 0, 0);
+		inkTexture[gl_GlobalInvocationID] = float4(0, 0, 0, 0);
 		//inkTexFinal[gl_GlobalInvocationID] = float4(0, 0, 0, 0);
 
-		velocityFinal[gl_GlobalInvocationID] *= 0.56;
+		velocityFinal[gl_GlobalInvocationID] *= 0.96;
 		//velocityTexture[gl_GlobalInvocationID] *= 0.996;
 
 		//velocityFinal[gl_GlobalInvocationID] *= 1.0002;

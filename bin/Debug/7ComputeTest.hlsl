@@ -95,7 +95,7 @@ void main
 		
 		//float4 final = float4(ink, 0.0, vorticityValue, 0.84);
 		//float4 final = float4(0.0, 0.0, 0.0, 0.84);
-		float4 final = float4(ink, 0.0, 0.0, 0.84);
+		float4 final = float4(normalize(ink), normalize(ink) / 24, 0, 0.84);
 		
 		//final.xyz += normalize(velocity.xyz);
 		//final.xyz += normalize(velocity.xyz);

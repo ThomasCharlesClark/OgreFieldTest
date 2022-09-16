@@ -56,7 +56,7 @@ void main
 
 		float4 velocity = velocityTexture.Load(idx4);
 
-		float3 idxBackInTime = (idx3 - (velocity));
+		float3 idxBackInTime = (idx3 - (timeSinceLast * velocity));
 
 		float4 v = velocityTexture.SampleLevel(TextureSampler, idxBackInTime / width, 0);
 

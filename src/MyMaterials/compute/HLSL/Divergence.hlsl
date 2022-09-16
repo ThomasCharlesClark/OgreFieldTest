@@ -39,6 +39,6 @@ void main
 			/*((a.x - b.x) + (c.y - d.y)) * halfDeltaX,
 			((a.x - b.x) + (c.y - d.y)) * halfDeltaX);*/
 
-		divergenceTexture[idx] = div;
+		divergenceTexture[idx] += div;
 	}
 }

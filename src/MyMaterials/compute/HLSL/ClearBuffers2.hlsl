@@ -9,6 +9,7 @@ RWTexture3D<float> inkTexture					: register(u0);
 RWTexture3D<float> inkTexFinal				: register(u1);
 RWTexture3D<float4> velocityTexture				: register(u2);
 RWTexture3D<float4> velocityFinal				: register(u3);
+RWTexture3D<float4> divergenceTexture				: register(u4);
 
 uniform uint2 texResolution;
 
@@ -24,13 +25,15 @@ void main
 		uint rwIdx = gl_GlobalInvocationID.y * texResolution.x + gl_GlobalInvocationID.x;
 		
 		//inkTexture[gl_GlobalInvocationID] *= 0.992;
-		inkTexFinal[gl_GlobalInvocationID] *= 0.02;
+		//inkTexFinal[gl_GlobalInvocationID] *= 0.02;
 
 		inkTexture[gl_GlobalInvocationID] = float4(0, 0, 0, 0);
-		//inkTexFinal[gl_GlobalInvocationID] = float4(0, 0, 0, 0);
+		inkTexFinal[gl_GlobalInvocationID] = float4(0, 0, 0, 0);
 
-		velocityFinal[gl_GlobalInvocationID] *= 0.96;
+		velocityFinal[gl_GlobalInvocationID] *= 0.04;
 		//velocityTexture[gl_GlobalInvocationID] *= 0.996;
+
+		divergenceTexture[gl_GlobalInvocationID] *= 0.96;
 
 		//velocityFinal[gl_GlobalInvocationID] *= 1.0002;
 		//velocityTexture[gl_GlobalInvocationID] *= 1.0002;

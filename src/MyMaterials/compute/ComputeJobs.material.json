@@ -196,7 +196,7 @@
       "threads_per_group": [ 4, 4, 1 ],
       "thread_groups": [ 1, 1, 1 ],
       "source": "ClearBuffers2",
-      "uav_units": 4,
+      "uav_units": 5,
       "params": [
         [
           "texResolution",
