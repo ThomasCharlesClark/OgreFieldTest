@@ -234,21 +234,14 @@ namespace MyThirdOgre
         const Ogre::Vector3& initialPos,
         const Ogre::Quaternion& initialRot,
         const Ogre::Vector3& initialScale,
+        const int columnCount,
+        const int rowCount,
         const bool useAlpha,
         const float alpha,
-        const bool visible,
-        const int columnCount,
-        const int rowCount)
+        const bool visible)
     {
 
-        FieldComputeSystem* gameEntity = new FieldComputeSystem(
-            mCurrentId++, 
-            moDefinition, 
-            type, 
-            this, 
-            columnCount,
-            rowCount);
-
+        FieldComputeSystem* gameEntity = new FieldComputeSystem(mCurrentId++, moDefinition, type, this, columnCount, rowCount);
         gameEntity->mTransparency = alpha;
 
         CreatedGameEntity cge;

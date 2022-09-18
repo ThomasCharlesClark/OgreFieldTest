@@ -6,7 +6,7 @@
 	***	threads_per_group_z	1
 	***	hlms_high_quality	0
 	***	typed_uav_load	1
-	***	num_thread_groups_y	512
+	***	num_thread_groups_y	32
 	***	glsles	1070293233
 	***	hlslvk	1841745752
 	***	syntax	-334286542
@@ -14,7 +14,7 @@
 	***	num_thread_groups_z	1
 	***	glslvk	-338983575
 	***	hlsl	-334286542
-	***	num_thread_groups_x	512
+	***	num_thread_groups_x	32
 	DONE DUMPING PROPERTIES
 	DONE DUMPING PIECES
 #endif
@@ -76,7 +76,7 @@ void main
     uint3 gl_GlobalInvocationID : SV_DispatchThreadId
 )
 {
-	if( gl_GlobalInvocationID.x < texResolution.x && gl_GlobalInvocationID.y < texResolution.y)
+	if(gl_GlobalInvocationID.x < texResolution.x && gl_GlobalInvocationID.y < texResolution.y)
 	{
 		uint idx = gl_GlobalInvocationID.y * texResolution.x + gl_GlobalInvocationID.x;
 
@@ -87,7 +87,8 @@ void main
 
 		float ink = inkTextureFinal.Load(idx4);
 
-		float4 velocity = velocityTextureFinal.Load(idx4);
+		float4 velocityOriginal = velocityTextureFinal.Load(idx4);
+		float4 velocity = velocityOriginal;
 
 		float vorticityValue = vortTex.Load(idx4);
 
@@ -95,15 +96,25 @@ void main
 		
 		//float4 final = float4(ink, 0.0, vorticityValue, 0.84);
 		//float4 final = float4(0.0, 0.0, 0.0, 0.84);
-		float4 final = float4(normalize(ink), normalize(ink) / 24, 0, 0.84);
+		float4 final = float4(ink, ink / 19, 0, 0.84);
 		
-		//final.xyz += normalize(velocity.xyz);
+		// you can't colourize using negative numbers, it doesn't work.
+		// so send the components positive by whatever... means... necessary. then normalize.
+
+		int minus = -1;
+		int plus = 1;
+
+		velocity.x *= velocity.x < 0 ? minus : plus;
+		velocity.y *= velocity.y < 0 ? minus : plus;
+		velocity.z *= velocity.z < 0 ? minus : plus;
+
+		//final.xyz = normalize(velocity.xyz);
 		//final.xyz += normalize(velocity.xyz);
 
 		pixelBuffer[idx] = packUnorm4x8(final);
+		 
+		//velocityTextureFinal[idx3] += float4(velocityOriginal.xyz, 0);
 
-		velocityTextureFinal[idx3] = float4(velocity.xyz, 0);
-
-		inkTextureFinal[idx3] = float4(ink, 0, 0, 0);
+		//inkTextureFinal[idx3] = float4(ink, 0, 0, 0);
 	}
 }

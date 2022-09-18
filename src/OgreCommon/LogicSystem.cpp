@@ -171,6 +171,17 @@ namespace MyThirdOgre
                 }
             }
             break;
+        case Mq::FIELD_COMPUTE_SYSTEM_RECIEVE_STAGING_TEXTURE:
+        {
+            auto field = dynamic_cast<LogicGameState*>(mCurrentGameState)->getField();
+
+            if (field && field->getComputeSystem()) {
+                auto stagingTextureMessage = reinterpret_cast<const FieldComputeSystem_StagingTextureMessage*>(data);
+
+                field->getComputeSystem()->receiveStagingTextureAndReset(stagingTextureMessage->mStagingTexture);
+            }
+        }
+        break;
         default:
             break;
         }

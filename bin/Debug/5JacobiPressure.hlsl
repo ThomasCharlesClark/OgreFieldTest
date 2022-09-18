@@ -29,6 +29,7 @@ SamplerState TextureSampler
 };
 
 uniform uint2 texResolution;
+uniform float timeSinceLast;
 uniform float halfDeltaX;
 
 [numthreads(32, 32, 1)]

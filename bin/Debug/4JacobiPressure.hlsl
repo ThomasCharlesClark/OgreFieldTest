@@ -6,7 +6,7 @@
 	***	threads_per_group_z	1
 	***	hlms_high_quality	0
 	***	typed_uav_load	1
-	***	num_thread_groups_y	512
+	***	num_thread_groups_y	32
 	***	glsles	1070293233
 	***	hlslvk	1841745752
 	***	syntax	-334286542
@@ -14,7 +14,7 @@
 	***	num_thread_groups_z	1
 	***	glslvk	-338983575
 	***	hlsl	-334286542
-	***	num_thread_groups_x	512
+	***	num_thread_groups_x	32
 	DONE DUMPING PROPERTIES
 	DONE DUMPING PIECES
 #endif
@@ -29,6 +29,7 @@ SamplerState TextureSampler
 };
 
 uniform uint2 texResolution;
+uniform float timeSinceLast;
 uniform float halfDeltaX;
 
 [numthreads(1, 1, 1)]
@@ -63,7 +64,7 @@ void main
 				(a.x + b.x + c.x + d.x + alpha * beta.x) * rBeta,
 				0);
 
-			pressureTexture[idx] = p;
+			pressureTexture[idx] = p;// *0.998;
 
 		//}
 	}

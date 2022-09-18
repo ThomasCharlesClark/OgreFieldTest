@@ -9,7 +9,7 @@ SamplerState TextureSampler
 };
 
 uniform uint2 texResolution;
-
+uniform float timeSinceLast;
 uniform float reciprocalDeltaX;
 
 [numthreads(@value( threads_per_group_x ), @value( threads_per_group_y ), @value( threads_per_group_z ))]

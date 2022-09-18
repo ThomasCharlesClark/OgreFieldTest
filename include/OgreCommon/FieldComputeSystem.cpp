@@ -7,6 +7,7 @@
 #include "OgreTechnique.h"
 #include "OgrePass.h"
 #include "OgreStagingTexture.h"
+#include "OgreTextureGpuManager.h"
 #include "OgreShaderParams.h"
 #include "Threading\MessageQueueSystem.h"
 #include "FieldComputeSystem.h"
@@ -21,8 +22,14 @@
 
 namespace MyThirdOgre
 {
-	FieldComputeSystem::FieldComputeSystem(Ogre::uint32 id, const MovableObjectDefinition* moDefinition,
-		Ogre::SceneMemoryMgrTypes type, GameEntityManager* geMgr) : GameEntity(id, moDefinition, type)
+	FieldComputeSystem::FieldComputeSystem(
+		Ogre::uint32 id,
+		const MovableObjectDefinition* moDefinition,
+		Ogre::SceneMemoryMgrTypes type,
+		GameEntityManager* geMgr,
+		const int columnCount,
+		const int rowCount
+	) : GameEntity(id, moDefinition, type)
 	{
 		mParent = 0;
 		mTestComputeJob = 0;
@@ -38,6 +45,15 @@ namespace MyThirdOgre
 		mSubtractPressureGradientComputeJob = 0;
 		mVorticityConfinementComputeJob = 0;
 		mVorticityComputationComputeJob = 0;
+
+		mDeltaX = 1.0f;
+		mHalfDeltaX = 0.5f;
+
+		mInkDissipationConstant = 0.997f;
+		mVelocityDissipationConstant = 0.28f;
+		mVorticityConfinementScale = 0.35f;
+
+		mReceivedStagingTexture = 0;
 
 		textureTicketFrameCounter = 0;
 
@@ -77,35 +93,51 @@ namespace MyThirdOgre
 		mDebugPlaneMoDef->moType = MoTypeDynamicTriangleList;
 		mDebugPlaneMoDef->resourceGroup = Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME;
 
-#if OGRE_DEBUG_MODE
-	/*	mBufferResolutionWidth = 23.0f;
-		mBufferResolutionHeight = 23.0f;
-		mFieldWidth = 23.0f;
-		mFieldHeight = 23.0f;*/
-		mBufferResolutionWidth = 64.0f;
-		mBufferResolutionHeight = 64.0f;
-		mFieldWidth = 64.0f;
-		mFieldHeight = 64.0f;
-#else
-		/*mBufferResolutionWidth = 128.0f;
-		mBufferResolutionHeight = 128.0f;
-		mFieldWidth = 128.0f;
-		mFieldHeight = 128.0f;*/
-		mBufferResolutionWidth = 512.0f; // 512.0f // not above 64 if in release mode visualising velocity arrows
-		mBufferResolutionHeight = 512.0f;
-		mFieldWidth = 64.0f;
-		mFieldHeight = 64.0f;
-#endif
+		mImpulses = std::vector<HandInfluence> { };
+//
+//#if OGRE_DEBUG_MODE
+//	/*	mBufferResolutionWidth = 23.0f;
+//		mBufferResolutionHeight = 23.0f;
+//		mFieldWidth = 23.0f;
+//		mFieldHeight = 23.0f;*/
+//		mBufferResolutionWidth = 128.0f;
+//		mBufferResolutionHeight = 128.0f;
+//		mFieldWidth = 64.0f;
+//		mFieldHeight = 64.0f;
+//#else
+//		/*mBufferResolutionWidth = 128.0f;
+//		mBufferResolutionHeight = 128.0f;
+//		mFieldWidth = 128.0f;
+//		mFieldHeight = 128.0f;*/
+//		mBufferResolutionWidth = 128.0f; // 512.0f // not above 64 if in release mode visualising velocity arrows
+//		mBufferResolutionHeight = 128.0f;
+//		mFieldWidth = 64.0f;
+//		mFieldHeight = 64.0f;
+//#endif
+
+		mColumnCount = columnCount;
+		mRowCount = rowCount;
+
+		mThreadGroupsX = mColumnCount;
+		mThreadGroupsY = mRowCount;
+
+		mFieldWidth = mColumnCount / 2;
+		mFieldHeight = mRowCount / 2;
+
+		mBufferResolutionWidth = mThreadGroupsX;
+		mBufferResolutionHeight = mThreadGroupsY;
 
 		resolution[0] = mBufferResolutionWidth;
 		resolution[1] = mBufferResolutionHeight;
 
 		mBufferResolutionDepth = 1.0f;
 
-
 		// When I say "resolution" I mean "how many of the buffer indices are inside a leaf"
-		mLeafResolutionX = 16.0f;
-		mLeafResolutionZ = 16.0f;
+		//mLeafResolutionX = 16.0f;
+		//mLeafResolutionZ = 16.0f;
+
+		mLeafResolutionX = mBufferResolutionWidth / 4;
+		mLeafResolutionZ = mBufferResolutionHeight / 4;
 
 		mLeafCountX = mBufferResolutionWidth / mLeafResolutionX;
 		mLeafWidth = mFieldWidth / mLeafCountX;
@@ -203,7 +235,7 @@ namespace MyThirdOgre
 				Ogre::Vector3(-(mFieldWidth / 2), 0, -(mFieldHeight / 2))
 				}),
 			Ogre::BLANKSTRING,
-			mTransform[0]->vPos,// + Ogre::Vector3(-0.5f, 0.0f, -0.5f),
+			mTransform[0]->vPos,
 			Ogre::Quaternion::IDENTITY,
 			Ogre::Vector3::UNIT_SCALE,
 			true,
@@ -636,6 +668,8 @@ namespace MyThirdOgre
 
 			if (!mHaveSetAddImpulsesComputeShaderParameters) {
 
+				mAddImpulsesComputeJob->setNumThreadGroups(mThreadGroupsX, mThreadGroupsY, 1);
+
 				Ogre::ShaderParams& shaderParams = mAddImpulsesComputeJob->getShaderParams("default");
 
 				Ogre::ShaderParams::Param* texResolution = shaderParams.findParameter("texResolution");
@@ -646,11 +680,18 @@ namespace MyThirdOgre
 
 				mHaveSetAddImpulsesComputeShaderParameters = true;
 			}
+			else {
+				Ogre::ShaderParams& shaderParams = mAddImpulsesComputeJob->getShaderParams("default");
+				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
+				tsl->setManualValue(timeSinceLast);
+			}
 		}
 
 		if (mVelocityAdvectionComputeJob) {
 
 			if (!mHaveSetVelocityAdvectionComputeShaderParameters) {
+
+				mVelocityAdvectionComputeJob->setNumThreadGroups(mThreadGroupsX, mThreadGroupsY, 1);
 
 				Ogre::ShaderParams& shaderParams = mVelocityAdvectionComputeJob->getShaderParams("default");
 				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
@@ -660,18 +701,25 @@ namespace MyThirdOgre
 				Ogre::ShaderParams::Param* inkDissipationConstant = shaderParams.findParameter("inkDissipationConstant");
 				tsl->setManualValue(timeSinceLast);
 				texResolution->setManualValue(resolution, sizeof(resolution) / sizeof(Ogre::uint));
-				reciprocalDeltaX->setManualValue(1.0f);
-				velocityDissipationConstant->setManualValue(0.97f);
-				inkDissipationConstant->setManualValue(1.0f);
+				reciprocalDeltaX->setManualValue(mDeltaX);
+				velocityDissipationConstant->setManualValue(mVelocityDissipationConstant);
+				inkDissipationConstant->setManualValue(mInkDissipationConstant);
 				shaderParams.setDirty();
 
 				mHaveSetVelocityAdvectionComputeShaderParameters = true;
+			}
+			else {
+				Ogre::ShaderParams& shaderParams = mVelocityAdvectionComputeJob->getShaderParams("default");
+				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
+				tsl->setManualValue(timeSinceLast);
 			}
 		}
 
 		if (mAdvectionCopyComputeJob) {
 
 			if (!mHaveSetAdvectionCopyComputeShaderParameters) {
+
+				mAdvectionCopyComputeJob->setNumThreadGroups(mThreadGroupsX, mThreadGroupsY, 1);
 
 				Ogre::ShaderParams& shaderParams = mAdvectionCopyComputeJob->getShaderParams("default");
 
@@ -681,17 +729,24 @@ namespace MyThirdOgre
 
 				texResolution->setManualValue(resolution, sizeof(resolution) / sizeof(Ogre::uint32));
 
-				reciprocalDeltaX->setManualValue(1.0f);
+				reciprocalDeltaX->setManualValue(mDeltaX);
 
 				shaderParams.setDirty();
 
 				mHaveSetAdvectionCopyComputeShaderParameters = true;
+			}
+			else {
+				Ogre::ShaderParams& shaderParams = mAdvectionCopyComputeJob->getShaderParams("default");
+				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
+				tsl->setManualValue(timeSinceLast);
 			}
 		}
 
 		if (mBoundaryConditionsComputeJob) {
 
 			if (!mHaveSetBoundaryConditionsComputeShaderParameters) {
+
+				mBoundaryConditionsComputeJob->setNumThreadGroups(mThreadGroupsX, mThreadGroupsY, 1);
 
 				Ogre::ShaderParams& shaderParams = mBoundaryConditionsComputeJob->getShaderParams("default");
 				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
@@ -700,7 +755,7 @@ namespace MyThirdOgre
 
 				tsl->setManualValue(timeSinceLast);
 
-				reciprocalDeltaX->setManualValue(1.0f);
+				reciprocalDeltaX->setManualValue(mDeltaX);
 
 				texResolution->setManualValue(resolution, sizeof(resolution) / sizeof(Ogre::uint32));
 
@@ -708,11 +763,18 @@ namespace MyThirdOgre
 
 				mHaveSetBoundaryConditionsComputeShaderParameters = true;
 			}
+			else {
+				Ogre::ShaderParams& shaderParams = mBoundaryConditionsComputeJob->getShaderParams("default");
+				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
+				tsl->setManualValue(timeSinceLast);
+			}
 		}
 
 		if (mClearBuffersComputeJob) {
 
 			if (!mHaveSetClearBuffersComputeShaderParameters) {
+
+				mClearBuffersComputeJob->setNumThreadGroups(mThreadGroupsX, mThreadGroupsY, 1);
 
 				Ogre::ShaderParams& shaderParams = mClearBuffersComputeJob->getShaderParams("default");
 
@@ -725,11 +787,18 @@ namespace MyThirdOgre
 				mHaveSetClearBuffersComputeShaderParameters = true;
 
 			}
+			else {
+				Ogre::ShaderParams& shaderParams = mClearBuffersComputeJob->getShaderParams("default");
+				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
+				tsl->setManualValue(timeSinceLast);
+			}
 		}
 
 		if (mClearBuffersTwoComputeJob) {
 
 			if (!mHaveSetClearBuffersComputeTwoShaderParameters) {
+
+				mClearBuffersTwoComputeJob->setNumThreadGroups(mThreadGroupsX, mThreadGroupsY, 1);
 
 				Ogre::ShaderParams& shaderParams = mClearBuffersTwoComputeJob->getShaderParams("default");
 
@@ -737,9 +806,22 @@ namespace MyThirdOgre
 
 				texResolution->setManualValue(resolution, sizeof(resolution) / sizeof(Ogre::uint32));
 
+				Ogre::ShaderParams::Param* velDis = shaderParams.findParameter("velocityDissipationConstant");
+
+				velDis->setManualValue(mVelocityDissipationConstant);
+
+				Ogre::ShaderParams::Param* inkDis = shaderParams.findParameter("inkDissipationConstant");
+
+				inkDis->setManualValue(mInkDissipationConstant);
+
 				shaderParams.setDirty();
 
 				mHaveSetClearBuffersComputeTwoShaderParameters = true;
+			}
+			else {
+				Ogre::ShaderParams& shaderParams = mClearBuffersTwoComputeJob->getShaderParams("default");
+				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
+				tsl->setManualValue(timeSinceLast);
 			}
 		}
 
@@ -747,20 +829,29 @@ namespace MyThirdOgre
 
 			if (!mHaveSetDivergenceComputeShaderParameters) {
 
+				mDivergenceComputeJob->setNumThreadGroups(mThreadGroupsX, mThreadGroupsY, 1);
+
 				Ogre::ShaderParams& shaderParams = mDivergenceComputeJob->getShaderParams("default");
 				Ogre::ShaderParams::Param* texResolution = shaderParams.findParameter("texResolution");
 				Ogre::ShaderParams::Param* halfDeltaX = shaderParams.findParameter("halfDeltaX");
 				texResolution->setManualValue(resolution, sizeof(resolution) / sizeof(Ogre::uint));
-				halfDeltaX->setManualValue(0.5f);
+				halfDeltaX->setManualValue(mHalfDeltaX);
 				shaderParams.setDirty();
 
 				mHaveSetDivergenceComputeShaderParameters = true;
+			}
+			else {
+				Ogre::ShaderParams& shaderParams = mDivergenceComputeJob->getShaderParams("default");
+				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
+				tsl->setManualValue(timeSinceLast);
 			}
 		}
 
 		if (mInkAdvectionComputeJob) {
 
 			if (!mHaveSetInkAdvectionComputeShaderParameters) {
+
+				mInkAdvectionComputeJob->setNumThreadGroups(mThreadGroupsX, mThreadGroupsY, 1);
 
 				Ogre::ShaderParams& shaderParams = mInkAdvectionComputeJob->getShaderParams("default");
 				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
@@ -770,9 +861,9 @@ namespace MyThirdOgre
 				Ogre::ShaderParams::Param* inkDissipationConstant = shaderParams.findParameter("inkDissipationConstant");
 				tsl->setManualValue(timeSinceLast);
 				texResolution->setManualValue(resolution, sizeof(resolution) / sizeof(Ogre::uint));
-				reciprocalDeltaX->setManualValue(1.0f);
-				velocityDissipationConstant->setManualValue(1.0f);
-				inkDissipationConstant->setManualValue(1.0f);
+				reciprocalDeltaX->setManualValue(mDeltaX);
+				velocityDissipationConstant->setManualValue(mVelocityDissipationConstant);
+				inkDissipationConstant->setManualValue(mInkDissipationConstant);
 
 				shaderParams.setDirty();
 
@@ -789,12 +880,14 @@ namespace MyThirdOgre
 
 			if (!mHaveSetJacobiDiffusionComputeShaderParameters) {
 
+				mJacobiDiffusionComputeJob->setNumThreadGroups(mThreadGroupsX, mThreadGroupsY, 1);
+
 				Ogre::ShaderParams& shaderParams = mJacobiDiffusionComputeJob->getShaderParams("default");
 				Ogre::ShaderParams::Param* texResolution = shaderParams.findParameter("texResolution");
 				Ogre::ShaderParams::Param* halfDeltaX = shaderParams.findParameter("halfDeltaX");
 				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
 				texResolution->setManualValue(resolution, sizeof(resolution) / sizeof(Ogre::uint));
-				halfDeltaX->setManualValue(0.5f);
+				halfDeltaX->setManualValue(mHalfDeltaX);
 				tsl->setManualValue(timeSinceLast);
 				shaderParams.setDirty();
 
@@ -811,14 +904,21 @@ namespace MyThirdOgre
 
 			if (!mHaveSetJacobiPressureComputeShaderParameters) {
 
+				mJacobiPressureComputeJob->setNumThreadGroups(mThreadGroupsX, mThreadGroupsY, 1);
+
 				Ogre::ShaderParams& shaderParams = mJacobiPressureComputeJob->getShaderParams("default");
 				Ogre::ShaderParams::Param* texResolution = shaderParams.findParameter("texResolution");
 				Ogre::ShaderParams::Param* halfDeltaX = shaderParams.findParameter("halfDeltaX");
 				texResolution->setManualValue(resolution, sizeof(resolution) / sizeof(Ogre::uint));
-				halfDeltaX->setManualValue(0.5f);
+				halfDeltaX->setManualValue(mHalfDeltaX);
 				shaderParams.setDirty();
 
 				mHaveSetJacobiPressureComputeShaderParameters = true;
+			}
+			else {
+				Ogre::ShaderParams& shaderParams = mJacobiPressureComputeJob->getShaderParams("default");
+				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
+				tsl->setManualValue(timeSinceLast);
 			}
 		}
 
@@ -826,11 +926,13 @@ namespace MyThirdOgre
 
 			if (!mHaveSetSubtractPressureGradientComputeShaderParameters) {
 
+				mSubtractPressureGradientComputeJob->setNumThreadGroups(mThreadGroupsX, mThreadGroupsY, 1);
+
 				Ogre::ShaderParams& shaderParams = mSubtractPressureGradientComputeJob->getShaderParams("default");
 				Ogre::ShaderParams::Param* texResolution = shaderParams.findParameter("texResolution");
 				Ogre::ShaderParams::Param* halfDeltaX = shaderParams.findParameter("halfDeltaX");
 				texResolution->setManualValue(resolution, sizeof(resolution) / sizeof(Ogre::uint));
-				halfDeltaX->setManualValue(0.5f);
+				halfDeltaX->setManualValue(mHalfDeltaX);
 				shaderParams.setDirty();
 
 				mHaveSetSubtractPressureGradientComputeShaderParameters = true;
@@ -841,14 +943,21 @@ namespace MyThirdOgre
 
 			if (!mHaveSetVorticityComputationComputeShaderParameters) {
 
+				mVorticityComputationComputeJob->setNumThreadGroups(mThreadGroupsX, mThreadGroupsY, 1);
+
 				Ogre::ShaderParams& shaderParams = mVorticityComputationComputeJob->getShaderParams("default");
 				Ogre::ShaderParams::Param* texResolution = shaderParams.findParameter("texResolution");
 				Ogre::ShaderParams::Param* halfDeltaX = shaderParams.findParameter("halfDeltaX");
 				texResolution->setManualValue(resolution, sizeof(resolution) / sizeof(Ogre::uint));
-				halfDeltaX->setManualValue(0.5f);
+				halfDeltaX->setManualValue(mHalfDeltaX);
 				shaderParams.setDirty();
 
 				mHaveSetVorticityComputationComputeShaderParameters = true;
+			}
+			else {
+				Ogre::ShaderParams& shaderParams = mSubtractPressureGradientComputeJob->getShaderParams("default");
+				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
+				tsl->setManualValue(timeSinceLast);
 			}
 		}
 
@@ -856,14 +965,16 @@ namespace MyThirdOgre
 
 			if (!mHaveSetVorticityConfinementComputeShaderParameters) {
 
+				mVorticityConfinementComputeJob->setNumThreadGroups(mThreadGroupsX, mThreadGroupsY, 1);
+
 				Ogre::ShaderParams& shaderParams = mVorticityConfinementComputeJob->getShaderParams("default");
 				Ogre::ShaderParams::Param* texResolution = shaderParams.findParameter("texResolution");
 				Ogre::ShaderParams::Param* halfDeltaX = shaderParams.findParameter("halfDeltaX");
 				Ogre::ShaderParams::Param* vortConfScale = shaderParams.findParameter("vorticityConfinementScale");
 				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
 				texResolution->setManualValue(resolution, sizeof(resolution) / sizeof(Ogre::uint));
-				halfDeltaX->setManualValue(0.5f);
-				vortConfScale->setManualValue(0.35f);
+				halfDeltaX->setManualValue(mHalfDeltaX);
+				vortConfScale->setManualValue(mVorticityConfinementScale);
 				tsl->setManualValue(timeSinceLast);
 				shaderParams.setDirty();
 
@@ -880,6 +991,8 @@ namespace MyThirdOgre
 		if (mTestComputeJob)
 		{
 			if (!mHaveSetTestComputeShaderParameters) {
+
+				mTestComputeJob->setNumThreadGroups(mThreadGroupsX, mThreadGroupsY, 1);
 
 				//Update the compute shader's
 				Ogre::ShaderParams& shaderParams = mTestComputeJob->getShaderParams("default");
@@ -966,6 +1079,18 @@ namespace MyThirdOgre
 				iter.velocity = Ogre::Vector3::ZERO;
 			}
 
+			Ogre::Vector3 manualVel = Ogre::Vector3::ZERO;
+			Ogre::Real manualInk = 0.0f;
+
+			auto it = mImpulses.begin();
+
+			while (it != mImpulses.end())
+			{
+				manualVel += it->vVelocity;
+				manualInk += it->rInkAmount;
+				it = mImpulses.erase(it);
+			}
+
 			if (mHand && mFieldBoundingHierarchy.size())
 			{
 				auto leaves = std::vector<FieldComputeSystem_BoundingHierarchyBox>({});
@@ -981,10 +1106,15 @@ namespace MyThirdOgre
 
 				if (leaves.size()) {
 					
+					//auto indexVel = mInkInputBuffer[mBufferResolutionWidth / 2 * mBufferResolutionWidth + mBufferResolutionWidth].velocity;
+
 					if (mGraphicsSystem) {
 						mGraphicsSystem->setAdditionalDebugText(
 							Ogre::String("\nIntersecting: ") + Ogre::StringConverter::toString(aabbIntersectionCount) + Ogre::String(" Leaf AaBbs") +
 							Ogre::String("\nSeeing: " + Ogre::StringConverter::toString(leaves.size() * mLeafResolutionX * mLeafResolutionZ) + Ogre::String(" buffer indices")));
+							/*Ogre::String("\nMidpoint Velocity: " + Ogre::StringConverter::toString(indexVel.x) + Ogre::String(", ")
+																 + Ogre::StringConverter::toString(indexVel.y) + Ogre::String(", ")
+																 + Ogre::StringConverter::toString(indexVel.z)));*/
 					}
 
 					Ogre::Real rHandSphereSquared = mHand->getBoundingSphere()->getRadius() * mHand->getBoundingSphere()->getRadius();
@@ -1015,7 +1145,7 @@ namespace MyThirdOgre
 
 								auto& thisElement = mInkInputBuffer[index.mIndex];
 
-								thisElement.ink += mHand->getState().rInk;
+								auto ink = mHand->getState().rInk;
 
 								if (thisElement.ink > 500.0f)
 									thisElement.ink = 500.0f;
@@ -1031,64 +1161,19 @@ namespace MyThirdOgre
 
 								auto dir = pos - posPrev;
 
-								auto vel = -dir * mHand->getState().vVel;
+								auto vel = mHand->getState().vVel;
 
-								//if (mHand->getState().vVel != Ogre::Vector3::ZERO) {
-								//	vel.normalise();
-								//	vel = dir * mHand->getState().vVel.squaredLength();
-								//}
+								ink += manualInk;
+								vel += manualVel;
 
-								//if (vel.x != 0 || vel.y != 0 || vel.z != 0) {
-								//	int f = 0;
-								//}
-								//else {
-								//	int f = 0;
-								//}
+								thisElement.ink += ink;
+								thisElement.velocity = vel;
 
-								//thisElement.velocity = vel;
-
-								thisElement.velocity += mHand->getState().vVel;
-
-								//thisElement.velocity = Ogre::Vector3(0.0f, 0.0f, 50.0f);
-
-								//mInkInputBuffer[index.mIndex].velocity += mHand->getState().vVel;
-
-
-
-
-								//auto m_CpuInstanceBuffer = reinterpret_cast<float*>(OGRE_MALLOC_SIMD(sizeof(Particle), Ogre::MEMCATEGORY_GENERAL));
-
-								//auto m_InstanceBuffer = reinterpret_cast<float*>(m_CpuInstanceBuffer);
-								//
-								//auto m_InstanceBufferStart = m_InstanceBuffer;
-
-								//memset(m_InstanceBuffer, 0, (sizeof(Particle)) -
-								//	(static_cast<size_t>(m_InstanceBuffer - m_InstanceBufferStart) * sizeof(float)));
-
-								//auto buffer = getUavBuffer(0);
-								//
-								//float* instanceBuffer = const_cast<float*>(m_InstanceBufferStart);
-
-								//*instanceBuffer++ = thisElement.ink;
-
-								//*instanceBuffer++ = thisElement.colour.x;
-								//*instanceBuffer++ = thisElement.colour.y;
-								//*instanceBuffer++ = thisElement.colour.z;
-								//*instanceBuffer++ = thisElement.colour.w;
-
-								//*instanceBuffer++ = thisElement.velocity.x;
-								//*instanceBuffer++ = thisElement.velocity.y;
-								//*instanceBuffer++ = thisElement.velocity.z;
-
-								//buffer->upload(m_CpuInstanceBuffer, index.mIndex, 1);
 							}
 						}
 					}
-
-					//int f = 0;
 				}
 			}
-			//
 
 			auto buffer = getUavBuffer(0);
 			auto uavBufferNumElements = buffer->getNumElements();
@@ -1104,7 +1189,7 @@ namespace MyThirdOgre
 				*instanceBuffer++ = iter.colour.z;
 				*instanceBuffer++ = iter.colour.w;// iter.colour.a;// (float)sin(mTimeAccumulator);
 
-				*instanceBuffer++ = iter.velocity.x; // FUCKING COORDINATE SYSTEM FRIEND
+				*instanceBuffer++ = iter.velocity.x;
 				*instanceBuffer++ = iter.velocity.y;
 				*instanceBuffer++ = iter.velocity.z;
 			}
@@ -1199,6 +1284,48 @@ namespace MyThirdOgre
 				Mq::FIELD_COMPUTE_SYSTEM_WRITE_FILE_TESTING,
 				NULL);
 		}
+	}
+
+	void FieldComputeSystem::addManualVelocity(float timeSinceLast, Ogre::Vector3 vVel, Ogre::Real rInk)
+	{
+		mImpulses.push_back(HandInfluence(vVel, rInk));
+	}
+
+	void FieldComputeSystem::reset(void) 
+	{
+		#pragma region Rest the sphere/hand
+
+		mHand->setVelocity(0.0f, Ogre::Vector3::ZERO);
+		mHand->setInk(0.0f, 0.0f);
+		mHand->setPosition(0.0f, Ogre::Vector3::ZERO);
+
+		#pragma endregion
+
+		#pragma region Clear the manual (keyboard) inputs
+
+		auto it = mImpulses.begin();
+
+		while (it != mImpulses.end())
+		{
+			it = mImpulses.erase(it);
+		}
+
+		#pragma endregion
+
+#pragma region Ask the graphics system to clear textures for us
+		mGameEntityManager->mLogicSystem->queueSendMessage(
+			mGameEntityManager->mGraphicsSystem,
+			Mq::FIELD_COMPUTE_SYSTEM_REQUEST_RESET,
+			NULL);
+#pragma endregion
+
+	}
+
+	void FieldComputeSystem::receiveStagingTextureAndReset(Ogre::StagingTexture* stagingTexture) 
+	{
+#pragma region Clear Textures
+
+#pragma endregion
 	}
 }
 

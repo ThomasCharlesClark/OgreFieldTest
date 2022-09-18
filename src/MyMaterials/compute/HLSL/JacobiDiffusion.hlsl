@@ -29,8 +29,8 @@ void main
 
 			float4 a = velocityTexture.Load(float4(idx.x - 1, idx.y,	 idx.z, 0));
 			float4 b = velocityTexture.Load(float4(idx.x + 1, idx.y,	 idx.z, 0));
-			float4 c = velocityTexture.Load(float4(idx.x,	  idx.y - 1, idx.z, 0));
-			float4 d = velocityTexture.Load(float4(idx.x,	  idx.y + 1, idx.z, 0));
+			float4 c = velocityTexture.Load(float4(idx.x,	  idx.y + 1, idx.z, 0));
+			float4 d = velocityTexture.Load(float4(idx.x,	  idx.y - 1, idx.z, 0));
 
 			float alpha = halfDeltaX * halfDeltaX / (10.0 * timeSinceLast);
 			float rBeta = 1 / (4 + alpha);
@@ -40,7 +40,7 @@ void main
 			float4 v = (a + b + c + d + alpha * beta) * rBeta;
 
 			//velocityTexture[idx] = float4(v.x, 0, v.z, 0);
-			velocityTexture[idx]= float4(v.xyz, 0);
+			velocityTexture[idx] = float4(v.xyz, 0);
 
 		//}
 	}

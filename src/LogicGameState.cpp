@@ -99,14 +99,32 @@ namespace MyThirdOgre
 
         mField->update(timeSinceLast, currIdx, prevIdx);
 
-        if (mInputKeys[0]) // Up Arrow
-            mField->increaseVelocity(timeSinceLast);
-        if (mInputKeys[1]) // Right Arrow
-            mField->rotateVelocityClockwise(timeSinceLast);
-        if (mInputKeys[2]) // Down Arrow
-            mField->decreaseVelocity(timeSinceLast);
-        if (mInputKeys[3]) // Left Arrow
-            mField->rotateVelocityCounterClockwise(timeSinceLast);
+        if (mField->getUseComputeSystem() == false)
+        {
+            if (mInputKeys[0]) // Up Arrow
+                mField->increaseVelocity(timeSinceLast);
+            if (mInputKeys[1]) // Right Arrow
+                mField->rotateVelocityClockwise(timeSinceLast);
+            if (mInputKeys[2]) // Down Arrow
+                mField->decreaseVelocity(timeSinceLast);
+            if (mInputKeys[3]) // Left Arrow
+                mField->rotateVelocityCounterClockwise(timeSinceLast);
+        }
+        else 
+        {
+            if (mInputKeys[0]) // Up Arrow
+                if (mField->getComputeSystem())
+                    mField->getComputeSystem()->addManualVelocity(timeSinceLast, Ogre::Vector3(0, 0, -1), 5.0f);
+            if (mInputKeys[1]) // Right Arrow
+                if (mField->getComputeSystem())
+                    mField->getComputeSystem()->addManualVelocity(timeSinceLast, Ogre::Vector3(1, 0, 0), 5.0f);
+            if (mInputKeys[2]) // Down Arrow
+                if (mField->getComputeSystem())
+                    mField->getComputeSystem()->addManualVelocity(timeSinceLast, Ogre::Vector3(0, 0, 1), 5.0f);
+            if (mInputKeys[3]) // Left Arrow
+                if (mField->getComputeSystem())
+                    mField->getComputeSystem()->addManualVelocity(timeSinceLast, Ogre::Vector3(-1, 0, 0), 5.0f);
+        }
 
         if (mInputKeys[4]) // Num Pad 4
             mField->traverseActiveCellXNegative();
@@ -117,18 +135,18 @@ namespace MyThirdOgre
         if (mInputKeys[7]) // Num Pad 2
             mField->traverseActiveCellZPositive();
 
-        if (mInputKeys[8])
+        if (mInputKeys[8]) // SDL_SCANCODE_KP_PLUS
             mField->addImpulse(timeSinceLast);
-        if (mInputKeys[9])
+        if (mInputKeys[9]) // SDL_SCANCODE_KP_MINUS
             mField->decreasePressure(timeSinceLast);
 
-        if (mInputKeys[10])
+        if (mInputKeys[10]) // SDL_SCANCODE_5
             mField->togglePressureGradientIndicators();
 
-        if (mInputKeys[11])
+        if (mInputKeys[11]) // SDL_SCANCODE_6
             mField->toggleVelocityIndicators();
 
-        if (mInputKeys[12])
+        if (mInputKeys[12]) // SDL_SCANCODE_P
             if (mField->getComputeSystem())
                 mField->getComputeSystem()->writeDebugImages(timeSinceLast);
 
@@ -235,7 +253,10 @@ namespace MyThirdOgre
                 mField->notifyShiftKey(false);
                 break;
             case SDL_SCANCODE_F5:
-                mField->resetState();
+                if (mField->getUseComputeSystem() == false)
+                    mField->resetState();
+                else
+                    mField->getComputeSystem()->reset();
                 break;
            /* case SDL_SCANCODE_KP_4:
                 mInputKeys[4] = false;

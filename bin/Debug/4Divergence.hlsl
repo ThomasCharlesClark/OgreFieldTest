@@ -29,6 +29,7 @@ SamplerState TextureSampler
 };
 
 uniform uint2 texResolution;
+uniform float timeSinceLast;
 uniform float halfDeltaX;
 
 [numthreads(32, 32, 1)]
@@ -59,6 +60,6 @@ void main
 			/*((a.x - b.x) + (c.y - d.y)) * halfDeltaX,
 			((a.x - b.x) + (c.y - d.y)) * halfDeltaX);*/
 
-		divergenceTexture[idx] = div;
+		divergenceTexture[idx] += div;
 	}
 }

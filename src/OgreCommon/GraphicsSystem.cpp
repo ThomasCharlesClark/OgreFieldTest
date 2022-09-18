@@ -576,6 +576,107 @@ namespace MyThirdOgre
                 //    Ogre::String(".png"), 0, 1, true);
             }
             break;
+        break;
+        case Mq::FIELD_COMPUTE_SYSTEM_REQUEST_RESET:
+        {
+            Ogre::TextureGpuManager* texMgr = this->getRoot()->getRenderSystem()->getTextureGpuManager();
+
+            for (auto& iter : mFieldComputeSystems) {
+
+                auto stagingTexture3d = texMgr->getStagingTexture(
+                    iter->getBufferResolutionWidth(),
+                    iter->getBufferResolutionHeight(),
+                    iter->getDepth(),
+                    iter->getDepth(),
+                    iter->getPixelFormat3D());
+
+                auto stagingTexture2d = texMgr->getStagingTexture(
+                    iter->getBufferResolutionWidth(),
+                    iter->getBufferResolutionHeight(),
+                    iter->getDepth(),
+                    iter->getDepth(),
+                    iter->getPixelFormat2D());
+
+                if (stagingTexture3d && stagingTexture2d)
+                {
+                    stagingTexture3d->startMapRegion();
+
+                    auto tBox3d = stagingTexture3d->mapRegion(
+                        iter->getBufferResolutionWidth(),
+                        iter->getBufferResolutionHeight(),
+                        iter->getBufferResolutionDepth(),
+                        1u,
+                        iter->getPixelFormat3D());
+
+                    stagingTexture2d->startMapRegion();
+
+                    auto tBox2d = stagingTexture2d->mapRegion(
+                        iter->getBufferResolutionWidth(),
+                        iter->getBufferResolutionHeight(),
+                        iter->getBufferResolutionDepth(),
+                        1u,
+                        iter->getPixelFormat2D());
+
+                    for (size_t z = 0; z < iter->getBufferResolutionDepth(); ++z)
+                    {
+                        for (size_t y = 0; y < iter->getBufferResolutionHeight(); ++y)
+                        {
+                            for (size_t x = 0; x < iter->getBufferResolutionWidth(); ++x)
+                            {
+                                float* data = reinterpret_cast<float*>(tBox3d.at(x, y, z));
+
+                                data[0] = 0.0f; //r
+                                data[1] = 0.0f; //g
+                                data[2] = 0.0f; //b
+                                data[3] = 1.0f; //a
+
+                                if (z == 0) {
+                                    float* data2d = reinterpret_cast<float*>(tBox2d.at(x, y, z));
+
+                                    data2d[0] = 0.0f; //r
+                                    data2d[1] = 0.0f; //g
+                                    data2d[2] = 0.0f; //b
+                                    data2d[3] = 1.0f; //a
+                                }
+                            }
+                        }
+                    }
+
+                    stagingTexture3d->stopMapRegion();
+
+                    stagingTexture2d->stopMapRegion();
+
+                    stagingTexture2d->upload(tBox2d, iter->getRenderTargetTexture(), 0, 0, 0);
+
+                    stagingTexture3d->upload(tBox3d, iter->getPrimaryVelocityTexture(), 0, 0, 0);
+                    stagingTexture3d->upload(tBox3d, iter->getSecondaryVelocityTexture(), 0, 0, 0);
+                    stagingTexture3d->upload(tBox3d, iter->getPressureTexture(), 0, 0, 0);
+                    stagingTexture3d->upload(tBox3d, iter->getPressureGradientTexture(), 0, 0, 0);
+                    stagingTexture3d->upload(tBox3d, iter->getDivergenceTexture(), 0, 0, 0);
+
+
+                    //stagingTexture->upload(tBox, iter->getRenderTargetTexture(), 0, 0, 0);
+                    //stagingTexture->upload(tBox, iter->getPrimaryInkTexture(), 0, 0, 0);
+                    //stagingTexture->upload(tBox, iter->getSecondaryInkTexture(), 0, 0, 0);
+
+                    /*mReceivedStagingTexture->upload(tBox, mPressureTexture, 0, 0, 0);
+                    mReceivedStagingTexture->upload(tBox, mDivergenceTexture, 0, 0, 0);
+                    mReceivedStagingTexture->upload(tBox, mPressureGradientTexture, 0, 0, 0);
+                    mReceivedStagingTexture->upload(tBox, mRenderTargetTexture, 0, 0, 0);
+                    mReceivedStagingTexture->upload(tBox, mInkTexture, 0, 0, 0);
+                    mReceivedStagingTexture->upload(tBox, mSecondaryInkTexture, 0, 0, 0);*/
+
+                    texMgr->removeStagingTexture(stagingTexture3d);
+
+                    texMgr->removeStagingTexture(stagingTexture2d);
+
+                    stagingTexture3d = 0;
+                    stagingTexture2d = 0;
+                }
+            }
+        }
+        break;
+        break;
         case Mq::REMOVE_STAGING_TEXTURE:
             {
                 Ogre::TextureGpuManager* texMgr = this->getRoot()->getRenderSystem()->getTextureGpuManager();

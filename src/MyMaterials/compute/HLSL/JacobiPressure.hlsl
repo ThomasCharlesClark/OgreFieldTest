@@ -9,6 +9,7 @@ SamplerState TextureSampler
 };
 
 uniform uint2 texResolution;
+uniform float timeSinceLast;
 uniform float halfDeltaX;
 
 [numthreads(@value( threads_per_group_x ), @value( threads_per_group_y ), @value( threads_per_group_z ))]
@@ -43,7 +44,7 @@ void main
 				(a.x + b.x + c.x + d.x + alpha * beta.x) * rBeta,
 				0);
 
-			pressureTexture[idx] = p * 0.998;
+			pressureTexture[idx] = p;// *0.998;
 
 		//}
 	}
