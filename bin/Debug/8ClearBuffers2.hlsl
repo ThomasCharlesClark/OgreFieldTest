@@ -6,7 +6,7 @@
 	***	threads_per_group_z	1
 	***	hlms_high_quality	0
 	***	typed_uav_load	1
-	***	num_thread_groups_y	32
+	***	num_thread_groups_y	64
 	***	glsles	1070293233
 	***	hlslvk	1841745752
 	***	syntax	-334286542
@@ -14,7 +14,7 @@
 	***	num_thread_groups_z	1
 	***	glslvk	-338983575
 	***	hlsl	-334286542
-	***	num_thread_groups_x	32
+	***	num_thread_groups_x	64
 	DONE DUMPING PROPERTIES
 	DONE DUMPING PIECES
 #endif
@@ -30,6 +30,7 @@ RWTexture3D<float> inkTexFinal				: register(u1);
 RWTexture3D<float4> velocityTexture				: register(u2);
 RWTexture3D<float4> velocityFinal				: register(u3);
 RWTexture3D<float4> divergenceTexture				: register(u4);
+RWTexture3D<float4> pressureTexture				: register(u5);
 
 uniform uint2 texResolution;
 uniform float timeSinceLast;
@@ -47,22 +48,29 @@ void main
 	{
 		uint rwIdx = gl_GlobalInvocationID.y * texResolution.x + gl_GlobalInvocationID.x;
 		
+		float4 zero = float4(0, 0, 0, 0);
+
 		//inkTexture[gl_GlobalInvocationID] *= 0.992;
 		//inkTexFinal[gl_GlobalInvocationID] *= 0.02;
 
-		inkTexture[gl_GlobalInvocationID] = float4(0, 0, 0, 0);
-		inkTexFinal[gl_GlobalInvocationID] = float4(0, 0, 0, 0);
+		//inkTexture[gl_GlobalInvocationID] = float4(0, 0, 0, 0);
+		//inkTexFinal[gl_GlobalInvocationID] = float4(0, 0, 0, 0);
 		 
 		//velocityFinal[gl_GlobalInvocationID] *= 0.04;
 		//velocityTexture[gl_GlobalInvocationID] *= 0.996;
 
-		divergenceTexture[gl_GlobalInvocationID] *= 0.96;
+		inkTexFinal[gl_GlobalInvocationID] *= inkDissipationConstant;
+
+		//divergenceTexture[gl_GlobalInvocationID] *= 0.96;
+
+		divergenceTexture[gl_GlobalInvocationID] = zero;
+		pressureTexture[gl_GlobalInvocationID] = zero;
 
 		//velocityFinal[gl_GlobalInvocationID] *= 1.0002;
 		//velocityTexture[gl_GlobalInvocationID] *= 1.0002;
 
-		velocityFinal[gl_GlobalInvocationID] *= velocityDissipationConstant;
-		//velocityTexture[gl_GlobalInvocationID] = float4(0, 0, 0, 0);
+		//velocityFinal[gl_GlobalInvocationID] *= velocityDissipationConstant;
+		//velocityFinal[gl_GlobalInvocationID] = float4(0, 0, 0, 0);
 
 	}
 }

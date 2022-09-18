@@ -1,6 +1,5 @@
-Texture3D<float4> velocityTexture				: register(t0);
 RWTexture3D<float4> velocityFinal				: register(u0);
-
+RWTexture3D<float4> inkFinal					: register(u1);
 
 SamplerState TextureSampler
 {
@@ -45,28 +44,21 @@ void main
 
 		float width = texResolution.x;
 
-		float4 velocity = velocityFinal.Load(idx4);
+		float4 velocity = velocityFinal.Load(idx4) * velocityDissipationConstant;
 
-		//float4 velocity = velocityTexture.SampleLevel(TextureSampler, idx4 / width, 0);
+		float4 ink = inkFinal.Load(idx4);
 
-		velocity.y = velocity.z;
-		velocity.z = 0;
+		//velocity.y = velocity.z;
+
+		//velocity.z = 0;
 
 		float3 idxBackInTime = (idx - (timeSinceLast * reciprocalDeltaX * velocity));
 		
 		float3 idxBackInTimeUV = idxBackInTime / width;
-		//float4 v = velocityTexture.SampleLevel(TextureSampler, idxBackInTimeUV, 0);
-
-		//float4 v = velocityFinal.Load(idxBackInTime);
 
 		float id = inkDissipationConstant;
 
 		idx = idx - (velocity.xyz * timeSinceLast);
-
-		//float3 a = velocityTexture.SampleLevel(TextureSampler, float3(idx.x - 1, idx.y, idx.z) / width, 0);
-		//float3 b = velocityTexture.SampleLevel(TextureSampler, float3(idx.x + 1, idx.y, idx.z) / width, 0);
-		//float3 c = velocityTexture.SampleLevel(TextureSampler, float3(idx.x, idx.y + 1, idx.z) / width, 0);
-		//float3 d = velocityTexture.SampleLevel(TextureSampler, float3(idx.x, idx.y - 1, idx.z) / width, 0);
 
 		float3 a = velocityFinal.Load(float4(idx.x - 1, idx.y, idx.z, 0)).xyz;
 		float3 b = velocityFinal.Load(float4(idx.x + 1, idx.y, idx.z, 0)).xyz;
@@ -79,5 +71,17 @@ void main
 		float3 newVel = lerp(e, f, 0.5);
 
 		velocityFinal[idxBackInTime] = float4(newVel.xyz, 0);
+
+		float4 ai = inkFinal.Load(float4(idx.x - 1, idx.y, idx.z, 0));
+		float4 bi = inkFinal.Load(float4(idx.x + 1, idx.y, idx.z, 0));
+		float4 ci = inkFinal.Load(float4(idx.x, idx.y - 1, idx.z, 0));
+		float4 di = inkFinal.Load(float4(idx.x, idx.y + 1, idx.z, 0));
+
+		float4 ei = lerp(ai, ci, 0.5);
+		float4 fi = lerp(bi, di, 0.5);
+
+		float4 newInk = lerp(ei, fi, 0.5);
+
+		inkFinal[idxBackInTime] = newInk;
 	}
 }
