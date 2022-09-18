@@ -64,7 +64,7 @@ void main
 				(a.x + b.x + c.x + d.x + alpha * beta.x) * rBeta,
 				0);
 
-			pressureTexture[idx] = p * 0.998;
+			pressureTexture[idx] = p;// *0.998;
 
 		//}
 	}

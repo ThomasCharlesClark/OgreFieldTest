@@ -7,8 +7,8 @@ compositor_node TestComputeNode
 	in 4 inkTexFinal
 	in_buffer 0 inputUavBuffer
 
-	texture divergenceTexture		target_width target_height 1 PFG_RGBA32_FLOAT	uav keep_content 3d depth_pool 0
-	texture pressureTexture			target_width target_height 1 PFG_RGBA32_FLOAT	uav keep_content 3d depth_pool 0 
+	texture divergenceTexture		target_width target_height 1 PFG_RGBA32_FLOAT	uav  3d depth_pool 0
+	texture pressureTexture			target_width target_height 1 PFG_RGBA32_FLOAT	uav  3d depth_pool 0 
 	texture vortTex					target_width target_height 1 PFG_R32_FLOAT		uav keep_content 3d depth_pool 0
 
 	buffer temporaryBuffer 1 4 target_width target_height
@@ -20,35 +20,27 @@ compositor_node TestComputeNode
 			job	AddImpulses
 			uav_buffer 0 inputUavBuffer read
 			uav 1 velTexFinal write
-			uav 2 inkTexture write
+			uav 2 inkTexFinal write
 		}
 
 		pass compute
 		{
-			job VelocityAdvection
-			input 0 velTexture read
+			job Advection
 			uav 0 velTexFinal write
+			uav 1 inkTexFinal write
 		}
 		
-		/*pass compute
+		pass compute
 		{
-			job	InkAdvection
-			input 0 inkTexture read
-			input 1 velTexFinal read
-			uav 0 inkTexFinal write
-		}*/
+			job JacobiDiffusion
+			uav 0 velTexFinal read write
+		}
 		
 		pass compute
 		{
 			job JacobiDiffusion
 			uav 0 velTexFinal read write
 		}
-		/*
-		pass compute
-		{
-			job JacobiDiffusion
-			uav 0 velTexFinal read write
-		}
 
 		pass compute
 		{
@@ -97,7 +89,6 @@ compositor_node TestComputeNode
 			job JacobiDiffusion
 			uav 0 velTexFinal read write
 		}
-		*/
 		
 		pass compute
 		{
@@ -186,14 +177,14 @@ compositor_node TestComputeNode
 			//uav 2 inkTexFinal read write
 		}
 
-		/*
+		
 		pass compute
 		{
 			job SubtractPressureGradient
 			uav 0 velTexFinal write
 			input 0 pressureTexture read
 		}
-		*/
+		
 
 		/*pass compute
 		{
@@ -208,15 +199,6 @@ compositor_node TestComputeNode
 			input 0 vortTex read
 			uav 0 velTexFinal write
 		}*/
-		
-		/*
-		pass compute
-		{
-			job ClearBuffers1
-			uav_buffer 0 inputUavBuffer write
-			uav 1 inkTexture write
-		}
-		*/
 		
 		pass compute
 		{
@@ -237,6 +219,7 @@ compositor_node TestComputeNode
 			uav 2 velTexture write
 			uav 3 velTexFinal write
 			uav 4 divergenceTexture write
+			uav 5 pressureTexture write
 		}
 	}
 

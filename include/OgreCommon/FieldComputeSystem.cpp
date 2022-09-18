@@ -49,8 +49,8 @@ namespace MyThirdOgre
 		mDeltaX = 1.0f;
 		mHalfDeltaX = 0.5f;
 
-		mInkDissipationConstant = 0.997f;
-		mVelocityDissipationConstant = 0.28f;
+		mInkDissipationConstant = 0.998f;
+		mVelocityDissipationConstant = 0.88f;
 		mVorticityConfinementScale = 0.35f;
 
 		mReceivedStagingTexture = 0;
@@ -1075,7 +1075,7 @@ namespace MyThirdOgre
 				// the input buffer MUST be cleared as often as possible
 				iter.colour = Ogre::Vector4(0.0f, 0.0f, 0.0f, 0.0f);
 				//iter.colour = Ogre::Vector4(0.0450033244f, 0.1421513113f, 0.4302441212f, 0.0f);
-				//iter.ink = 0.0f;
+				iter.ink = 0.0f;
 				iter.velocity = Ogre::Vector3::ZERO;
 			}
 
@@ -1147,10 +1147,11 @@ namespace MyThirdOgre
 
 								auto ink = mHand->getState().rInk;
 
-								if (thisElement.ink > 500.0f)
-									thisElement.ink = 500.0f;
+								//if (thisElement.ink > 5.0f)
+								//	thisElement.ink = 5.0f;
 
 								thisElement.colour.x = 0.85f;
+
 								thisElement.colour.y = 0.2941176562f;
 
 								thisElement.colour.w = mHand->getState().rInk;
@@ -1190,8 +1191,8 @@ namespace MyThirdOgre
 				*instanceBuffer++ = iter.colour.w;// iter.colour.a;// (float)sin(mTimeAccumulator);
 
 				*instanceBuffer++ = iter.velocity.x;
-				*instanceBuffer++ = iter.velocity.y;
 				*instanceBuffer++ = iter.velocity.z;
+				*instanceBuffer++ = 0;// iter.velocity.z;
 			}
 
 			auto tsb = buffer->getTotalSizeBytes();

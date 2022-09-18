@@ -36,6 +36,7 @@ void main
 		float3 grad = float3(a.x - b.x, c.y - d.y, 0) * halfDeltaX;
 		
 		//velocityTexture[idx] -= float3(grad.x, 0, 0);
+
 		velocityTexture[idx] -= grad.xyz;
 
 		//velocityTexture[idx] = float3(velocityTexture[idx].x, 0, velocityTexture[idx].z);

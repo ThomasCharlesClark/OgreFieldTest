@@ -6,7 +6,7 @@
 	***	threads_per_group_z	1
 	***	hlms_high_quality	0
 	***	typed_uav_load	1
-	***	num_thread_groups_y	32
+	***	num_thread_groups_y	64
 	***	glsles	1070293233
 	***	hlslvk	1841745752
 	***	syntax	-334286542
@@ -14,7 +14,7 @@
 	***	num_thread_groups_z	1
 	***	glslvk	-338983575
 	***	hlsl	-334286542
-	***	num_thread_groups_x	32
+	***	num_thread_groups_x	64
 	DONE DUMPING PROPERTIES
 	DONE DUMPING PIECES
 #endif
@@ -50,12 +50,13 @@ void main
 
 		float3 a = pressureRead.SampleLevel(TextureSampler, float3(idx.x - 1, idx.y,	 idx.z) / width, 0);
 		float3 b = pressureRead.SampleLevel(TextureSampler, float3(idx.x + 1, idx.y,	 idx.z) / width, 0);
-		float3 c = pressureRead.SampleLevel(TextureSampler, float3(idx.x,	  idx.y + 1, idx.z) / width, 0);
-		float3 d = pressureRead.SampleLevel(TextureSampler, float3(idx.x,	  idx.y - 1, idx.z) / width, 0);
+		float3 c = pressureRead.SampleLevel(TextureSampler, float3(idx.x,	  idx.y - 1, idx.z) / width, 0);
+		float3 d = pressureRead.SampleLevel(TextureSampler, float3(idx.x,	  idx.y + 1, idx.z) / width, 0);
 
-		float3 grad = float3(a.x - b.x, c.z - d.z, 0) * halfDeltaX;
+		float3 grad = float3(a.x - b.x, c.y - d.y, 0) * halfDeltaX;
 		
 		//velocityTexture[idx] -= float3(grad.x, 0, 0);
+
 		velocityTexture[idx] -= grad.xyz;
 
 		//velocityTexture[idx] = float3(velocityTexture[idx].x, 0, velocityTexture[idx].z);

@@ -1482,8 +1482,8 @@ namespace MyThirdOgre
                 fieldComputeSystem->setBoundaryConditionsComputeJob(hlmsCompute->findComputeJob("BoundaryConditions"));
                 fieldComputeSystem->setClearBuffersComputeJob(hlmsCompute->findComputeJob("ClearBuffers1"));
                 fieldComputeSystem->setClearBuffersTwoComputeJob(hlmsCompute->findComputeJob("ClearBuffers2"));
-                fieldComputeSystem->setVelocityAdvectionComputeJob(hlmsCompute->findComputeJob("VelocityAdvection"));
-                fieldComputeSystem->setInkAdvectionComputeJob(hlmsCompute->findComputeJob("InkAdvection"));
+                fieldComputeSystem->setVelocityAdvectionComputeJob(hlmsCompute->findComputeJob("Advection"));
+                //fieldComputeSystem->setInkAdvectionComputeJob(hlmsCompute->findComputeJob("InkAdvection"));
                 fieldComputeSystem->setAddImpulsesComputeJob(hlmsCompute->findComputeJob("AddImpulses"));
                 fieldComputeSystem->setDivergenceComputeJob(hlmsCompute->findComputeJob("Divergence"));
                 fieldComputeSystem->setJacobiPressureComputeJob(hlmsCompute->findComputeJob("JacobiPressure"));

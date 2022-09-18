@@ -75,9 +75,14 @@ void main
 		float4 pressure = pressureTexture.Load(idx4);
 		
 		//float4 final = float4(ink, 0.0, vorticityValue, 0.84);
-		//float4 final = float4(0.0, 0.0, 0.0, 0.84);
-		float4 final = float4(ink, ink / 19, 0, 0.84);
+		float4 final = float4(0.0, 0.0, 0.0, 0.84);
+
+		//float4 final = float4(ink, ink / 19, 0, 0.84);
 		
+		final.x += ink;
+
+		final.y += ink / 24.0f;
+
 		// you can't colourize using negative numbers, it doesn't work.
 		// so send the components positive by whatever... means... necessary. then normalize.
 
@@ -88,8 +93,8 @@ void main
 		velocity.y *= velocity.y < 0 ? minus : plus;
 		velocity.z *= velocity.z < 0 ? minus : plus;
 
-		final.xyz = normalize(velocity.xyz);
-		//final.xyz += normalize(velocity.xyz);
+		//final.xyz = normalize(velocity.xyz);
+		final.xyz += normalize(velocity.xyz);
 
 		pixelBuffer[idx] = packUnorm4x8(final);
 		 
