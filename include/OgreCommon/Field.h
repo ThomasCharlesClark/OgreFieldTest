@@ -36,6 +36,7 @@ namespace MyThirdOgre
 		float	mBoostedManualPressureAdjustmentSpeed;
 		float   mMaxInk;
 
+		Ogre::Vector3 mGridOffset;
 
 		float mMinCellPressure;
 		float mMaxCellPressure;
@@ -137,5 +138,7 @@ namespace MyThirdOgre
 		virtual void toggleVelocityIndicators(void);
 
 		virtual bool getVelocityVisible(void) { return mVelocityVisible; };
+
+		virtual bool getUseComputeSystem(void) { return mUseComputeSystem; };
 	};
 }

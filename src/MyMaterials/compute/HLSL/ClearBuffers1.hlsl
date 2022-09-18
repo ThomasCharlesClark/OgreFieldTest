@@ -16,6 +16,7 @@ SamplerState TextureSampler
 };
 
 uniform uint2 texResolution;
+uniform float timeSinceLast;
 
 [numthreads(@value( threads_per_group_x ), @value( threads_per_group_y ), @value( threads_per_group_z ))]
 void main

@@ -1,5 +1,5 @@
 RWTexture3D<float4> inkTexFinal			: register(u0);
-Texture3D<float4> inkTexture				: register(t0);
+Texture3D<float4> inkTexture			: register(t0);
 Texture3D<float4> velocityTexture		: register(t1);
 
 SamplerState TextureSampler
@@ -10,9 +10,8 @@ SamplerState TextureSampler
 };
 
 uniform uint2 texResolution;
-
-uniform float timeSinceLast;
 uniform float reciprocalDeltaX;
+uniform float timeSinceLast;
 uniform float velocityDissipationConstant;
 uniform float inkDissipationConstant;
 

@@ -50,16 +50,16 @@ namespace MyThirdOgre
 		mPressureSpreadHalfWidth(4),
 		mVelocitySpreadHalfWidth(2),
 #if OGRE_DEBUG_MODE
-		mColumnCount(64),
-		mRowCount(64),
+		mColumnCount(32),
+		mRowCount(32),
 		mGridVisible(false),
 		mVelocityVisible(true),
 		mPressureGradientVisible(false),
 		mJacobiIterationsPressure(20),
 		mJacobiIterationsDiffusion(20),
 #else
-		mColumnCount(64),
-		mRowCount(64),
+		mColumnCount(128),
+		mRowCount(128),
 		mGridVisible(false),
 		mVelocityVisible(false),
 		mPressureGradientVisible(false),
@@ -75,6 +75,24 @@ namespace MyThirdOgre
 	{
 		mReciprocalDeltaX = (float)1 / mDeltaX;
 		mHalfReciprocalDeltaX = 0.5f / mReciprocalDeltaX;
+
+		mGridOffset = mUseComputeSystem ? Ogre::Vector3(0.5f, 0.0f, 0.5f) : Ogre::Vector3::ZERO;
+		//mGridOffset = Ogre::Vector3::ZERO;
+
+		if (mUseComputeSystem == false)
+		{
+#if OGRE_DEBUG_MODE
+			mColumnCount = 31;
+			mRowCount = mColumnCount;
+			mGridVisible = true;
+			mVelocityVisible = true;
+#else
+			mColumnCount = 43;
+			mRowCount = mColumnCount;
+			mGridVisible = true;
+			mVelocityVisible = true;
+#endif
+		}
 
 		if (mGridVisible)
 			createGrid();
@@ -159,7 +177,7 @@ namespace MyThirdOgre
 			mGridLineMoDef,
 			"UnlitBlack",
 			gridLineList,
-			Ogre::Vector3::ZERO,
+			mGridOffset,
 			Ogre::Quaternion::IDENTITY,
 			Ogre::Vector3::UNIT_SCALE
 		);
@@ -183,6 +201,7 @@ namespace MyThirdOgre
 						mPressureGradientVisible,
 						mGridVisible,
 						mMaxInk,
+						mGridOffset,
 						mGameEntityManager);
 					mCells.insert({
 						c->getCellCoords(),
@@ -205,11 +224,13 @@ namespace MyThirdOgre
 			Ogre::SceneMemoryMgrTypes::SCENE_STATIC,
 			mFieldComputeSystemMoDef,
 			"TestCompute",
-			Ogre::Vector3(0, 0, 0),
+			Ogre::Vector3::ZERO,
 			Ogre::Quaternion::IDENTITY,
 			Ogre::Vector3::UNIT_SCALE, // What does it mean to even scale an abstract concept... 
 									  // but it ISN'T an abstract concept: this is a concrete THING which exists at a POSITION and DOES STUFF.
 									  // might be sensible to try to avoid the notion of scaling it just yet, though.
+			mColumnCount,
+			mRowCount,
 			this
 		);
 	}

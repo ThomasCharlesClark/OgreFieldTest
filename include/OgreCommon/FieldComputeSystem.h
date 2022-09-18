@@ -134,15 +134,24 @@ namespace MyThirdOgre
 
 			float						mBufferResolutionWidth;
 			float						mBufferResolutionHeight;
+			float						mBufferResolutionDepth;
 			float						mFieldWidth;
 			float						mFieldHeight;
 			float						mLeafWidth;
 			float						mLeafHeight;
 			float						mLeafResolutionX;
 			float						mLeafResolutionZ;
+			float						mVelocityDissipationConstant;
+			float						mInkDissipationConstant;
+			float						mVorticityConfinementScale;
+			float						mDeltaX;
+			float						mHalfDeltaX;
+			int							mColumnCount;
+			int							mRowCount;
+			int							mThreadGroupsX;
+			int							mThreadGroupsY;
 			int							mLeafCountX;
 			int							mLeafCountZ;
-			float						mBufferResolutionDepth;
 			bool						mDownloadingTextureViaTicket;
 			bool						mHaveSetTestComputeShaderParameters;
 			bool						mHaveSetAdvectionCopyComputeShaderParameters;
@@ -177,6 +186,7 @@ namespace MyThirdOgre
 			Ogre::MaterialPtr					mDrawFromUavBufferMat;
 			Ogre::StagingTexture*				mVelocityStagingTexture;
 			Ogre::StagingTexture*				mInkStagingTexture;
+			Ogre::StagingTexture*				mReceivedStagingTexture;
 			Ogre::TextureGpu*					mRenderTargetTexture;
 			Ogre::TextureGpu*					mVelocityTexture;
 			Ogre::TextureGpu*					mSecondaryVelocityTexture;
@@ -210,6 +220,7 @@ namespace MyThirdOgre
 			bool													mDebugFieldBoundingHierarchy;
 
 			std::vector<Particle>				mInkInputBuffer;
+			std::vector<HandInfluence>			mImpulses;
 
 			float* mCpuInstanceBuffer;
 			float* RESTRICT_ALIAS mInstanceBuffer;
@@ -221,7 +232,10 @@ namespace MyThirdOgre
 			FieldComputeSystem(Ogre::uint32 id, 
 				const MovableObjectDefinition* moDefinition,
 				Ogre::SceneMemoryMgrTypes type,
-				GameEntityManager* geMgr);
+				GameEntityManager* geMgr,
+				const int columnCount,
+				const int rowCount
+				);
 			~FieldComputeSystem();
 
 			virtual void _notifyGraphicsSystem(GraphicsSystem* gs);
@@ -264,6 +278,10 @@ namespace MyThirdOgre
 
 			virtual void addUavBuffer(Ogre::UavBufferPacked* b);
 
+			virtual void receiveStagingTextureAndReset(Ogre::StagingTexture* texture);
+
+			virtual void reset(void);
+
 			Ogre::TextureTypes::TextureTypes getTextureType2D(void) { return mTextureType2D; };
 			Ogre::TextureTypes::TextureTypes getTextureType3D(void) { return mTextureType3D; };
 			Ogre::PixelFormatGpu getPixelFormat2D(void) { return mPixelFormat2D; };
@@ -271,6 +289,7 @@ namespace MyThirdOgre
 			Ogre::PixelFormatGpu getPixelFormatFloat3D(void) { return mPixelFormatFloat3D; };
 			Ogre::StagingTexture* getVelocityStagingTexture(void) { return mVelocityStagingTexture; };
 			Ogre::StagingTexture* getInkStagingTexture(void) { return mInkStagingTexture; };
+			std::vector<Particle> getInkInputBuffer(void) { return mInkInputBuffer; };
 			float getBufferResolutionWidth(void) { return mBufferResolutionWidth; };
 			float getBufferResolutionHeight(void) { return mBufferResolutionHeight; };
 			float getBufferResolutionDepth(void) { return mBufferResolutionDepth; };
@@ -310,6 +329,8 @@ namespace MyThirdOgre
 			void _notifyHand(Hand* hand) { mHand = hand; };
 
 			virtual void writeDebugImages(float timeSinceLast);
+
+			virtual void addManualVelocity(float timeSinceLast, Ogre::Vector3 v, Ogre::Real rInk = 0.0f);
 
 			virtual void createBoundingHierarchy(void);
 

@@ -6,7 +6,7 @@
 	***	threads_per_group_z	1
 	***	hlms_high_quality	0
 	***	typed_uav_load	1
-	***	num_thread_groups_y	512
+	***	num_thread_groups_y	32
 	***	glsles	1070293233
 	***	hlslvk	1841745752
 	***	syntax	-334286542
@@ -14,12 +14,12 @@
 	***	num_thread_groups_z	1
 	***	glslvk	-338983575
 	***	hlsl	-334286542
-	***	num_thread_groups_x	512
+	***	num_thread_groups_x	32
 	DONE DUMPING PROPERTIES
 	DONE DUMPING PIECES
 #endif
 RWTexture3D<float4> inkTexFinal			: register(u0);
-Texture3D<float4> inkTexture				: register(t0);
+Texture3D<float4> inkTexture			: register(t0);
 Texture3D<float4> velocityTexture		: register(t1);
 
 SamplerState TextureSampler
@@ -30,9 +30,8 @@ SamplerState TextureSampler
 };
 
 uniform uint2 texResolution;
-
-uniform float timeSinceLast;
 uniform float reciprocalDeltaX;
+uniform float timeSinceLast;
 uniform float velocityDissipationConstant;
 uniform float inkDissipationConstant;
 

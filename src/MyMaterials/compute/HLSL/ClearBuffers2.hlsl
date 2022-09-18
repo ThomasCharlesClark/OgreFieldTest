@@ -12,6 +12,9 @@ RWTexture3D<float4> velocityFinal				: register(u3);
 RWTexture3D<float4> divergenceTexture				: register(u4);
 
 uniform uint2 texResolution;
+uniform float timeSinceLast;
+uniform float velocityDissipationConstant; 
+uniform float inkDissipationConstant;
 
 [numthreads(@value( threads_per_group_x ), @value( threads_per_group_y ), @value( threads_per_group_z ))]
 void main
@@ -29,8 +32,8 @@ void main
 
 		inkTexture[gl_GlobalInvocationID] = float4(0, 0, 0, 0);
 		inkTexFinal[gl_GlobalInvocationID] = float4(0, 0, 0, 0);
-
-		velocityFinal[gl_GlobalInvocationID] *= 0.04;
+		 
+		//velocityFinal[gl_GlobalInvocationID] *= 0.04;
 		//velocityTexture[gl_GlobalInvocationID] *= 0.996;
 
 		divergenceTexture[gl_GlobalInvocationID] *= 0.96;
@@ -38,8 +41,8 @@ void main
 		//velocityFinal[gl_GlobalInvocationID] *= 1.0002;
 		//velocityTexture[gl_GlobalInvocationID] *= 1.0002;
 
+		//velocityFinal[gl_GlobalInvocationID] *= velocityDissipationConstant;
 		//velocityFinal[gl_GlobalInvocationID] = float4(0, 0, 0, 0);
-		//velocityTexture[gl_GlobalInvocationID] = float4(0, 0, 0, 0);
 
 	}
 }

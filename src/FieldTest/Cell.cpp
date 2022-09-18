@@ -34,6 +34,7 @@ namespace MyThirdOgre
         bool pressureGradientArrowVisible,
         bool tileVisible,
         float maxInk,
+        Ogre::Vector3 gridOffset,
         GameEntityManager* geMgr
     ) :
         mScale(scale),
@@ -54,6 +55,7 @@ namespace MyThirdOgre
         mSphere(0),
         mMaxVelocitySquared(maxVelocitySquared),
         mMaxPressure(maxPressure),
+        mGridOffset(gridOffset),
         mGameEntityManager(geMgr)
         // interesting pressure - based surfaces:
         // (0.2 * ((rowIndex * rowIndex) - (2 * (rowIndex * columnIndex))) + 3)
@@ -213,11 +215,11 @@ namespace MyThirdOgre
             Ogre::SceneMemoryMgrTypes::SCENE_DYNAMIC,
             mVelocityArrowMoDef,
             //mBoundary ? "UnlitRed" : "UnlitWhite",
-            Ogre::Vector3(mState.vPos.x, 0.0f, mState.vPos.z),
+            Ogre::Vector3(mState.vPos.x, 0.0f, mState.vPos.z) + mGridOffset,
             mState.qRot,
             Ogre::Vector3::UNIT_SCALE,// mScale,
             true,
-            0.16f,
+            0.46f,
             mVelocityArrowVisible
         );
     }
@@ -288,7 +290,7 @@ namespace MyThirdOgre
     //        mVelocityArrowMoDef,
     //        mBoundary ? "UnlitRed" : "UnlitWhite",
     //        arrowLineList,
-    //        Ogre::Vector3(mState.vPos.x, 0.01f, mState.vPos.z),
+    //        Ogre::Vector3(mState.vPos.x, 0.01f, mState.vPos.z) + mGridOffset,
     //        mState.qRot,
     //        Ogre::Vector3::UNIT_SCALE * mScale,
     //        false,
@@ -336,7 +338,7 @@ namespace MyThirdOgre
             mPressureGradientArrowMoDef,
             "UnlitGreen",
             arrowLineList,
-            Ogre::Vector3(mState.vPos.x, 0.02f, mState.vPos.z),
+            Ogre::Vector3(mState.vPos.x, 0.02f, mState.vPos.z) + mGridOffset,
             Ogre::Quaternion(1, 0, 0, 0),
             Ogre::Vector3(0.5f, 0.0f, 0.5f) * mScale,
             false,
@@ -370,7 +372,7 @@ namespace MyThirdOgre
             mPlaneMoDef,
             Ogre::SceneManager::PrefabType::PT_PLANE,
             mBoundary ? "Red" : "White", //"Blue",
-            mState.vPos,
+            mState.vPos + mGridOffset,
             qRot,
             Ogre::Vector3(0.005f, 0.005f, 0.005f) * mScale,
             true,
@@ -403,7 +405,7 @@ namespace MyThirdOgre
             name,
             Ogre::SceneMemoryMgrTypes::SCENE_DYNAMIC,
             mSphereMoDef,
-            mState.vPos,
+            mState.vPos + mGridOffset,
             mState.qRot,
             Ogre::Vector3::UNIT_SCALE,
             true,
@@ -432,7 +434,10 @@ namespace MyThirdOgre
 
             auto q = GetRotation(Ogre::Vector3(0, 1, 0), mState.vVel.normalisedCopy(), Ogre::Vector3::UNIT_Y);
 
-            auto vVelLen = mState.vVel.squaredLength() * 0.0005;
+            auto vVel = mState.vVel;
+            auto vVelLen = vVel.squaredLength();
+            auto vVelNorm = mState.vVel.normalisedCopy();
+            auto vVelNormLen = vVelNorm.squaredLength();
 
             if (isnan(vVelLen) || isinf(vVelLen))
                 vVelLen = 0;
@@ -446,6 +451,10 @@ namespace MyThirdOgre
             mVelocityArrowEntity->mTransform[currIdx]->vScale.x = vVelLen;
             mVelocityArrowEntity->mTransform[currIdx]->vScale.y = vVelLen;
             mVelocityArrowEntity->mTransform[currIdx]->vScale.z = vVelLen;
+            
+            /*mVelocityArrowEntity->mTransform[currIdx]->vScale.x = vVelNormLen;
+            mVelocityArrowEntity->mTransform[currIdx]->vScale.y = vVelNormLen;
+            mVelocityArrowEntity->mTransform[currIdx]->vScale.z = vVelNormLen;*/
 
             q.normalise();
 

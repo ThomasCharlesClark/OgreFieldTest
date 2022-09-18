@@ -172,6 +172,8 @@ protected:
 
 		CellCoord					mCellCoords;
 
+		Ogre::Vector3				mGridOffset;
+
 		GameEntity					*mVelocityArrowEntity;
 		MovableObjectDefinition		*mVelocityArrowMoDef;
 
@@ -218,6 +220,7 @@ protected:
 		  	 bool pressureGradientArrowVisible,
 			 bool tileVisible,
 			 float maxInk,
+			 Ogre::Vector3 gridOffset,
 			 GameEntityManager* geMgr);
 
 		~Cell();

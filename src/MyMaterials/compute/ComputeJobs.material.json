@@ -10,7 +10,7 @@
       "params": [
           [
             "texResolution",
-            [ 256, 256 ],
+            [ 16, 16 ],
             "uint"
           ],
           [
@@ -36,8 +36,13 @@
       "params": [
         [
           "texResolution",
-          [ 256, 256 ],
+          [ 16, 16 ],
           "uint"
+        ],
+        [
+          "timeSinceLast",
+          [ 0 ],
+          "float"
         ],
         [
           "reciprocalDeltaX",
@@ -56,7 +61,7 @@
       "params": [
         [
           "texResolution",
-          [ 256, 256 ],
+          [ 16, 16 ],
           "uint"
         ],
         [
@@ -82,7 +87,7 @@
       "params": [
         [
           "texResolution",
-          [ 256, 256 ],
+          [ 16, 16 ],
           "uint"
         ],
         [
@@ -119,7 +124,7 @@
       "params": [
         [
           "texResolution",
-          [ 256, 256 ],
+          [ 16, 16 ],
           "uint"
         ],
         [
@@ -154,7 +159,7 @@
       "params": [
         [
           "texResolution",
-          [ 256, 256 ],
+          [ 16, 16 ],
           "uint"
         ],
         [
@@ -177,8 +182,13 @@
       "params": [
         [
           "texResolution",
-          [ 256, 256 ],
+          [ 16, 16 ],
           "uint"
+        ],
+        [
+          "timeSinceLast",
+          [ 0 ],
+          "float"
         ]
       ]
     },
@@ -190,8 +200,23 @@
       "params": [
         [
           "texResolution",
-          [ 256, 256 ],
+          [ 16, 16 ],
           "uint"
+        ],
+        [
+          "timeSinceLast",
+          [ 0 ],
+          "float"
+        ],
+        [
+          "velocityDissipationConstant",
+          [ 0 ],
+          "float"
+        ],
+        [
+          "inkDissipationConstant",
+          [ 0 ],
+          "float"
         ]
       ]
     },
@@ -206,8 +231,13 @@
       "params": [
         [
           "texResolution",
-          [ 256, 256 ],
+          [ 16, 16 ],
           "uint"
+        ],
+        [
+          "timeSinceLast",
+          [ 0 ],
+          "float"
         ],
         [
           "halfDeltaX",
@@ -227,8 +257,13 @@
       "params": [
         [
           "texResolution",
-          [ 256, 256 ],
+          [ 16, 16 ],
           "uint"
+        ],
+        [
+          "timeSinceLast",
+          [ 0 ],
+          "float"
         ],
         [
           "halfDeltaX",
@@ -248,17 +283,17 @@
       "params": [
         [
           "texResolution",
-          [ 256, 256 ],
+          [ 16, 16 ],
           "uint"
-        ],
-        [
-          "halfDeltaX",
-          [ 0.5 ],
-          "float"
         ],
         [
           "timeSinceLast",
           [ 0 ],
+          "float"
+        ],
+        [
+          "halfDeltaX",
+          [ 0.5 ],
           "float"
         ]
       ]
@@ -274,8 +309,13 @@
       "params": [
         [
           "texResolution",
-          [ 256, 256 ],
+          [ 16, 16 ],
           "uint"
+        ],
+        [
+          "timeSinceLast",
+          [ 0 ],
+          "float"
         ],
         [
           "halfDeltaX",
@@ -295,8 +335,13 @@
       "params": [
         [
           "texResolution",
-          [ 256, 256 ],
+          [ 16, 16 ],
           "uint"
+        ],
+        [
+          "timeSinceLast",
+          [ 0 ],
+          "float"
         ],
         [
           "halfDeltaX",
@@ -316,8 +361,13 @@
       "params": [
         [
           "texResolution",
-          [ 256, 256 ],
+          [ 16, 16 ],
           "uint"
+        ],
+        [
+          "timeSinceLast",
+          [ 0 ],
+          "float"
         ],
         [
           "halfDeltaX",
@@ -327,11 +377,6 @@
         [
           "vorticityConfinementScale",
           [ 0.065 ],
-          "float"
-        ],
-        [
-          "timeSinceLast",
-          [ 0 ],
           "float"
         ]
       ]

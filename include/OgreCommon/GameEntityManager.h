@@ -179,6 +179,8 @@ namespace MyThirdOgre
                                                     const Ogre::Vector3& initialPos,
                                                     const Ogre::Quaternion& initialRot,
                                                     const Ogre::Vector3& initialScale,
+                                                    const int columnCount,
+                                                    const int rowCount,
                                                     const bool useAlpha = false,
                                                     const float alpha = 1.0f,
                                                     const bool visible = true);
