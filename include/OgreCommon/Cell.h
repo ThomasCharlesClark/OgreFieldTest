@@ -174,8 +174,6 @@ protected:
 
 		CellCoord					mCellCoords;
 
-		Ogre::Vector3				mGridOffset;
-
 		GameEntity					*mVelocityArrowEntity;
 		MovableObjectDefinition		*mVelocityArrowMoDef;
 
