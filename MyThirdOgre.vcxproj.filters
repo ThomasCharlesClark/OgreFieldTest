@@ -198,6 +198,12 @@
     <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\Threading\MqMessages.h">
       <Filter>Header Files\Core</Filter>
     </ClInclude>
+    <ClInclude Include="include\Leap\LeapSystem.h">
+      <Filter>Header Files\Leap</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Leap\LeapSystemState.h">
+      <Filter>Header Files\Leap</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\CMakeLists.txt" />

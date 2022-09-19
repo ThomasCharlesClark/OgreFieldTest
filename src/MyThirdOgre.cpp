@@ -353,11 +353,13 @@ unsigned long leapThread(Ogre::ThreadHandle* threadHandle)
         startTime = yieldTimer.yield(cLeapFrametime, startTime);
     }
 
-    barrier->sync();
+    leapSystem->destroyConnection();
 
+    barrier->sync();
+    leapSystem->destroyScene();
+
+    barrier->sync();
     leapSystem->deinitialize();
-
-    barrier->sync();
 
     barrier->sync();
 

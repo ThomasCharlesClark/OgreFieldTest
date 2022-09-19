@@ -323,6 +323,8 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\FieldTest\Field.cpp" />
     <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\FieldTest\Hand.cpp" />
     <ClCompile Include="include\OgreCommon\FieldComputeSystem.cpp" />
+    <ClInclude Include="include\Leap\LeapSystem.h" />
+    <ClInclude Include="include\Leap\LeapSystemState.h" />
     <ClInclude Include="include\OgreCommon\FieldComputeSystem.h" />
     <ClInclude Include="include\OgreCommon\Cell.h" />
     <ClInclude Include="include\OgreCommon\Field.h" />
