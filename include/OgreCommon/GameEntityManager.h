@@ -183,9 +183,7 @@ namespace MyThirdOgre
                                                     const int rowCount,
                                                     const bool useAlpha = false,
                                                     const float alpha = 1.0f,
-                                                    const bool visible = true,
-                                                    const int columnCount = 64,
-                                                    const int rowCount = 64);
+                                                    const bool visible = true);
 
         /** Removes the GameEntity from the world. The pointer is not immediately destroyed,
             we first need to release data in other threads (i.e. Graphics).

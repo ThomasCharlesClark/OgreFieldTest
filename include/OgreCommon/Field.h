@@ -47,8 +47,6 @@ namespace MyThirdOgre
 		float mVelocityDissipationConstant;
 		float mInkDissipationConstant;
 
-		Ogre::Vector3 mGridOffset;
-
 		int mJacobiIterationsPressure;
 		int mJacobiIterationsDiffusion;
 

@@ -7,4 +7,5 @@ Dependencies/Ogre
 /bin/Data/CommonMaterials
 /bin/Data
 /.vs/MyThirdOgre/v16
-/bin/Debug
+bin/Debug
+bin/Release
