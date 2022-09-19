@@ -51,7 +51,7 @@ namespace MyThirdOgre
     {
 
 //#if OGRE_DEBUG_MODE
-        createDebugTextOverlay();
+        //createDebugTextOverlay();
 //#endif
 
         Ogre::Light* light = mGraphicsSystem->getSceneManager()->createLight();

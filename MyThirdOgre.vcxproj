@@ -433,22 +433,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\MyMaterials\compute\HLSL\CopyFromTexture_ps.hlsl">
-      <FileType>Document</FileType>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="src\MyMaterials\compute\HLSL\AdvectionCopy.hlsl">
-      <FileType>Document</FileType>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="src\MyMaterials\compute\HLSL\ClearBuffers1.hlsl">
-      <FileType>Document</FileType>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="src\MyMaterials\compute\HLSL\ClearBuffers2.hlsl">
+    <None Include="src\MyMaterials\compute\HLSL\ClearBuffers.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

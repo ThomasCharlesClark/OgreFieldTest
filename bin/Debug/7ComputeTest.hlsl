@@ -114,7 +114,7 @@ void main
 		velocity.z *= velocity.z < 0 ? minus : plus;
 
 		//final.xyz = normalize(velocity.xyz);
-		//final.xyz += normalize(velocity.xyz);
+		final.xyz += normalize(velocity.xyz);
 
 		pixelBuffer[idx] = packUnorm4x8(final);
 		 
