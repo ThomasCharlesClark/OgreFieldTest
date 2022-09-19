@@ -327,6 +327,7 @@ unsigned long leapThread(Ogre::ThreadHandle* threadHandle)
     barrier->sync();
 
     leapSystem->createScene01();
+
     barrier->sync();
 
     while (!graphicsSystem->getQuit())
@@ -355,6 +356,7 @@ unsigned long leapThread(Ogre::ThreadHandle* threadHandle)
     barrier->sync();
 
     leapSystem->deinitialize();
+
     barrier->sync();
 
     barrier->sync();

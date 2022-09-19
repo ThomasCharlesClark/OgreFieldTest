@@ -33,12 +33,9 @@ namespace MyThirdOgre
 	{
 		mParent = 0;
 		mTestComputeJob = 0;
-		mAdvectionCopyComputeJob = 0;
 		mBoundaryConditionsComputeJob = 0;
 		mClearBuffersComputeJob = 0;
-		mClearBuffersTwoComputeJob = 0;
 		mVelocityAdvectionComputeJob = 0;
-		mInkAdvectionComputeJob = 0;
 		mAddImpulsesComputeJob = 0;
 		mDivergenceComputeJob = 0;
 		mJacobiPressureComputeJob = 0;
@@ -164,7 +161,6 @@ namespace MyThirdOgre
 		mDownloadingTextureViaTicket = false;
 
 		mHaveSetTestComputeShaderParameters = false;
-		mHaveSetAdvectionCopyComputeShaderParameters = false;
 		mHaveSetVelocityAdvectionComputeShaderParameters = false;
 		mHaveSetAddImpulsesComputeShaderParameters = false;
 		mHaveSetDivergenceComputeShaderParameters = false;
@@ -173,8 +169,6 @@ namespace MyThirdOgre
 		mHaveSetJacobiDiffusionComputeShaderParameters = false;
 		mHaveSetBoundaryConditionsComputeShaderParameters = false;
 		mHaveSetClearBuffersComputeShaderParameters = false;
-		mHaveSetClearBuffersComputeTwoShaderParameters = false;
-		mHaveSetInkAdvectionComputeShaderParameters = false;
 		mHaveSetVorticityComputationComputeShaderParameters = false;
 		mHaveSetVorticityConfinementComputeShaderParameters = false;
 
@@ -526,11 +520,6 @@ namespace MyThirdOgre
 		mTestComputeJob = job;
 	}
 
-	void FieldComputeSystem::setAdvectionCopyComputeJob(Ogre::HlmsComputeJob* job)
-	{
-		mAdvectionCopyComputeJob = job;
-	}
-
 	void FieldComputeSystem::setBoundaryConditionsComputeJob(Ogre::HlmsComputeJob* job)
 	{
 		mBoundaryConditionsComputeJob = job;
@@ -541,19 +530,9 @@ namespace MyThirdOgre
 		mClearBuffersComputeJob = job;
 	}
 
-	void FieldComputeSystem::setClearBuffersTwoComputeJob(Ogre::HlmsComputeJob* job)
-	{
-		mClearBuffersTwoComputeJob = job;
-	}
-
 	void FieldComputeSystem::setVelocityAdvectionComputeJob(Ogre::HlmsComputeJob* job)
 	{
 		mVelocityAdvectionComputeJob = job;
-	}
-
-	void FieldComputeSystem::setInkAdvectionComputeJob(Ogre::HlmsComputeJob* job)
-	{
-		mInkAdvectionComputeJob = job;
 	}
 
 	void FieldComputeSystem::setJacobiDiffusionComputeJob(Ogre::HlmsComputeJob* job)
@@ -715,33 +694,6 @@ namespace MyThirdOgre
 			}
 		}
 
-		if (mAdvectionCopyComputeJob) {
-
-			if (!mHaveSetAdvectionCopyComputeShaderParameters) {
-
-				mAdvectionCopyComputeJob->setNumThreadGroups(mThreadGroupsX, mThreadGroupsY, 1);
-
-				Ogre::ShaderParams& shaderParams = mAdvectionCopyComputeJob->getShaderParams("default");
-
-				Ogre::ShaderParams::Param* texResolution = shaderParams.findParameter("texResolution");
-
-				Ogre::ShaderParams::Param* reciprocalDeltaX = shaderParams.findParameter("reciprocalDeltaX");
-
-				texResolution->setManualValue(resolution, sizeof(resolution) / sizeof(Ogre::uint32));
-
-				reciprocalDeltaX->setManualValue(mDeltaX);
-
-				shaderParams.setDirty();
-
-				mHaveSetAdvectionCopyComputeShaderParameters = true;
-			}
-			else {
-				Ogre::ShaderParams& shaderParams = mAdvectionCopyComputeJob->getShaderParams("default");
-				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
-				tsl->setManualValue(timeSinceLast);
-			}
-		}
-
 		if (mBoundaryConditionsComputeJob) {
 
 			if (!mHaveSetBoundaryConditionsComputeShaderParameters) {
@@ -782,30 +734,6 @@ namespace MyThirdOgre
 
 				texResolution->setManualValue(resolution, sizeof(resolution) / sizeof(Ogre::uint32));
 
-				shaderParams.setDirty();
-
-				mHaveSetClearBuffersComputeShaderParameters = true;
-
-			}
-			else {
-				Ogre::ShaderParams& shaderParams = mClearBuffersComputeJob->getShaderParams("default");
-				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
-				tsl->setManualValue(timeSinceLast);
-			}
-		}
-
-		if (mClearBuffersTwoComputeJob) {
-
-			if (!mHaveSetClearBuffersComputeTwoShaderParameters) {
-
-				mClearBuffersTwoComputeJob->setNumThreadGroups(mThreadGroupsX, mThreadGroupsY, 1);
-
-				Ogre::ShaderParams& shaderParams = mClearBuffersTwoComputeJob->getShaderParams("default");
-
-				Ogre::ShaderParams::Param* texResolution = shaderParams.findParameter("texResolution");
-
-				texResolution->setManualValue(resolution, sizeof(resolution) / sizeof(Ogre::uint32));
-
 				Ogre::ShaderParams::Param* velDis = shaderParams.findParameter("velocityDissipationConstant");
 
 				velDis->setManualValue(mVelocityDissipationConstant);
@@ -816,10 +744,11 @@ namespace MyThirdOgre
 
 				shaderParams.setDirty();
 
-				mHaveSetClearBuffersComputeTwoShaderParameters = true;
+				mHaveSetClearBuffersComputeShaderParameters = true;
+
 			}
 			else {
-				Ogre::ShaderParams& shaderParams = mClearBuffersTwoComputeJob->getShaderParams("default");
+				Ogre::ShaderParams& shaderParams = mClearBuffersComputeJob->getShaderParams("default");
 				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
 				tsl->setManualValue(timeSinceLast);
 			}
@@ -842,35 +771,6 @@ namespace MyThirdOgre
 			}
 			else {
 				Ogre::ShaderParams& shaderParams = mDivergenceComputeJob->getShaderParams("default");
-				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
-				tsl->setManualValue(timeSinceLast);
-			}
-		}
-
-		if (mInkAdvectionComputeJob) {
-
-			if (!mHaveSetInkAdvectionComputeShaderParameters) {
-
-				mInkAdvectionComputeJob->setNumThreadGroups(mThreadGroupsX, mThreadGroupsY, 1);
-
-				Ogre::ShaderParams& shaderParams = mInkAdvectionComputeJob->getShaderParams("default");
-				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
-				Ogre::ShaderParams::Param* texResolution = shaderParams.findParameter("texResolution");
-				Ogre::ShaderParams::Param* reciprocalDeltaX = shaderParams.findParameter("reciprocalDeltaX");
-				Ogre::ShaderParams::Param* velocityDissipationConstant = shaderParams.findParameter("velocityDissipationConstant");
-				Ogre::ShaderParams::Param* inkDissipationConstant = shaderParams.findParameter("inkDissipationConstant");
-				tsl->setManualValue(timeSinceLast);
-				texResolution->setManualValue(resolution, sizeof(resolution) / sizeof(Ogre::uint));
-				reciprocalDeltaX->setManualValue(mDeltaX);
-				velocityDissipationConstant->setManualValue(mVelocityDissipationConstant);
-				inkDissipationConstant->setManualValue(mInkDissipationConstant);
-
-				shaderParams.setDirty();
-
-				mHaveSetInkAdvectionComputeShaderParameters = true;
-			}
-			else {
-				Ogre::ShaderParams& shaderParams = mInkAdvectionComputeJob->getShaderParams("default");
 				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
 				tsl->setManualValue(timeSinceLast);
 			}

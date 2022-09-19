@@ -25,32 +25,6 @@
           ]
         ]
     },
-    "AdvectionCopy": {
-      "threads_per_group": [ 1, 1, 1 ],
-      "thread_groups": [ 512, 512, 1 ],
-      "source": "AdvectionCopy",
-      "uav_units": 1,
-      "textures": [
-        {}
-      ],
-      "params": [
-        [
-          "texResolution",
-          [ 16, 16 ],
-          "uint"
-        ],
-        [
-          "timeSinceLast",
-          [ 0 ],
-          "float"
-        ],
-        [
-          "reciprocalDeltaX",
-          [ 1.0 ],
-          "float"
-        ]
-      ]
-    },
     "BoundaryConditions": {
       "threads_per_group": [ 1, 1, 1 ],
       "thread_groups": [ 512, 512, 1 ],
@@ -136,28 +110,10 @@
         ]
       ]
     },
-    "ClearBuffers1": {
+    "ClearBuffers": {
       "threads_per_group": [ 1, 1, 1 ],
       "thread_groups": [ 512, 512, 1 ],
-      "source": "ClearBuffers1",
-      "uav_units": 2,
-      "params": [
-        [
-          "texResolution",
-          [ 16, 16 ],
-          "uint"
-        ],
-        [
-          "timeSinceLast",
-          [ 0 ],
-          "float"
-        ]
-      ]
-    },
-    "ClearBuffers2": {
-      "threads_per_group": [ 1, 1, 1 ],
-      "thread_groups": [ 512, 512, 1 ],
-      "source": "ClearBuffers2",
+      "source": "ClearBuffers",
       "uav_units": 6,
       "params": [
         [

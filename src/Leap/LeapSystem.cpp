@@ -72,6 +72,11 @@ namespace MyThirdOgre
             result = LeapPollConnection(mConnectionHandle, 0, &msg);
             //Handle message
 
+            if (result == eLeapRS_Timeout) 
+            {
+                destroyLeapConnection();
+            }
+
             switch (msg.type) {
             case eLeapEventType_Tracking: 
                 {

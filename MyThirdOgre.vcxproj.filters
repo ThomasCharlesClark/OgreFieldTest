@@ -293,18 +293,6 @@
     <None Include="src\MyMaterials\compute\HLSL\SubtractPressureGradient.hlsl">
       <Filter>ComputeShaders</Filter>
     </None>
-    <None Include="src\MyMaterials\compute\HLSL\CopyFromTexture_ps.hlsl">
-      <Filter>ComputeShaders</Filter>
-    </None>
-    <None Include="src\MyMaterials\compute\HLSL\AdvectionCopy.hlsl">
-      <Filter>ComputeShaders</Filter>
-    </None>
-    <None Include="src\MyMaterials\compute\HLSL\ClearBuffers1.hlsl">
-      <Filter>ComputeShaders</Filter>
-    </None>
-    <None Include="src\MyMaterials\compute\HLSL\ClearBuffers2.hlsl">
-      <Filter>ComputeShaders</Filter>
-    </None>
     <None Include="src\MyMaterials\compute\HLSL\VorticityComputation.hlsl">
       <Filter>ComputeShaders</Filter>
     </None>
@@ -312,6 +300,9 @@
       <Filter>ComputeShaders</Filter>
     </None>
     <None Include="src\MyMaterials\compute\HLSL\Advection.hlsl">
+      <Filter>ComputeShaders</Filter>
+    </None>
+    <None Include="src\MyMaterials\compute\HLSL\ClearBuffers.hlsl">
       <Filter>ComputeShaders</Filter>
     </None>
   </ItemGroup>

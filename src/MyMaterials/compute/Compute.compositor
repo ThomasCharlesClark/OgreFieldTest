@@ -7,9 +7,9 @@ compositor_node TestComputeNode
 	in 4 inkTexFinal
 	in_buffer 0 inputUavBuffer
 
-	texture divergenceTexture		target_width target_height 1 PFG_RGBA32_FLOAT	uav  3d depth_pool 0
-	texture pressureTexture			target_width target_height 1 PFG_RGBA32_FLOAT	uav  3d depth_pool 0 
-	texture vortTex					target_width target_height 1 PFG_R32_FLOAT		uav keep_content 3d depth_pool 0
+	texture divergenceTexture		target_width target_height 1 PFG_RGBA32_FLOAT	uav 3d depth_pool 0
+	texture pressureTexture			target_width target_height 1 PFG_RGBA32_FLOAT	uav 3d depth_pool 0 
+	texture vortTex					target_width target_height 1 PFG_R32_FLOAT		uav 3d depth_pool 0
 
 	buffer temporaryBuffer 1 4 target_width target_height
 	
@@ -213,7 +213,7 @@ compositor_node TestComputeNode
 		
 		pass compute
 		{
-			job ClearBuffers2
+			job ClearBuffers
 			uav 0 inkTexture write
 			uav 1 inkTexFinal write
 			uav 2 velTexture write
@@ -270,34 +270,3 @@ workspace "Test Compute Workspace"
 
 	connect_output TestComputeNode 0
 }
-
-
-
-
-
-
-
-
-
-
-
-
-	/*target inkTexture
-	{
-		pass bind_uav
-		{
-			starting_slot 1
-			uav 0 inkTextureFinal read
-		}
-
-		pass render_quad
-		{
-			material CopyFromTexture
-			uses_uav 0 read
-		}
-
-		pass bind_uav 
-		{
-
-		}
-	}*/
