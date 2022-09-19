@@ -66,13 +66,13 @@ namespace MyThirdOgre
             "mainCamera",
             Ogre::SCENE_DYNAMIC, 
             mCameraMoDef,
-#if OGRE_DEBUG_MODE
-            Ogre::Vector3(0, 15, 35),
-            Ogre::Quaternion(0.983195186, -0.182557389, 0.0f, 0.0f),
-#else
+//#if OGRE_DEBUG_MODE
+//            Ogre::Vector3(0, 15, 35),
+//            Ogre::Quaternion(0.983195186, -0.182557389, 0.0f, 0.0f),
+//#else
             Ogre::Vector3(0, 35, 70),
             Ogre::Quaternion(0.983195186, -0.182557389, 0.0f, 0.0f),
-#endif
+//#endif
             Ogre::Vector3::UNIT_SCALE);
 
         float width = mLogicSystem->getWindowWidth(),

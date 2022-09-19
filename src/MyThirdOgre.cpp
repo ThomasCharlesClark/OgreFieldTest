@@ -283,6 +283,9 @@ unsigned long logicThread(Ogre::ThreadHandle* threadHandle)
         startTime = yieldTimer.yield(cLogicFrametime, startTime);
     }
 
+    // annoyingly, we need to destroy the leap system here otherwise the thread hangs if the device is disconnected when exiting
+    leapSystem->destroyLeapConnection();
+
     barrier->sync();
 
     logicSystem->destroyScene();
@@ -353,14 +356,12 @@ unsigned long leapThread(Ogre::ThreadHandle* threadHandle)
         startTime = yieldTimer.yield(cLeapFrametime, startTime);
     }
 
-    leapSystem->destroyConnection();
-
     barrier->sync();
+
     leapSystem->destroyScene();
-
     barrier->sync();
-    leapSystem->deinitialize();
 
+    leapSystem->deinitialize();
     barrier->sync();
 
     return 0;

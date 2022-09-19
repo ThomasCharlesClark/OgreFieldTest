@@ -5,12 +5,9 @@ struct Particle
 	float3 velocity;
 };
 
-RWStructuredBuffer<Particle> inputUavBuffer		: register(u0); // inputUavBuffer
-RWTexture3D<float4> velocityTexture				: register(u1); // velocityTexture
-RWTexture3D<float> inkTexture					: register(u2); // inkTexture
-RWTexture3D<float> inkTextureSampler			: register(u3); // inkTextureSampler
-RWTexture3D<float4> temporaryVelocity			: register(u4); // velocityTexture
-
+RWStructuredBuffer<Particle> inputUavBuffer		: register(u0);
+RWTexture3D<float4> velocityTexture				: register(u1);
+RWTexture3D<float> inkTexture					: register(u2);
 
 SamplerState TextureSampler
 {

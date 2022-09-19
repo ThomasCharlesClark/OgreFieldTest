@@ -32,7 +32,7 @@ namespace MyThirdOgre
 	) : GameEntity(id, moDefinition, type)
 	{
 		mParent = 0;
-		mTestComputeJob = 0;
+		mRenderComputeJob = 0;
 		mBoundaryConditionsComputeJob = 0;
 		mClearBuffersComputeJob = 0;
 		mVelocityAdvectionComputeJob = 0;
@@ -46,8 +46,10 @@ namespace MyThirdOgre
 		mDeltaX = 1.0f;
 		mHalfDeltaX = 0.5f;
 
-		mInkDissipationConstant = 0.998f;
-		mVelocityDissipationConstant = 0.88f;
+		mInkDissipationConstant = 0.98f;
+		mVelocityDissipationConstant = 0.98f;
+		mPressureDissipationConstant = 0.988f;
+		mViscosity = 0.15f;
 		mVorticityConfinementScale = 0.35f;
 
 		mReceivedStagingTexture = 0;
@@ -56,12 +58,10 @@ namespace MyThirdOgre
 
 		mRenderTargetTexture = 0;
 		mVelocityTexture = 0;
-		mSecondaryVelocityTexture = 0;
 		mPressureTexture = 0;
 		mPressureGradientTexture = 0;
 		mDivergenceTexture = 0;
 		mInkTexture = 0;
-		mSecondaryInkTexture = 0;
 
 		mVelocityStagingTexture = 0;
 		mInkStagingTexture = 0;
@@ -115,11 +115,11 @@ namespace MyThirdOgre
 		mColumnCount = columnCount;
 		mRowCount = rowCount;
 
-		mThreadGroupsX = mColumnCount;
-		mThreadGroupsY = mRowCount;
+		mThreadGroupsX = 256;
+		mThreadGroupsY = 256;
 
-		mFieldWidth = mColumnCount / 2;
-		mFieldHeight = mRowCount / 2;
+		mFieldWidth = mColumnCount;
+		mFieldHeight = mRowCount;
 
 		mBufferResolutionWidth = mThreadGroupsX;
 		mBufferResolutionHeight = mThreadGroupsY;
@@ -160,7 +160,7 @@ namespace MyThirdOgre
 
 		mDownloadingTextureViaTicket = false;
 
-		mHaveSetTestComputeShaderParameters = false;
+		mHaveSetRenderComputeShaderParameters = false;
 		mHaveSetVelocityAdvectionComputeShaderParameters = false;
 		mHaveSetAddImpulsesComputeShaderParameters = false;
 		mHaveSetDivergenceComputeShaderParameters = false;
@@ -515,9 +515,9 @@ namespace MyThirdOgre
 		mUavBuffers->push_back(buffer);
 	}
 
-	void FieldComputeSystem::setTestComputeJob(Ogre::HlmsComputeJob* job)
+	void FieldComputeSystem::setRenderComputeJob(Ogre::HlmsComputeJob* job)
 	{
-		mTestComputeJob = job;
+		mRenderComputeJob = job;
 	}
 
 	void FieldComputeSystem::setBoundaryConditionsComputeJob(Ogre::HlmsComputeJob* job)
@@ -585,11 +585,6 @@ namespace MyThirdOgre
 		mVelocityTexture = texture;
 	}
 
-	void FieldComputeSystem::setSecondaryVelocityTexture(Ogre::TextureGpu* texture)
-	{
-		mSecondaryVelocityTexture = texture;
-	}
-
 	void FieldComputeSystem::setPressureTexture(Ogre::TextureGpu* texture)
 	{
 		mPressureTexture = texture;
@@ -608,11 +603,6 @@ namespace MyThirdOgre
 	void FieldComputeSystem::setInkTexture(Ogre::TextureGpu* texture)
 	{
 		mInkTexture = texture;
-	}
-
-	void FieldComputeSystem::setSecondaryInkTexture(Ogre::TextureGpu* texture)
-	{
-		mSecondaryInkTexture = texture;
 	}
 
 	void FieldComputeSystem::setVelocityStagingTexture(Ogre::StagingTexture* sTex)
@@ -694,61 +684,27 @@ namespace MyThirdOgre
 			}
 		}
 
-		if (mBoundaryConditionsComputeJob) {
+		if (mJacobiDiffusionComputeJob) {
 
-			if (!mHaveSetBoundaryConditionsComputeShaderParameters) {
+			if (!mHaveSetJacobiDiffusionComputeShaderParameters) {
 
-				mBoundaryConditionsComputeJob->setNumThreadGroups(mThreadGroupsX, mThreadGroupsY, 1);
+				mJacobiDiffusionComputeJob->setNumThreadGroups(mThreadGroupsX, mThreadGroupsY, 1);
 
-				Ogre::ShaderParams& shaderParams = mBoundaryConditionsComputeJob->getShaderParams("default");
-				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
-				Ogre::ShaderParams::Param* reciprocalDeltaX = shaderParams.findParameter("reciprocalDeltaX");
+				Ogre::ShaderParams& shaderParams = mJacobiDiffusionComputeJob->getShaderParams("default");
 				Ogre::ShaderParams::Param* texResolution = shaderParams.findParameter("texResolution");
-
+				Ogre::ShaderParams::Param* halfDeltaX = shaderParams.findParameter("halfDeltaX");
+				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
+				Ogre::ShaderParams::Param* vis = shaderParams.findParameter("viscosity");
+				texResolution->setManualValue(resolution, sizeof(resolution) / sizeof(Ogre::uint));
+				halfDeltaX->setManualValue(mHalfDeltaX);
+				vis->setManualValue(mViscosity);
 				tsl->setManualValue(timeSinceLast);
-
-				reciprocalDeltaX->setManualValue(mDeltaX);
-
-				texResolution->setManualValue(resolution, sizeof(resolution) / sizeof(Ogre::uint32));
-
 				shaderParams.setDirty();
 
-				mHaveSetBoundaryConditionsComputeShaderParameters = true;
+				mHaveSetJacobiDiffusionComputeShaderParameters = true;
 			}
 			else {
-				Ogre::ShaderParams& shaderParams = mBoundaryConditionsComputeJob->getShaderParams("default");
-				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
-				tsl->setManualValue(timeSinceLast);
-			}
-		}
-
-		if (mClearBuffersComputeJob) {
-
-			if (!mHaveSetClearBuffersComputeShaderParameters) {
-
-				mClearBuffersComputeJob->setNumThreadGroups(mThreadGroupsX, mThreadGroupsY, 1);
-
-				Ogre::ShaderParams& shaderParams = mClearBuffersComputeJob->getShaderParams("default");
-
-				Ogre::ShaderParams::Param* texResolution = shaderParams.findParameter("texResolution");
-
-				texResolution->setManualValue(resolution, sizeof(resolution) / sizeof(Ogre::uint32));
-
-				Ogre::ShaderParams::Param* velDis = shaderParams.findParameter("velocityDissipationConstant");
-
-				velDis->setManualValue(mVelocityDissipationConstant);
-
-				Ogre::ShaderParams::Param* inkDis = shaderParams.findParameter("inkDissipationConstant");
-
-				inkDis->setManualValue(mInkDissipationConstant);
-
-				shaderParams.setDirty();
-
-				mHaveSetClearBuffersComputeShaderParameters = true;
-
-			}
-			else {
-				Ogre::ShaderParams& shaderParams = mClearBuffersComputeJob->getShaderParams("default");
+				Ogre::ShaderParams& shaderParams = mJacobiDiffusionComputeJob->getShaderParams("default");
 				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
 				tsl->setManualValue(timeSinceLast);
 			}
@@ -776,30 +732,6 @@ namespace MyThirdOgre
 			}
 		}
 
-		if (mJacobiDiffusionComputeJob) {
-
-			if (!mHaveSetJacobiDiffusionComputeShaderParameters) {
-
-				mJacobiDiffusionComputeJob->setNumThreadGroups(mThreadGroupsX, mThreadGroupsY, 1);
-
-				Ogre::ShaderParams& shaderParams = mJacobiDiffusionComputeJob->getShaderParams("default");
-				Ogre::ShaderParams::Param* texResolution = shaderParams.findParameter("texResolution");
-				Ogre::ShaderParams::Param* halfDeltaX = shaderParams.findParameter("halfDeltaX");
-				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
-				texResolution->setManualValue(resolution, sizeof(resolution) / sizeof(Ogre::uint));
-				halfDeltaX->setManualValue(mHalfDeltaX);
-				tsl->setManualValue(timeSinceLast);
-				shaderParams.setDirty();
-
-				mHaveSetJacobiDiffusionComputeShaderParameters = true;
-			}
-			else {
-				Ogre::ShaderParams& shaderParams = mJacobiDiffusionComputeJob->getShaderParams("default");
-				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
-				tsl->setManualValue(timeSinceLast);
-			}
-		}
-
 		if (mJacobiPressureComputeJob) {
 
 			if (!mHaveSetJacobiPressureComputeShaderParameters) {
@@ -817,6 +749,34 @@ namespace MyThirdOgre
 			}
 			else {
 				Ogre::ShaderParams& shaderParams = mJacobiPressureComputeJob->getShaderParams("default");
+				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
+				tsl->setManualValue(timeSinceLast);
+			}
+		}
+
+		if (mBoundaryConditionsComputeJob) {
+
+			if (!mHaveSetBoundaryConditionsComputeShaderParameters) {
+
+				mBoundaryConditionsComputeJob->setNumThreadGroups(mThreadGroupsX, mThreadGroupsY, 1);
+
+				Ogre::ShaderParams& shaderParams = mBoundaryConditionsComputeJob->getShaderParams("default");
+				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
+				Ogre::ShaderParams::Param* reciprocalDeltaX = shaderParams.findParameter("reciprocalDeltaX");
+				Ogre::ShaderParams::Param* texResolution = shaderParams.findParameter("texResolution");
+
+				tsl->setManualValue(timeSinceLast);
+
+				reciprocalDeltaX->setManualValue(mDeltaX);
+
+				texResolution->setManualValue(resolution, sizeof(resolution) / sizeof(Ogre::uint32));
+
+				shaderParams.setDirty();
+
+				mHaveSetBoundaryConditionsComputeShaderParameters = true;
+			}
+			else {
+				Ogre::ShaderParams& shaderParams = mBoundaryConditionsComputeJob->getShaderParams("default");
 				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
 				tsl->setManualValue(timeSinceLast);
 			}
@@ -888,14 +848,14 @@ namespace MyThirdOgre
 			}
 		}
 
-		if (mTestComputeJob)
+		if (mRenderComputeJob)
 		{
-			if (!mHaveSetTestComputeShaderParameters) {
+			if (!mHaveSetRenderComputeShaderParameters) {
 
-				mTestComputeJob->setNumThreadGroups(mThreadGroupsX, mThreadGroupsY, 1);
+				mRenderComputeJob->setNumThreadGroups(mThreadGroupsX, mThreadGroupsY, 1);
 
 				//Update the compute shader's
-				Ogre::ShaderParams& shaderParams = mTestComputeJob->getShaderParams("default");
+				Ogre::ShaderParams& shaderParams = mRenderComputeJob->getShaderParams("default");
 				Ogre::ShaderParams::Param* texResolution = shaderParams.findParameter("texResolution");
 				Ogre::ShaderParams::Param* maxInk = shaderParams.findParameter("maxInk");
 				auto pb = shaderParams.findParameter("pixelBuffer");
@@ -910,51 +870,45 @@ namespace MyThirdOgre
 
 				psParams->setNamedConstant("texResolution", res, 1u, 2u);
 
-				if (this->getInkStagingTexture())
-				{
-					this->getInkStagingTexture()->startMapRegion();
+				// This is unnecessary, but I'm leaving it commented out here as an example of how to manually draw to a texture.
+				// Need a staging texture delivered from the graphics system across threads, need to discard that staging texture as soon as done with it.
+				//if (this->getInkStagingTexture())
+				//{
+				//	this->getInkStagingTexture()->startMapRegion();
+				//	auto tBox = this->getInkStagingTexture()->mapRegion(
+				//		this->getBufferResolutionWidth(),
+				//		this->getBufferResolutionHeight(),
+				//		this->getBufferResolutionDepth(),
+				//		1u,
+				//		this->getPixelFormat3D());
+				//	for (size_t z = 0; z < this->getBufferResolutionDepth(); ++z)
+				//	{
+				//		for (size_t y = 0; y < this->getBufferResolutionHeight(); ++y)
+				//		{
+				//			for (size_t x = 0; x < this->getBufferResolutionWidth(); ++x)
+				//			{
+				//				float* data = reinterpret_cast<float*>(tBox.at(x, y, z));
+				//				//data[0] = 0.0450033244f; //r
+				//				//data[1] = 0.1421513113f; //g
+				//				//data[2] = 0.4302441212f; //b
+				//				//data[3] = 1.0f; //a
+				//				data[0] = 0.0f; //r
+				//				data[1] = 0.0f; //g
+				//				data[2] = 0.0f; //b
+				//				data[3] = 1.0f; //a
+				//			}
+				//		}
+				//	}
+				//	this->getInkStagingTexture()->stopMapRegion();
+				//	this->getInkStagingTexture()->upload(tBox, this->getPrimaryInkTexture(), 0, 0, 0);
+				//	this->mGameEntityManager->mLogicSystem->queueSendMessage(
+				//		this->mGameEntityManager->mGraphicsSystem,
+				//		Mq::REMOVE_STAGING_TEXTURE,
+				//		mInkStagingTexture);
+				//	mInkStagingTexture = 0;
+				//}
 
-					auto tBox = this->getInkStagingTexture()->mapRegion(
-						this->getBufferResolutionWidth(),
-						this->getBufferResolutionHeight(),
-						this->getBufferResolutionDepth(),
-						1u,
-						this->getPixelFormat3D());
-
-					for (size_t z = 0; z < this->getBufferResolutionDepth(); ++z)
-					{
-						for (size_t y = 0; y < this->getBufferResolutionHeight(); ++y)
-						{
-							for (size_t x = 0; x < this->getBufferResolutionWidth(); ++x)
-							{
-								float* data = reinterpret_cast<float*>(tBox.at(x, y, z));
-								//data[0] = 0.0450033244f; //r
-								//data[1] = 0.1421513113f; //g
-								//data[2] = 0.4302441212f; //b
-								//data[3] = 1.0f; //a
-
-								data[0] = 0.0f; //r
-								data[1] = 0.0f; //g
-								data[2] = 0.0f; //b
-								data[3] = 1.0f; //a
-							}
-						}
-					}
-
-					this->getInkStagingTexture()->stopMapRegion();
-
-					//this->getInkStagingTexture()->upload(tBox, this->getPrimaryInkTexture(), 0, 0, 0);
-					this->getInkStagingTexture()->upload(tBox, this->getSecondaryVelocityTexture(), 0, 0, 0);
-
-					this->mGameEntityManager->mLogicSystem->queueSendMessage(
-						this->mGameEntityManager->mGraphicsSystem,
-						Mq::REMOVE_STAGING_TEXTURE,
-						mInkStagingTexture);
-
-					mInkStagingTexture = 0;
-				}
-
-				mHaveSetTestComputeShaderParameters = true;
+				mHaveSetRenderComputeShaderParameters = true;
 			}
 
 			auto c = Ogre::ColourValue(0.0f, 0.32f, 0.12f, 1.0f);
@@ -966,19 +920,14 @@ namespace MyThirdOgre
 				}
 			}*/
 
-
-
-
-
-
+			// the input buffer MUST be cleared as often as possible
 			for (auto& iter : mInkInputBuffer) {
-				// the input buffer MUST be cleared as often as possible
 				iter.colour = Ogre::Vector4(0.0f, 0.0f, 0.0f, 0.0f);
-				//iter.colour = Ogre::Vector4(0.0450033244f, 0.1421513113f, 0.4302441212f, 0.0f);
 				iter.ink = 0.0f;
 				iter.velocity = Ogre::Vector3::ZERO;
 			}
 
+			// Manual additions (logic system provides keyboard input)
 			Ogre::Vector3 manualVel = Ogre::Vector3::ZERO;
 			Ogre::Real manualInk = 0.0f;
 
@@ -1103,11 +1052,47 @@ namespace MyThirdOgre
 			buffer->upload(mCpuInstanceBuffer, 0u, buffer->getNumElements());
 		}
 
+		if (mClearBuffersComputeJob) {
+
+			if (!mHaveSetClearBuffersComputeShaderParameters) {
+
+				mClearBuffersComputeJob->setNumThreadGroups(mThreadGroupsX, mThreadGroupsY, 1);
+
+				Ogre::ShaderParams& shaderParams = mClearBuffersComputeJob->getShaderParams("default");
+
+				Ogre::ShaderParams::Param* texResolution = shaderParams.findParameter("texResolution");
+
+				texResolution->setManualValue(resolution, sizeof(resolution) / sizeof(Ogre::uint32));
+
+				Ogre::ShaderParams::Param* velDis = shaderParams.findParameter("velocityDissipationConstant");
+
+				velDis->setManualValue(mVelocityDissipationConstant);
+
+				Ogre::ShaderParams::Param* inkDis = shaderParams.findParameter("inkDissipationConstant");
+
+				inkDis->setManualValue(mInkDissipationConstant);
+
+				Ogre::ShaderParams::Param* pDis = shaderParams.findParameter("inkDissipationConstant");
+
+				pDis->setManualValue(mPressureDissipationConstant);
+
+				shaderParams.setDirty();
+
+				mHaveSetClearBuffersComputeShaderParameters = true;
+
+			}
+			else {
+				Ogre::ShaderParams& shaderParams = mClearBuffersComputeJob->getShaderParams("default");
+				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
+				tsl->setManualValue(timeSinceLast);
+			}
+		}
+
 		#pragma region For Awesome Visual Debugging using Arrow.mesh instances
 
 		if (mParent && mParent->getVelocityVisible()) {
 			if (!isDownloadingViaTextureTicket()) {
-				getTextureTicket3D()->download(getSecondaryVelocityTexture(), 0, true);
+				getTextureTicket3D()->download(getVelocityTexture(), 0, true);
 				setDownloadingTextureViaTicket(true);
 			}
 			else
@@ -1120,7 +1105,7 @@ namespace MyThirdOgre
 
 					for (int i = 0; i < numSlices; i++) {
 						auto texBox = getTextureTicket3D()->map(i);
-						auto pFormat = getSecondaryVelocityTexture()->getPixelFormat();
+						auto pFormat = getVelocityTexture()->getPixelFormat();
 
 						for (int x = 0; x < mBufferResolutionWidth; x++) {
 							for (int z = 0; z < mBufferResolutionHeight; z++) {
@@ -1178,7 +1163,7 @@ namespace MyThirdOgre
 
 	void FieldComputeSystem::writeDebugImages(float timeSinceLast)
 	{
-		if (mTestComputeJob)
+		if (mRenderComputeJob)
 		{
 			mGameEntityManager->mLogicSystem->queueSendMessage(
 				mGameEntityManager->mGraphicsSystem,

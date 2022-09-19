@@ -354,8 +354,6 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\Utils\SmaaUtils.cpp" />
     <ClCompile Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\src\OgreCommon\Utils\TestUtils.cpp" />
     <ClInclude Include="include\OgreCommon\GraphicsGameState.h" />
-    <ClInclude Include="include\OgreCommon\LeapSystem.h" />
-    <ClInclude Include="include\OgreCommon\LeapSystemState.h" />
     <ClInclude Include="include\OgreCommon\LogicGameState.h" />
     <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\BaseSystem.h" />
     <ClInclude Include="D:\source\repos\ThomasCharlesClark\Ogre\my-third-ogre\include\OgreCommon\CameraController.h" />
@@ -400,7 +398,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <None Include="src\MyMaterials\MainWorkspace.compositor" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\MyMaterials\compute\HLSL\ComputeTest.hlsl">
+    <None Include="src\MyMaterials\compute\HLSL\Render.hlsl">
       <FileType>Document</FileType>
     </None>
     <None Include="src\MyMaterials\compute\HLSL\DrawFromUavBuffer_ps.hlsl">

@@ -10,6 +10,7 @@ SamplerState TextureSampler
 uniform uint2 texResolution;
 uniform float timeSinceLast;
 uniform float halfDeltaX;
+uniform float viscosity;
 
 [numthreads(@value( threads_per_group_x ), @value( threads_per_group_y ), @value( threads_per_group_z ))]
 void main
@@ -32,7 +33,7 @@ void main
 			float4 c = velocityTexture.Load(float4(idx.x,	  idx.y + 1, idx.z, 0));
 			float4 d = velocityTexture.Load(float4(idx.x,	  idx.y - 1, idx.z, 0));
 
-			float alpha = halfDeltaX * halfDeltaX / (10.0 * timeSinceLast);
+			float alpha = halfDeltaX * halfDeltaX / (viscosity * timeSinceLast);
 			float rBeta = 1 / (4 + alpha);
 			float4 beta = velocityTexture.Load(float4(idx.xyz, 0));
 
@@ -40,8 +41,8 @@ void main
 			float4 v = (a + b + c + d + alpha * beta) * rBeta;
 
 			//velocityTexture[idx] = float4(v.x, 0, v.z, 0);
-			velocityTexture[idx] = float4(v.xyz, 0);
 
+			velocityTexture[idx] = float4(v.xyz, 0);
 		//}
 	}
 }

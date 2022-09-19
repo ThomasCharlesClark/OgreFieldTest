@@ -561,7 +561,7 @@ namespace MyThirdOgre
         case Mq::FIELD_COMPUTE_SYSTEM_WRITE_FILE_TESTING:
             {
                 for (auto& iter : mFieldComputeSystems) {
-                    iter->getTextureTicket3D()->download(iter->getPrimaryVelocityTexture(), 0, false);
+                    iter->getTextureTicket3D()->download(iter->getVelocityTexture(), 0, false);
                     iter->setDownloadingTextureViaTicket(true);
                 }
 
@@ -630,14 +630,15 @@ namespace MyThirdOgre
                                 data[2] = 0.0f; //b
                                 data[3] = 1.0f; //a
 
-                                if (z == 0) {
-                                    float* data2d = reinterpret_cast<float*>(tBox2d.at(x, y, z));
+                                // doesn't like doing this
+                                //if (z == 0) {
+                                //    float* data2d = reinterpret_cast<float*>(tBox2d.at(x, y, z));
 
-                                    data2d[0] = 0.0f; //r
-                                    data2d[1] = 0.0f; //g
-                                    data2d[2] = 0.0f; //b
-                                    data2d[3] = 1.0f; //a
-                                }
+                                //    data2d[0] = 0.0f; //r
+                                //    data2d[1] = 0.0f; //g
+                                //    data2d[2] = 0.0f; //b
+                                //    data2d[3] = 1.0f; //a
+                                //}
                             }
                         }
                     }
@@ -648,23 +649,11 @@ namespace MyThirdOgre
 
                     stagingTexture2d->upload(tBox2d, iter->getRenderTargetTexture(), 0, 0, 0);
 
-                    stagingTexture3d->upload(tBox3d, iter->getPrimaryVelocityTexture(), 0, 0, 0);
-                    stagingTexture3d->upload(tBox3d, iter->getSecondaryVelocityTexture(), 0, 0, 0);
+                    stagingTexture3d->upload(tBox3d, iter->getVelocityTexture(), 0, 0, 0);
+                    //stagingTexture3d->upload(tBox3d, iter->getInkTexture(), 0, 0, 0);
                     stagingTexture3d->upload(tBox3d, iter->getPressureTexture(), 0, 0, 0);
                     stagingTexture3d->upload(tBox3d, iter->getPressureGradientTexture(), 0, 0, 0);
                     stagingTexture3d->upload(tBox3d, iter->getDivergenceTexture(), 0, 0, 0);
-
-
-                    //stagingTexture->upload(tBox, iter->getRenderTargetTexture(), 0, 0, 0);
-                    //stagingTexture->upload(tBox, iter->getPrimaryInkTexture(), 0, 0, 0);
-                    //stagingTexture->upload(tBox, iter->getSecondaryInkTexture(), 0, 0, 0);
-
-                    /*mReceivedStagingTexture->upload(tBox, mPressureTexture, 0, 0, 0);
-                    mReceivedStagingTexture->upload(tBox, mDivergenceTexture, 0, 0, 0);
-                    mReceivedStagingTexture->upload(tBox, mPressureGradientTexture, 0, 0, 0);
-                    mReceivedStagingTexture->upload(tBox, mRenderTargetTexture, 0, 0, 0);
-                    mReceivedStagingTexture->upload(tBox, mInkTexture, 0, 0, 0);
-                    mReceivedStagingTexture->upload(tBox, mSecondaryInkTexture, 0, 0, 0);*/
 
                     texMgr->removeStagingTexture(stagingTexture3d);
 
@@ -1477,7 +1466,7 @@ namespace MyThirdOgre
 
                 Ogre::HlmsCompute* hlmsCompute = root->getHlmsManager()->getComputeHlms();
 
-                fieldComputeSystem->setTestComputeJob(hlmsCompute->findComputeJob("TestJob"));
+                fieldComputeSystem->setRenderComputeJob(hlmsCompute->findComputeJob("Render"));
                 fieldComputeSystem->setBoundaryConditionsComputeJob(hlmsCompute->findComputeJob("BoundaryConditions"));
                 fieldComputeSystem->setClearBuffersComputeJob(hlmsCompute->findComputeJob("ClearBuffers"));
                 fieldComputeSystem->setVelocityAdvectionComputeJob(hlmsCompute->findComputeJob("Advection"));
@@ -1620,17 +1609,13 @@ namespace MyThirdOgre
 
                 fieldComputeSystem->setVelocityTexture(textures[1]);
 
-                fieldComputeSystem->setSecondaryVelocityTexture(textures[2]);
+                fieldComputeSystem->setPressureTexture(textures[2]);
 
-                fieldComputeSystem->setPressureTexture(textures[3]);
+                fieldComputeSystem->setPressureGradientTexture(textures[3]);
 
-                fieldComputeSystem->setPressureGradientTexture(textures[4]);
+                fieldComputeSystem->setDivergenceTexture(textures[4]);
 
-                fieldComputeSystem->setDivergenceTexture(textures[5]);
-
-                fieldComputeSystem->setInkTexture(textures[6]);
-
-                fieldComputeSystem->setSecondaryInkTexture(textures[7]);
+                fieldComputeSystem->setInkTexture(textures[5]);
 
                 size_t uavBufferNumElements = fieldComputeSystem->getBufferResolutionWidth() * fieldComputeSystem->getBufferResolutionHeight();
 
@@ -1682,13 +1667,9 @@ namespace MyThirdOgre
                 fieldComputeSystem->getRenderTargetTexture()->setResolution(fieldComputeSystem->getBufferResolutionWidth(), fieldComputeSystem->getBufferResolutionHeight());
                 fieldComputeSystem->getRenderTargetTexture()->setPixelFormat(fieldComputeSystem->getPixelFormat2D());
 
-                fieldComputeSystem->getPrimaryVelocityTexture()->setNumMipmaps(1);
-                fieldComputeSystem->getPrimaryVelocityTexture()->setResolution(fieldComputeSystem->getBufferResolutionWidth(), fieldComputeSystem->getBufferResolutionHeight());
-                fieldComputeSystem->getPrimaryVelocityTexture()->setPixelFormat(fieldComputeSystem->getPixelFormat3D());
-
-                fieldComputeSystem->getSecondaryVelocityTexture()->setNumMipmaps(1);
-                fieldComputeSystem->getSecondaryVelocityTexture()->setResolution(fieldComputeSystem->getBufferResolutionWidth(), fieldComputeSystem->getBufferResolutionHeight());
-                fieldComputeSystem->getSecondaryVelocityTexture()->setPixelFormat(fieldComputeSystem->getPixelFormat3D());
+                fieldComputeSystem->getVelocityTexture()->setNumMipmaps(1);
+                fieldComputeSystem->getVelocityTexture()->setResolution(fieldComputeSystem->getBufferResolutionWidth(), fieldComputeSystem->getBufferResolutionHeight());
+                fieldComputeSystem->getVelocityTexture()->setPixelFormat(fieldComputeSystem->getPixelFormat3D());
 
                 fieldComputeSystem->getPressureTexture()->setNumMipmaps(1);
                 fieldComputeSystem->getPressureTexture()->setResolution(fieldComputeSystem->getBufferResolutionWidth(), fieldComputeSystem->getBufferResolutionHeight());
@@ -1702,13 +1683,9 @@ namespace MyThirdOgre
                 fieldComputeSystem->getDivergenceTexture()->setResolution(fieldComputeSystem->getBufferResolutionWidth(), fieldComputeSystem->getBufferResolutionHeight());
                 fieldComputeSystem->getDivergenceTexture()->setPixelFormat(fieldComputeSystem->getPixelFormat3D());
 
-                fieldComputeSystem->getPrimaryInkTexture()->setNumMipmaps(1);
-                fieldComputeSystem->getPrimaryInkTexture()->setResolution(fieldComputeSystem->getBufferResolutionWidth(), fieldComputeSystem->getBufferResolutionHeight());
-                fieldComputeSystem->getPrimaryInkTexture()->setPixelFormat(fieldComputeSystem->getPixelFormatFloat3D());
-
-                fieldComputeSystem->getSecondaryInkTexture()->setNumMipmaps(1);
-                fieldComputeSystem->getSecondaryInkTexture()->setResolution(fieldComputeSystem->getBufferResolutionWidth(), fieldComputeSystem->getBufferResolutionHeight());
-                fieldComputeSystem->getSecondaryInkTexture()->setPixelFormat(fieldComputeSystem->getPixelFormatFloat3D());
+                fieldComputeSystem->getInkTexture()->setNumMipmaps(1);
+                fieldComputeSystem->getInkTexture()->setResolution(fieldComputeSystem->getBufferResolutionWidth(), fieldComputeSystem->getBufferResolutionHeight());
+                fieldComputeSystem->getInkTexture()->setPixelFormat(fieldComputeSystem->getPixelFormatFloat3D());
 
                 bool canUseSynchronousUpload = fieldComputeSystem
                     ->getRenderTargetTexture()
@@ -1725,30 +1702,16 @@ namespace MyThirdOgre
 
 
                 canUseSynchronousUpload = fieldComputeSystem
-                    ->getPrimaryVelocityTexture()
+                    ->getVelocityTexture()
                     ->getNextResidencyStatus() == Ogre::GpuResidency::Resident
-                    && fieldComputeSystem->getPrimaryVelocityTexture()->isDataReady();
+                    && fieldComputeSystem->getVelocityTexture()->isDataReady();
 
                 if (!canUseSynchronousUpload) {
-                    fieldComputeSystem->getPrimaryVelocityTexture()->waitForData();
+                    fieldComputeSystem->getVelocityTexture()->waitForData();
                 }
 
                 fieldComputeSystem
-                    ->getPrimaryVelocityTexture()
-                    ->scheduleTransitionTo(Ogre::GpuResidency::Resident, 0, true);
-
-
-                canUseSynchronousUpload = fieldComputeSystem
-                    ->getSecondaryVelocityTexture()
-                    ->getNextResidencyStatus() == Ogre::GpuResidency::Resident
-                    && fieldComputeSystem->getSecondaryVelocityTexture()->isDataReady();
-
-                if (!canUseSynchronousUpload) {
-                    fieldComputeSystem->getSecondaryVelocityTexture()->waitForData();
-                }
-
-                fieldComputeSystem
-                    ->getSecondaryVelocityTexture()
+                    ->getVelocityTexture()
                     ->scheduleTransitionTo(Ogre::GpuResidency::Resident, 0, true);
 
 
@@ -1794,49 +1757,27 @@ namespace MyThirdOgre
 
 
                 canUseSynchronousUpload = fieldComputeSystem
-                    ->getPrimaryInkTexture()
+                    ->getInkTexture()
                     ->getNextResidencyStatus() == Ogre::GpuResidency::Resident
-                    && fieldComputeSystem->getPrimaryInkTexture()->isDataReady();
+                    && fieldComputeSystem->getInkTexture()->isDataReady();
 
                 if (!canUseSynchronousUpload) {
-                    fieldComputeSystem->getPrimaryInkTexture()->waitForData();
+                    fieldComputeSystem->getInkTexture()->waitForData();
                 }
 
                 fieldComputeSystem
-                    ->getPrimaryInkTexture()
+                    ->getInkTexture()
                     ->scheduleTransitionTo(Ogre::GpuResidency::Resident, 0, true);
-
-
-                canUseSynchronousUpload = fieldComputeSystem
-                    ->getSecondaryInkTexture()
-                    ->getNextResidencyStatus() == Ogre::GpuResidency::Resident
-                    && fieldComputeSystem->getSecondaryInkTexture()->isDataReady();
-
-                if (!canUseSynchronousUpload) {
-                    fieldComputeSystem->getSecondaryInkTexture()->waitForData();
-                }
-
-                fieldComputeSystem
-                    ->getSecondaryInkTexture()
-                    ->scheduleTransitionTo(Ogre::GpuResidency::Resident, 0, true);
-
-
-
-
-
-
-
 
 
                 auto tVec = Ogre::CompositorChannelVec({
                         fieldComputeSystem->getRenderTargetTexture(),
-                        fieldComputeSystem->getPrimaryVelocityTexture(),
-                        fieldComputeSystem->getSecondaryVelocityTexture(),
-                        fieldComputeSystem->getPrimaryInkTexture(),
-                        fieldComputeSystem->getSecondaryInkTexture(),
+                        fieldComputeSystem->getVelocityTexture(),
+                        fieldComputeSystem->getInkTexture()
+                        /*,
                         fieldComputeSystem->getPressureTexture(),
                         fieldComputeSystem->getPressureGradientTexture(),
-                        fieldComputeSystem->getDivergenceTexture()
+                        fieldComputeSystem->getDivergenceTexture()*/
                     });
 
                 auto workspace = compositorManager->addWorkspace(

@@ -12,12 +12,11 @@ SamplerState TextureSampler
 	AddressV = Clamp;
 };
 
-RWStructuredBuffer<uint> pixelBuffer		: register(u0);
-RWTexture3D<float4> velocityTextureFinal	: register(u1);
-RWTexture3D<float4> velocityTexture			: register(u2);
-RWTexture3D<float> vortTex					: register(u3);
-RWTexture3D<float4> pressureTexture			: register(u4);
-RWTexture3D<float4> inkTextureFinal			: register(u5);
+RWStructuredBuffer<uint> pixelBuffer	: register(u0);
+RWTexture3D<float4> velocityTexture		: register(u1);
+RWTexture3D<float4> inkTexture			: register(u2);
+RWTexture3D<float4> pressureTexture		: register(u3);
+RWTexture3D<float> vorticityTexture		: register(u4);
 
 uniform float maxInk;
 uniform uint2 texResolution;
@@ -65,23 +64,23 @@ void main
 		int3 idx3 = int3(gl_GlobalInvocationID);
 		int4 idx4 = int4(gl_GlobalInvocationID, 0);
 
-		float ink = inkTextureFinal.Load(idx4);
+		float ink = inkTexture.Load(idx4);
 
-		float4 velocityOriginal = velocityTextureFinal.Load(idx4);
+		float4 velocityOriginal = velocityTexture.Load(idx4);
+
 		float4 velocity = velocityOriginal;
 
-		float vorticityValue = vortTex.Load(idx4);
+		float vorticity = vorticityTexture.Load(idx4);
 
 		float4 pressure = pressureTexture.Load(idx4);
 		
-		//float4 final = float4(ink, 0.0, vorticityValue, 0.84);
-		float4 final = float4(0.0, 0.0, 0.0, 0.84);
+		float4 final = float4(0, 0, 0, 1.0);
 
-		//float4 final = float4(ink, ink / 19, 0, 0.84);
-		
+		/*
 		final.x += ink;
-
 		final.y += ink / 24.0f;
+		final.z += vorticity;
+		*/
 
 		// you can't colourize using negative numbers, it doesn't work.
 		// so send the components positive by whatever... means... necessary. then normalize.
@@ -98,8 +97,8 @@ void main
 
 		pixelBuffer[idx] = packUnorm4x8(final);
 		 
-		//velocityTextureFinal[idx3] += float4(velocityOriginal.xyz, 0);
+		//velocityTexture[idx3] += float4(velocityOriginal.xyz, 0);
 
-		//inkTextureFinal[idx3] = float4(ink, 0, 0, 0);
+		//inkTexture[idx3] = float4(ink, 0, 0, 0);
 	}
 }

@@ -33,7 +33,7 @@ void main
 		float3 c = velocityTexture.SampleLevel(TextureSampler, float3(idx.x, idx.y - 1, idx.z) / width, 0);
 		float3 d = velocityTexture.SampleLevel(TextureSampler, float3(idx.x, idx.y + 1, idx.z) / width, 0);
 
-		float vort = ((a.z - b.z) - (c.x - d.x)) * halfDeltaX;
+		float vort = ((a.y - b.y) - (c.x - d.x)) * halfDeltaX;
 
 		vorticityTexture[idx] = vort;
 	}

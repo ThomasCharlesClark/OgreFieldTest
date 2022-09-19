@@ -2,7 +2,6 @@
 #include "Leap/LeapSystemState.h"
 #include "OgrePrerequisites.h"
 #include "OgreVector3.h"
-#include "..\..\include\OgreCommon\LeapSystem.h"
 //
 //#include <Windows.h>
 //#include <iostream>
@@ -115,11 +114,6 @@ namespace MyThirdOgre
                 break;
             }
         }
-    }
-
-    void LeapSystem::destroyConnection(void)
-    {
-        this->destroyLeapConnection();
     }
     
     //-----------------------------------------------------------------------------------

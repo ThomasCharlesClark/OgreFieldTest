@@ -58,8 +58,8 @@ namespace MyThirdOgre
 		mJacobiIterationsPressure(20),
 		mJacobiIterationsDiffusion(20),
 #else
-		mColumnCount(256),
-		mRowCount(256),
+		mColumnCount(64),
+		mRowCount(64),
 		mGridVisible(false),
 		mVelocityVisible(false),
 		mPressureGradientVisible(false),
@@ -68,7 +68,7 @@ namespace MyThirdOgre
 #endif
 		mImpulses(std::vector<std::pair<CellCoord, HandInfluence>> { }),
 		mHand(0),
-		mVorticityConfinementScale(0.065f),
+		mVorticityConfinementScale(0.35f),
 		mMaxInk(maxInk),
 		mUseComputeSystem( true ),
 		mFieldComputeSystem( 0 )

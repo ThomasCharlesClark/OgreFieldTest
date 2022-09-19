@@ -41,7 +41,6 @@ namespace MyThirdOgre
 		BaseSystem						*mGraphicsSystem;
 
 		virtual void createLeapConnection(void);
-		virtual void destroyLeapConnection(void);
 
 		/// @see MessageQueueSystem::processIncomingMessage
 		virtual void processIncomingMessage(Mq::MessageId messageId, const void* data);
@@ -61,6 +60,7 @@ namespace MyThirdOgre
 		void _notifyLogicSystem(BaseSystem* logicSystem) { mLogicSystem = logicSystem; };
 
 		virtual void pollConnection(float timeSinceLast);
+		virtual void destroyLeapConnection(void);
 	};
 }
 

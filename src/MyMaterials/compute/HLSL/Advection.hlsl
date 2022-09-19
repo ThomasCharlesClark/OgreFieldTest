@@ -1,5 +1,5 @@
-RWTexture3D<float4> velocityFinal				: register(u0);
-RWTexture3D<float4> inkFinal					: register(u1);
+RWTexture3D<float4> velocityTexture				: register(u0);
+RWTexture3D<float4> inkTexture					: register(u1);
 
 SamplerState TextureSampler
 {
@@ -44,13 +44,13 @@ void main
 
 		float width = texResolution.x;
 
-		float4 velocity = velocityFinal.Load(idx4) * velocityDissipationConstant;
+		float4 velocity = velocityTexture.Load(idx4) * velocityDissipationConstant;
 
-		float4 ink = inkFinal.Load(idx4);
+		velocity.y = velocity.z;
 
-		//velocity.y = velocity.z;
+		velocity.z = 0;
 
-		//velocity.z = 0;
+		float4 ink = inkTexture.Load(idx4);
 
 		float3 idxBackInTime = (idx - (timeSinceLast * reciprocalDeltaX * velocity));
 		
@@ -60,28 +60,28 @@ void main
 
 		idx = idx - (velocity.xyz * timeSinceLast);
 
-		float3 a = velocityFinal.Load(float4(idx.x - 1, idx.y, idx.z, 0)).xyz;
-		float3 b = velocityFinal.Load(float4(idx.x + 1, idx.y, idx.z, 0)).xyz;
-		float3 c = velocityFinal.Load(float4(idx.x, idx.y + 1, idx.z, 0)).xyz;
-		float3 d = velocityFinal.Load(float4(idx.x, idx.y - 1, idx.z, 0)).xyz;
+		float3 a = velocityTexture.Load(float4(idx.x - 1, idx.y, idx.z, 0)).xyz;
+		float3 b = velocityTexture.Load(float4(idx.x + 1, idx.y, idx.z, 0)).xyz;
+		float3 c = velocityTexture.Load(float4(idx.x, idx.y + 1, idx.z, 0)).xyz;
+		float3 d = velocityTexture.Load(float4(idx.x, idx.y - 1, idx.z, 0)).xyz;
 
 		float3 e = lerp(a, c, 0.5);
 		float3 f = lerp(b, d, 0.5);
 
 		float3 newVel = lerp(e, f, 0.5);
 
-		velocityFinal[idxBackInTime] = float4(newVel.xyz, 0);
+		velocityTexture[idxBackInTime] = float4(newVel.xyz, 0);
 
-		float4 ai = inkFinal.Load(float4(idx.x - 1, idx.y, idx.z, 0));
-		float4 bi = inkFinal.Load(float4(idx.x + 1, idx.y, idx.z, 0));
-		float4 ci = inkFinal.Load(float4(idx.x, idx.y - 1, idx.z, 0));
-		float4 di = inkFinal.Load(float4(idx.x, idx.y + 1, idx.z, 0));
+		float4 ai = inkTexture.Load(float4(idx.x - 1, idx.y, idx.z, 0));
+		float4 bi = inkTexture.Load(float4(idx.x + 1, idx.y, idx.z, 0));
+		float4 ci = inkTexture.Load(float4(idx.x, idx.y - 1, idx.z, 0));
+		float4 di = inkTexture.Load(float4(idx.x, idx.y + 1, idx.z, 0));
 
 		float4 ei = lerp(ai, ci, 0.5);
 		float4 fi = lerp(bi, di, 0.5);
 
 		float4 newInk = lerp(ei, fi, 0.5);
 
-		inkFinal[idxBackInTime] = newInk;
+		inkTexture[idxBackInTime] = newInk;
 	}
 }
