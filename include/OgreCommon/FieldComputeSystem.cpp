@@ -28,7 +28,8 @@ namespace MyThirdOgre
 		Ogre::SceneMemoryMgrTypes type,
 		GameEntityManager* geMgr,
 		const int columnCount,
-		const int rowCount
+		const int rowCount,
+		const bool velocityVisible
 	) : GameEntity(id, moDefinition, type)
 	{
 		mParent = 0;
@@ -43,10 +44,12 @@ namespace MyThirdOgre
 		mVorticityConfinementComputeJob = 0;
 		mVorticityComputationComputeJob = 0;
 
+		mVelocityVisible = velocityVisible;
+
 		mDeltaX = 1.0f;
 		mHalfDeltaX = 0.5f;
 
-		mInkDissipationConstant = 0.98f;
+		mInkDissipationConstant = 0.998f;
 		mVelocityDissipationConstant = 0.98f;
 		mPressureDissipationConstant = 0.988f;
 		mViscosity = 0.15f;
@@ -115,8 +118,14 @@ namespace MyThirdOgre
 		mColumnCount = columnCount;
 		mRowCount = rowCount;
 
-		mThreadGroupsX = 256;
-		mThreadGroupsY = 256;
+		if (mVelocityVisible) {
+			mThreadGroupsX = columnCount;
+			mThreadGroupsY = rowCount;
+		}
+		else {
+			mThreadGroupsX = 256;
+			mThreadGroupsY = 256;
+		}
 
 		mFieldWidth = mColumnCount;
 		mFieldHeight = mRowCount;
@@ -133,8 +142,8 @@ namespace MyThirdOgre
 		//mLeafResolutionX = 16.0f;
 		//mLeafResolutionZ = 16.0f;
 
-		mLeafResolutionX = mBufferResolutionWidth / 4;
-		mLeafResolutionZ = mBufferResolutionHeight / 4;
+		mLeafResolutionX = mBufferResolutionWidth / 32;
+		mLeafResolutionZ = mBufferResolutionHeight / 32;
 
 		mLeafCountX = mBufferResolutionWidth / mLeafResolutionX;
 		mLeafWidth = mFieldWidth / mLeafCountX;
@@ -645,6 +654,10 @@ namespace MyThirdOgre
 
 				texResolution->setManualValue(resolution, sizeof(resolution) / sizeof(Ogre::uint32));
 
+				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
+
+				tsl->setManualValue(timeSinceLast);
+
 				shaderParams.setDirty();
 
 				mHaveSetAddImpulsesComputeShaderParameters = true;
@@ -923,8 +936,9 @@ namespace MyThirdOgre
 			// the input buffer MUST be cleared as often as possible
 			for (auto& iter : mInkInputBuffer) {
 				iter.colour = Ogre::Vector4(0.0f, 0.0f, 0.0f, 0.0f);
-				iter.ink = 0.0f;
+				//iter.ink = 0.0f;
 				iter.velocity = Ogre::Vector3::ZERO;
+				// except for inkLifetime don't clear that
 			}
 
 			// Manual additions (logic system provides keyboard input)
@@ -1016,9 +1030,10 @@ namespace MyThirdOgre
 								ink += manualInk;
 								vel += manualVel;
 
-								thisElement.ink += ink;
+								thisElement.ink = ink;
 								thisElement.velocity = vel;
 
+								thisElement.inkLifetime = 1.0f;
 							}
 						}
 					}
@@ -1042,6 +1057,8 @@ namespace MyThirdOgre
 				*instanceBuffer++ = iter.velocity.x;
 				*instanceBuffer++ = iter.velocity.z;
 				*instanceBuffer++ = 0;// iter.velocity.z;
+
+				*instanceBuffer++ = iter.inkLifetime;
 			}
 
 			auto tsb = buffer->getTotalSizeBytes();
@@ -1075,6 +1092,10 @@ namespace MyThirdOgre
 				Ogre::ShaderParams::Param* pDis = shaderParams.findParameter("inkDissipationConstant");
 
 				pDis->setManualValue(mPressureDissipationConstant);
+
+				Ogre::ShaderParams::Param* tsl = shaderParams.findParameter("timeSinceLast");
+
+				tsl->setManualValue(timeSinceLast);
 
 				shaderParams.setDirty();
 
@@ -1172,7 +1193,7 @@ namespace MyThirdOgre
 		}
 	}
 
-	void FieldComputeSystem::addManualVelocity(float timeSinceLast, Ogre::Vector3 vVel, Ogre::Real rInk)
+	void FieldComputeSystem::addManualInput(float timeSinceLast, Ogre::Vector3 vVel, Ogre::Real rInk)
 	{
 		mImpulses.push_back(HandInfluence(vVel, rInk));
 	}
@@ -1198,11 +1219,13 @@ namespace MyThirdOgre
 
 		#pragma endregion
 
-#pragma region Ask the graphics system to clear textures for us
+#pragma region Ask the graphics system to clear textures for us [Not really necessary]
+
 		mGameEntityManager->mLogicSystem->queueSendMessage(
 			mGameEntityManager->mGraphicsSystem,
 			Mq::FIELD_COMPUTE_SYSTEM_REQUEST_RESET,
 			NULL);
+
 #pragma endregion
 
 	}

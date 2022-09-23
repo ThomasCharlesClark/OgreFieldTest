@@ -34,6 +34,9 @@ namespace MyThirdOgre
 		Ogre::Real ink;
 		Ogre::Vector4 colour;
 		Ogre::Vector3 velocity;
+		Ogre::Real inkLifetime; // what is the objective here? we want ink to start disappearing itself after a given time. Say 5s.
+								// whenever ink is added, give it a lifetime of 5s. in advection, reduce inkLifetime by timeSinceLast.
+								// if inkLifetime == 0, set ink to 0?
 	};
 
 	struct FieldComputeSystem_StagingTextureMessage
@@ -154,6 +157,7 @@ namespace MyThirdOgre
 			int							mThreadGroupsY;
 			int							mLeafCountX;
 			int							mLeafCountZ;
+			bool						mVelocityVisible;
 			bool						mDownloadingTextureViaTicket;
 			bool						mHaveSetRenderComputeShaderParameters;
 			bool						mHaveSetBoundaryConditionsComputeShaderParameters;
@@ -228,7 +232,8 @@ namespace MyThirdOgre
 				Ogre::SceneMemoryMgrTypes type,
 				GameEntityManager* geMgr,
 				const int columnCount,
-				const int rowCount
+				const int rowCount,
+				const bool velocityVisible
 				);
 			~FieldComputeSystem();
 
@@ -314,7 +319,7 @@ namespace MyThirdOgre
 
 			virtual void writeDebugImages(float timeSinceLast);
 
-			virtual void addManualVelocity(float timeSinceLast, Ogre::Vector3 v, Ogre::Real rInk = 0.0f);
+			virtual void addManualInput(float timeSinceLast, Ogre::Vector3 v, Ogre::Real rInk = 0.0f);
 
 			virtual void createBoundingHierarchy(void);
 

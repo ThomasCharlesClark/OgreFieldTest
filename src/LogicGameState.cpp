@@ -109,21 +109,29 @@ namespace MyThirdOgre
                 mField->decreaseVelocity(timeSinceLast);
             if (mInputKeys[3]) // Left Arrow
                 mField->rotateVelocityCounterClockwise(timeSinceLast);
+
+            if (mInputKeys[8]) // SDL_SCANCODE_KP_PLUS
+                mField->addImpulse(timeSinceLast);
+            if (mInputKeys[9]) // SDL_SCANCODE_KP_MINUS
+                mField->decreasePressure(timeSinceLast);
         }
         else 
         {
-            if (mInputKeys[0]) // Up Arrow
-                if (mField->getComputeSystem())
-                    mField->getComputeSystem()->addManualVelocity(timeSinceLast, Ogre::Vector3(0, 0, -1), 5.0f);
-            if (mInputKeys[1]) // Right Arrow
-                if (mField->getComputeSystem())
-                    mField->getComputeSystem()->addManualVelocity(timeSinceLast, Ogre::Vector3(1, 0, 0), 5.0f);
-            if (mInputKeys[2]) // Down Arrow
-                if (mField->getComputeSystem())
-                    mField->getComputeSystem()->addManualVelocity(timeSinceLast, Ogre::Vector3(0, 0, 1), 5.0f);
-            if (mInputKeys[3]) // Left Arrow
-                if (mField->getComputeSystem())
-                    mField->getComputeSystem()->addManualVelocity(timeSinceLast, Ogre::Vector3(-1, 0, 0), 5.0f);
+            if (mField->getComputeSystem()) {
+                if (mInputKeys[0]) // Up Arrow
+                    mField->getComputeSystem()->addManualInput(timeSinceLast, Ogre::Vector3(0, 0, -1.0f), 0.0f);
+                if (mInputKeys[1]) // Right Arrow
+                    mField->getComputeSystem()->addManualInput(timeSinceLast, Ogre::Vector3(1.0f, 0, 0), 0.0f);
+                if (mInputKeys[2]) // Down Arrow
+                    mField->getComputeSystem()->addManualInput(timeSinceLast, Ogre::Vector3(0, 0, 1.0f), 0.0f);
+                if (mInputKeys[3]) // Left Arrow
+                    mField->getComputeSystem()->addManualInput(timeSinceLast, Ogre::Vector3(-1.0f, 0, 0), 0.0f);
+
+                if (mInputKeys[8]) // SDL_SCANCODE_KP_PLUS
+                    mField->getComputeSystem()->addManualInput(timeSinceLast, Ogre::Vector3(0, 0, 0), 50.0f);
+                if (mInputKeys[9]) // SDL_SCANCODE_KP_MINUS
+                    mField->getComputeSystem()->addManualInput(timeSinceLast, Ogre::Vector3(0, 0, 0), -50.0f);
+            }
         }
 
         if (mInputKeys[4]) // Num Pad 4
@@ -134,11 +142,6 @@ namespace MyThirdOgre
             mField->traverseActiveCellZNegative();
         if (mInputKeys[7]) // Num Pad 2
             mField->traverseActiveCellZPositive();
-
-        if (mInputKeys[8]) // SDL_SCANCODE_KP_PLUS
-            mField->addImpulse(timeSinceLast);
-        if (mInputKeys[9]) // SDL_SCANCODE_KP_MINUS
-            mField->decreasePressure(timeSinceLast);
 
         if (mInputKeys[10]) // SDL_SCANCODE_5
             mField->togglePressureGradientIndicators();

@@ -3,10 +3,12 @@ compositor_node TestComputeNode
 	in 0 renderTarget
 	in 1 velocityTexture
 	in 2 inkTexture
+	in 3 pressureTexture
+	in 4 divergenceTexture
 	in_buffer 0 inputUavBuffer
 
-	texture divergenceTexture		target_width target_height 1 PFG_RGBA32_FLOAT uav 3d depth_pool 0
-	texture pressureTexture			target_width target_height 1 PFG_RGBA32_FLOAT uav 3d depth_pool 0 
+	//texture divergenceTexture		target_width target_height 1 PFG_RGBA32_FLOAT uav 3d depth_pool 0
+	//texture pressureTexture			target_width target_height 1 PFG_RGBA32_FLOAT uav 3d depth_pool 0 
 	texture vorticityTexture		target_width target_height 1 PFG_R32_FLOAT	  uav 3d depth_pool 0
 
 	buffer temporaryBuffer 1 4 target_width target_height
@@ -34,7 +36,7 @@ compositor_node TestComputeNode
 			uav 0 velocityTexture read write
 		}
 		
-		pass compute
+		/*pass compute
 		{
 			job JacobiDiffusion
 			uav 0 velocityTexture read write
@@ -86,7 +88,7 @@ compositor_node TestComputeNode
 		{
 			job JacobiDiffusion
 			uav 0 velocityTexture read write
-		}
+		}*/
 		
 		pass compute
 		{
@@ -207,10 +209,11 @@ compositor_node TestComputeNode
 		pass compute
 		{
 			job ClearBuffers
-			uav 0 inkTexture write
-			uav 1 velocityTexture write
-			uav 2 divergenceTexture write
-			uav 3 pressureTexture write
+			uav_buffer 0 inputUavBuffer write
+			uav 1 inkTexture write
+			uav 2 velocityTexture write
+			uav 3 divergenceTexture write
+			uav 4 pressureTexture write
 		}
 	}
 
@@ -256,6 +259,8 @@ workspace "Test Compute Workspace"
 	connect_buffer_external 0 TestComputeNode 0
 	connect_external 1 TestComputeNode 1
 	connect_external 2 TestComputeNode 2
+	connect_external 3 TestComputeNode 3
+	connect_external 4 TestComputeNode 4
 
 	connect_output TestComputeNode 0
 }

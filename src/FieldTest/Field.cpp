@@ -53,7 +53,7 @@ namespace MyThirdOgre
 		mColumnCount(64),
 		mRowCount(64),
 		mGridVisible(false),
-		mVelocityVisible(false),
+		mVelocityVisible(true),
 		mPressureGradientVisible(false),
 		mJacobiIterationsPressure(20),
 		mJacobiIterationsDiffusion(20),
@@ -231,6 +231,7 @@ namespace MyThirdOgre
 									  // might be sensible to try to avoid the notion of scaling it just yet, though.
 			mColumnCount,
 			mRowCount,
+			mVelocityVisible,
 			this
 		);
 	}

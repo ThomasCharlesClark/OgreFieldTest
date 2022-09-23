@@ -3,11 +3,12 @@ struct Particle
 	float ink;
 	float4 colour;
 	float3 velocity;
+	float inkLifetime;
 };
 
 RWStructuredBuffer<Particle> inputUavBuffer		: register(u0);
 RWTexture3D<float4> velocityTexture				: register(u1);
-RWTexture3D<float> inkTexture					: register(u2);
+RWTexture3D<float4> inkTexture					: register(u2);
 
 SamplerState TextureSampler
 {
@@ -39,7 +40,15 @@ void main
 
 		float width = texResolution.x;
 
+		////if (inputUavBuffer[rwIdx].inkLifetime > 0) {
+		//	inputUavBuffer[rwIdx].inkLifetime += timeSinceLast;
+		////}
+
+		//if (inputUavBuffer[rwIdx].inkLifetime > 1.0f) {
+		//	inputUavBuffer[rwIdx].ink = 2.0f;
+		//}
+
 		velocityTexture[gl_GlobalInvocationID] += velocity;
-		inkTexture[gl_GlobalInvocationID] += inputUavBuffer[rwIdx].ink;
+		inkTexture[gl_GlobalInvocationID] += float4(inputUavBuffer[rwIdx].ink, 0, 0, inputUavBuffer[rwIdx].inkLifetime);
 	}
 }

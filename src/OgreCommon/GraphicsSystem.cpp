@@ -590,14 +590,7 @@ namespace MyThirdOgre
                     iter->getDepth(),
                     iter->getPixelFormat3D());
 
-                auto stagingTexture2d = texMgr->getStagingTexture(
-                    iter->getBufferResolutionWidth(),
-                    iter->getBufferResolutionHeight(),
-                    iter->getDepth(),
-                    iter->getDepth(),
-                    iter->getPixelFormat2D());
-
-                if (stagingTexture3d && stagingTexture2d)
+                if (stagingTexture3d)
                 {
                     stagingTexture3d->startMapRegion();
 
@@ -607,15 +600,6 @@ namespace MyThirdOgre
                         iter->getBufferResolutionDepth(),
                         1u,
                         iter->getPixelFormat3D());
-
-                    stagingTexture2d->startMapRegion();
-
-                    auto tBox2d = stagingTexture2d->mapRegion(
-                        iter->getBufferResolutionWidth(),
-                        iter->getBufferResolutionHeight(),
-                        iter->getBufferResolutionDepth(),
-                        1u,
-                        iter->getPixelFormat2D());
 
                     for (size_t z = 0; z < iter->getBufferResolutionDepth(); ++z)
                     {
@@ -629,38 +613,21 @@ namespace MyThirdOgre
                                 data[1] = 0.0f; //g
                                 data[2] = 0.0f; //b
                                 data[3] = 1.0f; //a
-
-                                // doesn't like doing this
-                                //if (z == 0) {
-                                //    float* data2d = reinterpret_cast<float*>(tBox2d.at(x, y, z));
-
-                                //    data2d[0] = 0.0f; //r
-                                //    data2d[1] = 0.0f; //g
-                                //    data2d[2] = 0.0f; //b
-                                //    data2d[3] = 1.0f; //a
-                                //}
                             }
                         }
                     }
 
                     stagingTexture3d->stopMapRegion();
 
-                    stagingTexture2d->stopMapRegion();
-
-                    stagingTexture2d->upload(tBox2d, iter->getRenderTargetTexture(), 0, 0, 0);
-
                     stagingTexture3d->upload(tBox3d, iter->getVelocityTexture(), 0, 0, 0);
-                    //stagingTexture3d->upload(tBox3d, iter->getInkTexture(), 0, 0, 0);
+                    stagingTexture3d->upload(tBox3d, iter->getInkTexture(), 0, 0, 0);
                     stagingTexture3d->upload(tBox3d, iter->getPressureTexture(), 0, 0, 0);
                     stagingTexture3d->upload(tBox3d, iter->getPressureGradientTexture(), 0, 0, 0);
                     stagingTexture3d->upload(tBox3d, iter->getDivergenceTexture(), 0, 0, 0);
 
                     texMgr->removeStagingTexture(stagingTexture3d);
 
-                    texMgr->removeStagingTexture(stagingTexture2d);
-
                     stagingTexture3d = 0;
-                    stagingTexture2d = 0;
                 }
             }
         }
@@ -1515,7 +1482,7 @@ namespace MyThirdOgre
                     fieldComputeSystem->getTextureType3D(),
                     fieldComputeSystem->getPixelFormat3D()));
 
-                Ogre::TextureGpu* textures[8];
+                Ogre::TextureGpu* textures[6];
 
                 textures[0] =
                     texMgr->createTexture(
@@ -1530,8 +1497,8 @@ namespace MyThirdOgre
 
                 textures[1] =
                     texMgr->createTexture(
-                        "primaryVelocityTexture",
-                        "primaryVelocityTexture",
+                        "velocityTexture",
+                        "velocityTexture",
                         Ogre::GpuPageOutStrategy::Discard,
                         Ogre::TextureFlags::RenderToTexture | Ogre::TextureFlags::Uav,
                         fieldComputeSystem->getTextureType3D(),
@@ -1541,10 +1508,10 @@ namespace MyThirdOgre
 
                 textures[2] =
                     texMgr->createTexture(
-                        "secondaryVelocityTexture",
-                        "secondaryVelocityTexture",
+                        "pressureTexture",
+                        "pressureTexture",
                         Ogre::GpuPageOutStrategy::Discard,
-                        Ogre::TextureFlags::RenderToTexture | Ogre::TextureFlags::Uav,
+                        Ogre::TextureFlags::ManualTexture | Ogre::TextureFlags::Uav,
                         fieldComputeSystem->getTextureType3D(),
                         Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME,
                         0u,
@@ -1552,8 +1519,8 @@ namespace MyThirdOgre
 
                 textures[3] =
                     texMgr->createTexture(
-                        "pressureTexture",
-                        "pressureTexture",
+                        "pressureGradientTexture",
+                        "pressureGradientTexture",
                         Ogre::GpuPageOutStrategy::Discard,
                         Ogre::TextureFlags::ManualTexture | Ogre::TextureFlags::Uav,
                         fieldComputeSystem->getTextureType3D(),
@@ -1563,8 +1530,8 @@ namespace MyThirdOgre
 
                 textures[4] =
                     texMgr->createTexture(
-                        "pressureGradientTexture",
-                        "pressureGradientTexture",
+                        "divergenceTexture",
+                        "divergenceTexture",
                         Ogre::GpuPageOutStrategy::Discard,
                         Ogre::TextureFlags::ManualTexture | Ogre::TextureFlags::Uav,
                         fieldComputeSystem->getTextureType3D(),
@@ -1573,33 +1540,11 @@ namespace MyThirdOgre
                         0u);
 
                 textures[5] =
-                    texMgr->createTexture(
-                        "divergenceTexture",
-                        "divergenceTexture",
-                        Ogre::GpuPageOutStrategy::Discard,
-                        Ogre::TextureFlags::ManualTexture | Ogre::TextureFlags::Uav,
-                        fieldComputeSystem->getTextureType3D(),
-                        Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME,
-                        0u,
-                        0u);
-
-                textures[6] =
                     texMgr->createOrRetrieveTexture(
-                        "primaryInkTexture",
-                        "primaryInkTexture",
+                        "inkTexture",
+                        "inkTexture",
                         Ogre::GpuPageOutStrategy::Discard,
                         Ogre::TextureFlags::ManualTexture | Ogre::TextureFlags::Uav,
-                        fieldComputeSystem->getTextureType3D(),
-                        Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME,
-                        0u,
-                        0u);
-
-                textures[7] =
-                    texMgr->createTexture(
-                        "secondaryInkTexture",
-                        "secondaryInkTexture",
-                        Ogre::GpuPageOutStrategy::Discard,
-                        Ogre::TextureFlags::ManualTexture | Ogre::TextureFlags::RenderToTexture | Ogre::TextureFlags::Uav,
                         fieldComputeSystem->getTextureType3D(),
                         Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME,
                         0u,
@@ -1650,6 +1595,7 @@ namespace MyThirdOgre
                     *instanceBuffer++ = 0.0f; // velocity.y
                     *instanceBuffer++ = 0.0f; // velocity.z
 
+                    *instanceBuffer++ = 0.0f; // inkLifetime
                 }
 
                 OGRE_ASSERT_LOW((size_t)(instanceBuffer - instanceBufferStart) * sizeof(float) <=
@@ -1685,7 +1631,7 @@ namespace MyThirdOgre
 
                 fieldComputeSystem->getInkTexture()->setNumMipmaps(1);
                 fieldComputeSystem->getInkTexture()->setResolution(fieldComputeSystem->getBufferResolutionWidth(), fieldComputeSystem->getBufferResolutionHeight());
-                fieldComputeSystem->getInkTexture()->setPixelFormat(fieldComputeSystem->getPixelFormatFloat3D());
+                fieldComputeSystem->getInkTexture()->setPixelFormat(fieldComputeSystem->getPixelFormat3D());
 
                 bool canUseSynchronousUpload = fieldComputeSystem
                     ->getRenderTargetTexture()
@@ -1773,11 +1719,9 @@ namespace MyThirdOgre
                 auto tVec = Ogre::CompositorChannelVec({
                         fieldComputeSystem->getRenderTargetTexture(),
                         fieldComputeSystem->getVelocityTexture(),
-                        fieldComputeSystem->getInkTexture()
-                        /*,
+                        fieldComputeSystem->getInkTexture(),
                         fieldComputeSystem->getPressureTexture(),
-                        fieldComputeSystem->getPressureGradientTexture(),
-                        fieldComputeSystem->getDivergenceTexture()*/
+                        fieldComputeSystem->getDivergenceTexture()
                     });
 
                 auto workspace = compositorManager->addWorkspace(

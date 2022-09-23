@@ -3,12 +3,14 @@ struct Particle
 	float ink;
 	float4 colour;
 	float3 velocity;
+	float inkLifetime;
 }; 
 
-RWTexture3D<float> inkTexture					: register(u0);
-RWTexture3D<float4> velocityTexture				: register(u1);
-RWTexture3D<float4> divergenceTexture			: register(u2);
-RWTexture3D<float4> pressureTexture				: register(u3);
+RWStructuredBuffer<Particle> inputUavBuffer		: register(u0);
+RWTexture3D<float4> inkTexture					: register(u1);
+RWTexture3D<float4> velocityTexture				: register(u2);
+RWTexture3D<float4> divergenceTexture			: register(u3);
+RWTexture3D<float4> pressureTexture				: register(u4);
 
 uniform uint2 texResolution;
 uniform float timeSinceLast;
@@ -29,6 +31,8 @@ void main
 		
 		float4 zero = float4(0, 0, 0, 0);
 
+		//Particle p = inputUavBuffer[rwIdx];
+
 		//velocityTexture[gl_GlobalInvocationID] *= velocityDissipationConstant;
 		
 		//inkTexture[gl_GlobalInvocationID] *= inkDissipationConstant;
@@ -38,5 +42,7 @@ void main
 		//pressureTexture[gl_GlobalInvocationID] *= pressureDissipationConstant;
 
 		//pressureTexture[gl_GlobalInvocationID] = zero;
+
+		//velocityTexture[gl_GlobalInvocationID] = zero;
 	}
 }

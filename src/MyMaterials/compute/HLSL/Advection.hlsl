@@ -44,17 +44,15 @@ void main
 
 		float width = texResolution.x;
 
-		float4 velocity = velocityTexture.Load(idx4) * velocityDissipationConstant;
+		float4 velocity = velocityTexture.Load(idx4);
 
-		velocity.y = velocity.z;
+		//velocity.y = velocity.z;
 
-		velocity.z = 0;
-
-		float4 ink = inkTexture.Load(idx4);
+		//velocity.z = 0;
 
 		float3 idxBackInTime = (idx - (timeSinceLast * reciprocalDeltaX * velocity));
 		
-		float3 idxBackInTimeUV = idxBackInTime / width;
+		//float3 idxBackInTimeUV = idxBackInTime / width;
 
 		float id = inkDissipationConstant;
 
@@ -72,10 +70,15 @@ void main
 
 		velocityTexture[idxBackInTime] = float4(newVel.xyz, 0);
 
-		float4 ai = inkTexture.Load(float4(idx.x - 1, idx.y, idx.z, 0));
-		float4 bi = inkTexture.Load(float4(idx.x + 1, idx.y, idx.z, 0));
-		float4 ci = inkTexture.Load(float4(idx.x, idx.y - 1, idx.z, 0));
-		float4 di = inkTexture.Load(float4(idx.x, idx.y + 1, idx.z, 0));
+
+		float3 inkIdx = int3(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, gl_GlobalInvocationID.z);
+
+		inkIdx = inkIdx - (newVel.xyz * timeSinceLast);
+
+		float4 ai = inkTexture.Load(float4(inkIdx.x - 1, inkIdx.y, inkIdx.z, 0));
+		float4 bi = inkTexture.Load(float4(inkIdx.x + 1, inkIdx.y, inkIdx.z, 0));
+		float4 ci = inkTexture.Load(float4(inkIdx.x, inkIdx.y - 1, inkIdx.z, 0));
+		float4 di = inkTexture.Load(float4(inkIdx.x, inkIdx.y + 1, inkIdx.z, 0));
 
 		float4 ei = lerp(ai, ci, 0.5);
 		float4 fi = lerp(bi, di, 0.5);

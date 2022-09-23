@@ -50,9 +50,9 @@ namespace MyThirdOgre
     void TutorialGameState::createScene01(void)
     {
 
-//#if OGRE_DEBUG_MODE
-        //createDebugTextOverlay();
-//#endif
+#if OGRE_DEBUG_MODE
+        createDebugTextOverlay();
+#endif
 
         Ogre::Light* light = mGraphicsSystem->getSceneManager()->createLight();
         Ogre::SceneNode* lightNode = mGraphicsSystem->getSceneManager()->getRootSceneNode()->createChildSceneNode();

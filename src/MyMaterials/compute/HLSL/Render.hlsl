@@ -3,6 +3,7 @@ struct Particle
 	float ink;
 	float4 colour;
 	float3 velocity;
+	float inkLifetime;
 };
 
 SamplerState TextureSampler
@@ -55,7 +56,10 @@ void main
     uint3 gl_GlobalInvocationID : SV_DispatchThreadId
 )
 {
-	if(gl_GlobalInvocationID.x < texResolution.x && gl_GlobalInvocationID.y < texResolution.y)
+	if(gl_GlobalInvocationID.x > 0 && 
+	   gl_GlobalInvocationID.x < texResolution.x - 1 && 
+	   gl_GlobalInvocationID.y > 0 &&
+	   gl_GlobalInvocationID.y < texResolution.y - 1)
 	{
 		uint idx = gl_GlobalInvocationID.y * texResolution.x + gl_GlobalInvocationID.x;
 
@@ -76,6 +80,9 @@ void main
 		
 		float4 final = float4(0, 0, 0, 1.0);
 
+		final.x += ink / 4;
+		final.y += ink / 48.0f;
+
 		/*
 		final.x += ink;
 		final.y += ink / 24.0f;
@@ -88,12 +95,13 @@ void main
 		int minus = -1;
 		int plus = 1;
 
-		velocity.x *= velocity.x < 0 ? minus : plus;
-		velocity.y *= velocity.y < 0 ? minus : plus;
-		velocity.z *= velocity.z < 0 ? minus : plus;
+		//velocity.x *= velocity.x < 0 ? minus : plus;
+		//velocity.y *= velocity.y < 0 ? minus : plus;
+		//velocity.z *= velocity.z < 0 ? minus : plus;
 
-		//final.xyz = normalize(velocity.xyz);
-		final.xyz += normalize(velocity.xyz);
+		//final.z += length(velocity.xyz);
+		//final.xyz += normalize(velocity.xyz);
+		//final.xyz += velocity.xyz;
 
 		pixelBuffer[idx] = packUnorm4x8(final);
 		 
